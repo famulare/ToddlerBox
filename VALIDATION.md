@@ -1,8 +1,8 @@
 # Bootable system validation — 2026-10-02
 
-The [shared interface qualification](#shared-interface-qualification) below is
-the current result for release **`6bf84a8245b3f9b6`**. Earlier sections retain
-the Music/repair qualification and initial system baseline as historical evidence.
+The [Reading qualification](#reading-application-qualification) below is the
+current result for release **`c12b9037f41f5f85`**. Earlier sections retain the
+shared interface, Music/repair and initial system results as historical evidence.
 
 This is a development baseline for VM iteration. Hardware, extended operation,
 and the remaining failure cases below still require qualification before using
@@ -289,7 +289,7 @@ listed qualification limits remain unchanged.
 Reading adds 30 illustrated words, alphabet sound/name decks, and numbers 0–30.
 The shared launcher now fits five icons in centered rows where required.
 
-- **200 tests passed** in 4.22 seconds: 178 existing tests plus 22 Reading checks.
+- **201 tests passed** in 4.14 seconds: 178 existing tests plus 23 Reading checks.
 - All **158 source assets and 189 prepared outputs** passed SHA-256 verification.
   A separate rebuild reproduced every prepared file and catalog byte-for-byte.
   Independently regenerating all 31 number WAVs with the locked Piper preparation
@@ -306,11 +306,71 @@ The shared launcher now fits five icons in centered rows where required.
   editable drawings are included. Human listening/pronunciation review remains
   outstanding; decoding and waveform bounds do not establish pedagogical quality.
 
-The Reading system build and fresh-VM/USB-installer qualification are in progress.
-Do not interpret the earlier release's VM results as validation of this new release.
-Local evidence is under `build/reading-preview/`, `build/reading-rebuild/`,
-`build/reading-number-check/`, `build/reading-selection-check.json`, and
-`build/reading-system-build.log`.
+### Built system and actual guest checks
+
+Release **`c12b9037f41f5f85`** was built with `./system/build.sh` from the shared
+Ubuntu 24.04 recipe. Filesystem checking, raw/QCOW2 comparison and independent
+verification of all four artifact checksums passed. The source identity matches
+the application/configuration used for these checks.
+
+The fresh x86-64 UEFI/TCG overlay required parent password creation, then opened
+the five-activity launcher in standalone Cage. The controller reported healthy
+frames, zero retries and no child GNOME shell.
+
+| Check | Observed result |
+| --- | --- |
+| Word-first interaction | The initial card had no picture; tapping played the sequence and revealed the illustration |
+| Captured speech | Nonzero PCM, peak 7276; this verifies output, not pronunciation or physical loudness |
+| Next and Home | Next changed the word; both controls interrupted speech and subsequent captured PCM was zero |
+| Shared audio | Music → Reading → Music worked in the shared process |
+| Other activities | Paint's dot and Typing's `reading` restored after Home/re-entry; Photos opened |
+| Parent-selected decks | Lowercase sounds, uppercase letter names, and number 23 played and revealed their illustration/quantity |
+| Actual data ENOSPC plus damaged media | A dedicated 16 MiB ext4 loop filesystem reached zero available bytes; a 4096-byte write failed ENOSPC. With this as Reading's data root and a corrupt `cat` sequence, remaining cards still played/revealed, Next/Home worked, and the controller retained zero retries |
+| Independent frozen-app escape | After SIGSTOP during Reading, the held parent chord removed the stopped launcher, persisted the parent latch, reached GNOME login and left zero captured PCM |
+
+The recovery harness's first fixed 12-second host wait was too short under TCG.
+Subsequent independent serial checks confirmed parent mode, absence of the stopped
+PID, and the controller's exact reason: `Ctrl+Alt+Home held for two seconds`.
+This is not a physical recovery-time measurement. The storage fixture was removed,
+the original configuration restored, and the original recording hash rechecked.
+This bounded Reading test does not qualify whole-root exhaustion or Paint saves.
+
+The final ISO then installed onto a separate blank 16 GiB virtual disk. Payload
+verification, disk writing, filesystem checking/expansion and shutdown passed.
+Without the ISO attached, that disk required parent password setup and reached
+healthy child mode with zero retries. Its root filesystem reported 16 GiB with
+13 GiB available; all 189 Reading output hashes matched. Reading played speech
+(captured PCM peak 7284), revealed its picture, and stopped cleanly on Home
+(zero PCM). Typing saved `reading`, and an administrative transition entered
+persistent parent mode.
+Password authentication started an active parent seat session with `gnome-shell`;
+an administrative return to child mode restored the fullscreen launcher, healthy
+frames and zero retries. The saved Typing text remained `reading`. Parent session
+authentication/process state was verified over serial; the desktop's finished
+render was not separately captured in this Reading pass.
+
+Local evidence includes `build/reading-final-build.log`, `build/reading-preview/`,
+`build/reading-rebuild/`, `build/reading-number-check/`,
+`build/reading-selection-check.json`, and `build/vm/reading-{guest-status,smoke,decks,storage-fault,recovery-verified}.log`.
+Screenshots and captured audio are retained under ignored `build/vm/`.
+Installer evidence is in `build/vm/reading-installer.log`,
+`reading-installed-status.log`, `reading-installed-smoke.log`, and
+`reading-installed-results.json`, plus `reading-installed-parent-status.log` and
+`reading-installed-return-child.log`; the installed disk is retained at
+`build/reading-install/disk.qcow2`. Earlier qualified disks were preserved.
+
+### Artifact checksums
+
+```text
+6f34008d9526e3a9a72cf66ef6d2b962071698f498d40d66d661f34cf02a7b23  toddlerbox.img
+5eff20ed23636c84f7f1edebb93486d255eafa1afde36980090559d6f81cb4a9  toddlerbox.qcow2
+059af6824818796db59aa35d4ad0ca086e788e81e1a94782c579ac41cb86ecb4  toddlerbox-installer.iso
+f2b66b58b8be1c994937c9c9c27f5e7850ac1d0ac0d5e0aa666ac1a9f7e9b3c8  toddlerbox-app-c12b9037f41f5f85.tar.gz
+```
+
+HP touchscreen/graphics/speakers, USB boot on physical hardware, sleep/resume,
+human listening and multi-hour operation remain unqualified. Earlier open
+whole-root/power-cut/startup/installer-refusal gates also remain open.
 
 ## Preparing a USB after qualification
 
