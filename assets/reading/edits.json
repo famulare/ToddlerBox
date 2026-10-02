@@ -1,0 +1,454 @@
+{
+  "word-cat": {
+    "start": 0,
+    "end": 46080
+  },
+  "word-hat": {
+    "start": 0,
+    "end": 42624
+  },
+  "word-mat": {
+    "start": 0,
+    "end": 40320
+  },
+  "word-map": {
+    "start": 0,
+    "end": 42624
+  },
+  "word-cap": {
+    "start": 0,
+    "end": 41472
+  },
+  "word-pan": {
+    "start": 0,
+    "end": 36864
+  },
+  "word-bed": {
+    "start": 0,
+    "end": 35603
+  },
+  "word-hen": {
+    "start": 0,
+    "end": 40320
+  },
+  "word-net": {
+    "start": 0,
+    "end": 34560
+  },
+  "word-pen": {
+    "start": 0,
+    "end": 41472
+  },
+  "word-pig": {
+    "start": 179,
+    "end": 32256
+  },
+  "word-bib": {
+    "start": 0,
+    "end": 35311
+  },
+  "word-wig": {
+    "start": 0,
+    "end": 31104
+  },
+  "word-lip": {
+    "start": 0,
+    "end": 42624
+  },
+  "word-dog": {
+    "start": 0,
+    "end": 42624
+  },
+  "word-log": {
+    "start": 2018,
+    "end": 39168
+  },
+  "word-pot": {
+    "start": 363,
+    "end": 35712
+  },
+  "word-top": {
+    "start": 1319,
+    "end": 34560
+  },
+  "word-mug": {
+    "start": 1280,
+    "end": 33408
+  },
+  "word-sun": {
+    "start": 0,
+    "end": 29952
+  },
+  "word-bus": {
+    "start": 319,
+    "end": 29473
+  },
+  "word-bug": {
+    "start": 0,
+    "end": 48384
+  },
+  "word-ship": {
+    "start": 0,
+    "end": 39168
+  },
+  "word-fish": {
+    "start": 0,
+    "end": 38016
+  },
+  "word-duck": {
+    "start": 0,
+    "end": 40320
+  },
+  "word-sock": {
+    "start": 701,
+    "end": 34560
+  },
+  "word-hand": {
+    "start": 0,
+    "end": 39168
+  },
+  "word-tent": {
+    "start": 715,
+    "end": 37853
+  },
+  "word-frog": {
+    "start": 0,
+    "end": 38016
+  },
+  "word-drum": {
+    "start": 0,
+    "end": 43776
+  },
+  "sound-a": {
+    "start": 1160,
+    "end": 34229
+  },
+  "sound-b": {
+    "start": 920,
+    "end": 46996
+  },
+  "sound-c": {
+    "start": 1240,
+    "end": 63975
+  },
+  "sound-d": {
+    "start": 923,
+    "end": 72441
+  },
+  "sound-e": {
+    "start": 1092,
+    "end": 60212
+  },
+  "sound-f": {
+    "start": 987,
+    "end": 51744
+  },
+  "sound-g": {
+    "start": 947,
+    "end": 72441
+  },
+  "sound-h": {
+    "start": 926,
+    "end": 66797
+  },
+  "sound-i": {
+    "start": 950,
+    "end": 55875
+  },
+  "sound-j": {
+    "start": 894,
+    "end": 41396
+  },
+  "sound-l": {
+    "start": 899,
+    "end": 65856
+  },
+  "sound-m": {
+    "start": 1005,
+    "end": 85613
+  },
+  "sound-n": {
+    "start": 985,
+    "end": 70560
+  },
+  "sound-o": {
+    "start": 987,
+    "end": 58329
+  },
+  "sound-p": {
+    "start": 1180,
+    "end": 65856
+  },
+  "sound-qu": {
+    "start": 1117,
+    "end": 47981
+  },
+  "sound-r": {
+    "start": 907,
+    "end": 44217
+  },
+  "sound-s": {
+    "start": 951,
+    "end": 47251
+  },
+  "sound-sh": {
+    "start": 881,
+    "end": 48921
+  },
+  "sound-t": {
+    "start": 1084,
+    "end": 62093
+  },
+  "sound-u": {
+    "start": 918,
+    "end": 47981
+  },
+  "sound-v": {
+    "start": 892,
+    "end": 42336
+  },
+  "sound-w": {
+    "start": 889,
+    "end": 59271
+  },
+  "sound-x": {
+    "start": 930,
+    "end": 53625
+  },
+  "sound-y": {
+    "start": 894,
+    "end": 44217
+  },
+  "sound-z": {
+    "start": 1002,
+    "end": 43277
+  },
+  "name-a": {
+    "start": 0,
+    "end": 22016
+  },
+  "name-b": {
+    "start": 0,
+    "end": 20736
+  },
+  "name-c": {
+    "start": 0,
+    "end": 26112
+  },
+  "name-d": {
+    "start": 0,
+    "end": 19456
+  },
+  "name-e": {
+    "start": 0,
+    "end": 20608
+  },
+  "name-f": {
+    "start": 0,
+    "end": 24064
+  },
+  "name-g": {
+    "start": 0,
+    "end": 24192
+  },
+  "name-h": {
+    "start": 0,
+    "end": 22528
+  },
+  "name-i": {
+    "start": 0,
+    "end": 22016
+  },
+  "name-j": {
+    "start": 0,
+    "end": 25472
+  },
+  "name-k": {
+    "start": 0,
+    "end": 24576
+  },
+  "name-l": {
+    "start": 0,
+    "end": 23040
+  },
+  "name-m": {
+    "start": 0,
+    "end": 21376
+  },
+  "name-n": {
+    "start": 0,
+    "end": 22784
+  },
+  "name-o": {
+    "start": 0,
+    "end": 23680
+  },
+  "name-p": {
+    "start": 0,
+    "end": 25208
+  },
+  "name-q": {
+    "start": 0,
+    "end": 23552
+  },
+  "name-r": {
+    "start": 0,
+    "end": 23296
+  },
+  "name-s": {
+    "start": 0,
+    "end": 25344
+  },
+  "name-t": {
+    "start": 0,
+    "end": 22912
+  },
+  "name-u": {
+    "start": 0,
+    "end": 22528
+  },
+  "name-v": {
+    "start": 0,
+    "end": 26624
+  },
+  "name-w": {
+    "start": 0,
+    "end": 31744
+  },
+  "name-x": {
+    "start": 0,
+    "end": 20736
+  },
+  "name-y": {
+    "start": 0,
+    "end": 27047
+  },
+  "name-z": {
+    "start": 0,
+    "end": 26368
+  },
+  "number-0": {
+    "start": 0,
+    "end": 26112
+  },
+  "number-1": {
+    "start": 0,
+    "end": 22706
+  },
+  "number-2": {
+    "start": 0,
+    "end": 23024
+  },
+  "number-3": {
+    "start": 0,
+    "end": 24064
+  },
+  "number-4": {
+    "start": 0,
+    "end": 23040
+  },
+  "number-5": {
+    "start": 0,
+    "end": 26112
+  },
+  "number-6": {
+    "start": 0,
+    "end": 31232
+  },
+  "number-7": {
+    "start": 0,
+    "end": 27651
+  },
+  "number-8": {
+    "start": 0,
+    "end": 19968
+  },
+  "number-9": {
+    "start": 0,
+    "end": 24555
+  },
+  "number-10": {
+    "start": 0,
+    "end": 19088
+  },
+  "number-11": {
+    "start": 0,
+    "end": 24553
+  },
+  "number-12": {
+    "start": 0,
+    "end": 25088
+  },
+  "number-13": {
+    "start": 0,
+    "end": 33792
+  },
+  "number-14": {
+    "start": 0,
+    "end": 38603
+  },
+  "number-15": {
+    "start": 0,
+    "end": 32602
+  },
+  "number-16": {
+    "start": 0,
+    "end": 40448
+  },
+  "number-17": {
+    "start": 0,
+    "end": 43810
+  },
+  "number-18": {
+    "start": 0,
+    "end": 33062
+  },
+  "number-19": {
+    "start": 0,
+    "end": 28928
+  },
+  "number-20": {
+    "start": 0,
+    "end": 27310
+  },
+  "number-21": {
+    "start": 0,
+    "end": 38501
+  },
+  "number-22": {
+    "start": 0,
+    "end": 39404
+  },
+  "number-23": {
+    "start": 0,
+    "end": 42712
+  },
+  "number-24": {
+    "start": 0,
+    "end": 40960
+  },
+  "number-25": {
+    "start": 0,
+    "end": 43520
+  },
+  "number-26": {
+    "start": 0,
+    "end": 48640
+  },
+  "number-27": {
+    "start": 0,
+    "end": 42486
+  },
+  "number-28": {
+    "start": 0,
+    "end": 46592
+  },
+  "number-29": {
+    "start": 0,
+    "end": 42155
+  },
+  "number-30": {
+    "start": 0,
+    "end": 23514
+  }
+}

@@ -1,4 +1,4 @@
-"""Shared, quiet visual language for the launcher and all four activities.
+"""Shared, quiet visual language for the launcher and its activities.
 
 Artwork is loaded and scaled once per size; frames only blit it.
 Document pixels and photo colors are deliberately independent of this palette.
@@ -47,7 +47,7 @@ def artwork(kind: str, size: tuple[int, int]) -> pygame.Surface:
     """Reuse ToddlerBox's original illustrated artwork at each display size."""
     base = Path(__file__).resolve().parents[3] / "assets" / "icons"
     names = {"home": "home/home_256.png", "photos": "photos/photos_512.png",
-             "music": "music/music.png"}
+             "music": "music/music.png", "reading": "reading/reading.png"}
     try:
         source = pygame.image.load(str(base / names[kind])).convert_alpha()
     except (pygame.error, OSError):

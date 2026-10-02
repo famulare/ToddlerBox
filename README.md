@@ -1,15 +1,16 @@
 # ToddlerBox
 
 **ToddlerBox** is a minimalist, offline-first Linux "kid mode" designed for very young children.
-By default it boots into a fullscreen launcher with four large buttons:
+By default it boots into a fullscreen launcher with five large buttons:
 
 - **Paint**
 - **Photos**
 - **Typing**
 - **Music**
+- **Reading**
 
-All four activities share a cream-and-sage interface and the same Home button.
-The original illustrated icons are preserved; Music has a matching piano icon.
+All five activities share a cream-and-sage interface and the same Home button.
+The original illustrated icons are preserved; Music and Reading have matching icons.
 Shared pygame styling lives in `src/toddlerbox/ui/theme.py`.
 
 ![ToddlerBox shared interface](assets/screenshots/overview.png)
@@ -61,6 +62,7 @@ The old global keyd setup is retired. See [system/README.md](system/README.md).
 │                            │
 │  [ Paint ] [ Photos ]      │
 │  [ Typing ] [ Music ]      │
+│        [ Reading ]        │
 │                            │
 └─────────────┬──────────────┘
               │ switches scenes in-process
@@ -70,6 +72,7 @@ The old global keyd setup is retired. See [system/README.md](system/README.md).
 │  - Photos                  │
 │  - Typing                  │
 │  - Music                   │
+│  - Reading                 │
 │                            │
 │  Fullscreen, no chrome     │
 │  Exit = return to launcher │
@@ -118,14 +121,21 @@ falling-note keyboard. Audio and note cues are generated from the same score.
 
 ![ToddlerBox Music App](assets/screenshots/music.png)
 
+### Reading
+
+Tap a word to hear its sounds and then the whole word; its picture appears
+afterward. Next chooses another random card without an immediate repeat.
+
+![ToddlerBox Reading App](assets/screenshots/reading.png)
+
 ---
 
 ## Components
 
 ### Launcher
 
-- Fullscreen home screen with four icons
-- Runs built-in apps in-process (`paint`, `photos`, `typing`, `music`)
+- Fullscreen home screen with five icons; centered rows when needed
+- Runs built-in apps in-process (`paint`, `photos`, `typing`, `music`, `reading`)
 - Subprocess fallback only in unsupervised desktop development
 - No clickable "exit" control on-screen
 - Ignores function keys (`F1`-`F12`)
@@ -181,6 +191,19 @@ falling-note keyboard. Audio and note cues are generated from the same score.
 - Home and parent recovery stop playback; unavailable audio remains quiet and responsive
 - Offline audio, scores, notices and reproducible generation recipe in [assets/music](assets/music/README.md)
 
+### Reading App
+
+- One large word, letter or numeral at a time; no automatic speech or advancement
+- Tap to hear; written sound groups highlight with the recordings
+- Reveal the picture after speech, with replay by tapping text or picture
+- Random Next excludes the current card; no scores, rewards, tests or learning history
+- 30 words grouped by sound pattern, alphabet sounds/names, and numbers 0–30
+- Starts with six short-a words: cat, hat, mat, map, cap, pan
+- Parent configuration selects content; the child sees only the card, Next and Home
+- Numbers reveal organized groups of ten; letter cards replay the selected sound/name
+- Next, Home, focus changes and parent recovery stop speech
+- [Content credits and preparation](assets/reading/README.md); [design decisions](READING_DESIGN.md)
+
 Paint and Typing archive limits are capacities, not automatic deletion policies.
 At capacity, New/Recall replacement keeps current work and logs the reason for a
 parent. Export or remove archives in parent mode to make space. Default capacities
@@ -226,10 +249,20 @@ Runtime configuration is read from `config.yaml` (repo root for dev) or `/etc/to
 - `paint.palette`
 - `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
 - `music.volume` (0–1, default 0.25), `music.autoplay`, `music.latency_ms`
+- `reading.mode` (`words`, `letters`, `numbers`), `reading.word_sets`
+- `reading.letter_case` (`lowercase`, `uppercase`), `reading.letter_audio` (`sounds`, `names`)
+- `reading.number_min`, `reading.number_max` (within 0–30), `reading.volume` (0–1)
+
+Reading settings are applied on activity entry. Word sets are `short_a_cvc`,
+`short_e_cvc`, `short_i_cvc`, `short_o_cvc`, `short_u_cvc`, `digraphs`, and
+`adjacent_consonants`. List multiple sets to mix them with equal chance per word.
+For example, `reading: {mode: numbers, number_min: 0, number_max: 30}` selects
+the complete number deck. Change these YAML settings from parent mode; the child
+screen has no configuration controls.
 
 App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
-a three-app installation, add the Music launcher entry from this repository's
-`config.yaml` in parent mode. Fresh system images already include all four apps.
+an older installation, add the Music and/or Reading launcher entries from this
+repository's `config.yaml` in parent mode. Fresh images include all five apps.
 
 ---
 
@@ -302,6 +335,7 @@ uv run python -m toddlerbox.paint
 uv run python -m toddlerbox.photos
 uv run python -m toddlerbox.typing
 uv run python -m toddlerbox.music
+uv run python -m toddlerbox.reading
 ```
 
 ---
@@ -347,4 +381,5 @@ Contributions are welcome if they respect the core design principles.
 
 ## License
 
-MIT
+Application code: MIT. Bundled media have separate source and license notices
+under [assets/music](assets/music/README.md) and [assets/reading](assets/reading/README.md).

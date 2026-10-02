@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/toddlerbox/` contains the launcher and apps (`launcher.py`, `paint/`, `photos/`, `typing/`).
+- `src/toddlerbox/` contains the launcher and apps (`paint/`, `photos/`, `typing/`, `music/`, `reading/`).
 - `src/toddlerbox/ui/` contains shared UI helpers and widgets.
 - `src/toddlerbox/runtime/` contains runtime safety/logging helpers.
 - `tests/` holds pytest unit tests.
@@ -17,6 +17,8 @@ Use `uv` with the local `.venv`; the repo scripts now pick a per-user writable c
 - `uv run python -m toddlerbox.paint` — run paint.
 - `uv run python -m toddlerbox.photos` — run photos.
 - `uv run python -m toddlerbox.typing` — run typing.
+- `uv run python -m toddlerbox.music` — run music.
+- `uv run python -m toddlerbox.reading` — run reading.
 - `uv run pytest` — run unit tests.
 - `./scripts/run-stable.sh` — bounded process-exit retries for development.
 - `./system/build.sh` — build the Ubuntu VM disk and USB installer from the shared system recipe.

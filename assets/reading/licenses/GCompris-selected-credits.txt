@@ -1,0 +1,34 @@
+Upstream voices/LICENSE at 5cfd4e4a4236701ec5e9d04a1796b6837d945403
+
+cat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+hat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+mat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+map.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+cap.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pan.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bed.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+hen.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+net.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pen.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pig.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bib.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+wig.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+lip.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+dog.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+log.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pot.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+top.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+mug.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+sun.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bus.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+bug.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+ship.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+fish.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+duck.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+sock.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+hand.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+tent.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+frog.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+drum.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+
+Alphabet names: Joshua Shreve, 2019, GPL V3+. See per-file metadata and sources.json.
