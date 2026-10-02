@@ -1,5 +1,9 @@
 # Bootable system validation — 2026-10-02
 
+The [Music and repair qualification](#music-and-repair-qualification) below is the
+current result for release **`e65218acd46d664e`**. Earlier sections retain the
+initial system baseline and its artifact identities as historical evidence.
+
 This is a development baseline for VM iteration. Hardware, extended operation,
 and the remaining failure cases below still require qualification before using
 it as the child's everyday system.
@@ -122,12 +126,102 @@ at `build/vm/install-target.qcow2`; the VM was shut down after validation.
 - Extended soak with memory, process, log, and save measurements.
 - Whole-guest disk exhaustion and abrupt virtual power cuts during saves; simulated
   write failures are covered, but they do not establish physical storage behavior.
-- Deliberately broken startup and controller failure in the VM, beyond the unit
-  coverage of retry policy; explicit GRUB parent-recovery selection.
+- Deliberately broken startup in the VM, beyond the unit coverage of retry
+  policy; explicit GRUB parent-recovery selection. Controller KILL/SIGSTOP
+  recovery was subsequently qualified below.
 - Installation refusal cases beyond cancellation: undersized targets, mounted
   filesystems, installer-media targets, and damaged payloads.
 
 The existing HP session and the cause of its previous instability remain unknown.
+
+## Music and repair qualification
+
+The integrated implementation is committed in `fbee06e` (Astra repairs) and
+`b28d7eb` (Music and integration). The final build is release
+**`e65218acd46d664e`**, produced by `./system/build.sh` from the shared Ubuntu
+24.04 recipe. `build/music-final-build.log` records the build and successful
+raw/QCOW2 comparison. The release ID matches `system/source-id.py`; generated
+Python package metadata is excluded from that identity.
+
+### Automated and asset checks
+
+- `UV_CACHE_DIR=/workspace/.cache/uv uv run --offline pytest -q`:
+  **178 passed**. This includes pointer ownership/duplicate suppression,
+  drawing/save regressions, bounded caches and archives, preservation on storage
+  errors, release compatibility, and Music playback/state/cleanup behavior.
+- Shell syntax and `git diff --check` passed. Controller credential/pidfd tests
+  use simulated boundaries where the workspace sandbox blocks kernel operations;
+  the real guest controller checks below complement them.
+- Regenerating all 14 Music outputs offline produced byte-identical files.
+  Preparing the piano inputs again from the cached, pinned upstream samples also
+  reproduced the committed inputs. Six decoded tracks contain audio without
+  clipping, have initial onsets within 50 ms of their first cues, and end quietly.
+  These are asset measurements, not physical speaker latency or human listening.
+- Launcher and Music screenshots were inspected at 1024×600 and 1366×768.
+  The committed [Music screenshot](assets/screenshots/music.png) illustrates the
+  passive keyboard visualization. Source, arrangement, instrument and recording
+  provenance is recorded in [the asset documentation](assets/music/README.md).
+
+### Actual guest checks
+
+Recovery fault injection used release `53cf9f20f23af22c`. Its application,
+controller and bundled Music code/assets match the final release; subsequent
+changes corrected the host's fresh-overlay UEFI state and source identity
+calculation. The final release was separately installed and exercised below.
+Guests used x86-64 TCG, a standalone Cage Wayland child session, PipeWire and
+emulated Intel HDA, with QEMU recording audio to a WAV file.
+
+| Check | Observed result |
+| --- | --- |
+| Child session | Fullscreen four-activity launcher, healthy frames, zero retries, no child GNOME shell |
+| Music output | Nonzero captured PCM; selection, automatic track advancement and resumed playback produced output |
+| Controller SIGKILL during Music | Systemd restarted the controller in persistent parent mode; old child exited and audio capture stopped advancing; GDM was active |
+| Controller SIGSTOP | The 10-second systemd watchdog aborted the stopped controller; restart reached persistent parent mode, removed the old child and activated GDM |
+| Parent authentication | Password login reached the ordinary GNOME desktop after recovery |
+| Recovery reboot | Parent recovery latch survived reboot; the greeter remained available |
+| Independent parent chord | With the launcher deliberately stopped, holding Ctrl+Alt+Home for 2.5 seconds entered parent mode and removed the frozen process |
+| Final ISO installation | Booted the final ISO on a fresh 16 GiB target, verified its payload, wrote the disk, expanded ext4 and powered off |
+| Installed final disk | Booted without the ISO, completed parent password setup and entered healthy child mode; release ID and all six bundled WAV hashes matched |
+| Installed Music | Played from the installed disk and advanced automatically through the song list to Minuet |
+| Installed pause/resume | Paused note-field screenshots matched exactly and captured PCM was zero; playback resumed afterward |
+| Installed Home cleanup | Returning Home from Music produced zero captured PCM |
+| Installed Paint | A single-click dot remained after Home and re-entry |
+| Installed Photos | Opened the empty-library view |
+| Installed Typing | `musicready` restored after Home and re-entry; the added `z` was present in `current.json` after parent transition, yielding `musicreadyz` |
+
+The final installed root filesystem reported 16 GiB with approximately 13 GiB
+available. Local logs/screenshots are retained under ignored `build/vm/`:
+`music-controller-kill.log`, `music-controller-stop-verified.log`,
+`music-reboot-parent-status.log`, `music-app-chord-recovery.log`,
+`music-parent-desktop.png`, `music-final-installer.log`,
+`music-installed-status.log`, `music-installed-playing.png`,
+`music-installed-pause-a.png`, `music-installed-pause-b.png`,
+`music-installed-home.png`, `music-installed-paint-restored.png`,
+`music-installed-photos.png`, `music-installed-typing-restored.png`, and
+`music-installed-parent-save.log`. Disposable VM credentials remain local and
+are excluded from source and installation media.
+
+### Final artifact checksums
+
+All system and application bundle checksums were independently verified:
+
+```text
+eb73f17803f7702633a734ab14961d234b5ca0c3f199923515f95bab9dfce6f3  toddlerbox.img
+b85540b157d15423cfe22095e3a3e732a3718d2190547ea987a181104e82dc2e  toddlerbox.qcow2
+7b01f930389c8eadf41fb1d5dcd388b798f90d6bd9d82c6cd29e75b9ab09640c  toddlerbox-installer.iso
+48652ba0e32c9ea40396eff4b51b9bad5b9e77195041302ce635c723dc5e9ca7  toddlerbox-app-e65218acd46d664e.tar.gz
+```
+
+### Limits of this qualification
+
+Physical HP touch routing and edge gestures, graphics, keyboard/trackpad,
+speaker volume and audiovisual timing, USB installation, and sleep/resume still
+need hardware qualification. Human listening to the arrangements and a
+multi-hour representative-content soak are also outstanding. The existing
+whole-guest ENOSPC, abrupt power-cut, interrupted release-switch, startup and
+installer-refusal gates remain open; simulated storage failure tests do not
+establish durability on the HP. The Music changes do not require a network at
+runtime, and no claim of physical hardware validation is made.
 
 ## Preparing a USB after qualification
 
