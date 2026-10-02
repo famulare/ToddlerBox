@@ -1,11 +1,12 @@
 # ToddlerBox
 
 **ToddlerBox** is a minimalist, offline-first Linux "kid mode" designed for very young children.
-By default it boots into a fullscreen launcher with three large buttons:
+By default it boots into a fullscreen launcher with four large buttons:
 
 - **Paint**
 - **Photos**
 - **Typing**
+- **Music**
 
 There is no desktop environment visible, no file browser, no login/logout flow, and no network dependency during normal use. The system is intentionally constrained, predictable, and robust against accidental input, while remaining easy for a parent to administer and extend.
 
@@ -29,20 +30,19 @@ It is a small, comprehensible appliance built on top of Ubuntu.
 - **Offline by default**
   - No network dependency during normal use
 - **Parent-controlled escape**
-  - Hidden keyboard chord exits to parent shell on `tty1`
+  - Independent keyboard chord opens the parent GNOME login
 - **Grow-with-the-child**
   - Built-in apps run in-process for smooth transitions
-  - Non-built-in apps can still be launched via subprocess fallback
+  - Supervised child sessions use registered embedded activities; development retains subprocess fallback
   - Full desktop can be re-enabled later without reinstalling
 
 ---
 
-## Keyboard hardening (toddler-proofing)
+## Child session input
 
-In a real kiosk setup, OS-level key handling still matters (e.g. `Super`/Windows, media keys, brightness, airplane mode).
-ToddlerBox ignores some keys in-app, but the most robust approach is to no-op escape-hatch keys at the Linux input level (works on Wayland too).
-
-- Example `keyd` config generator: `scripts/noop_keys_keyd.sh`
+The bootable system runs Cage directly under GDM, with no surrounding GNOME
+session. Child-session key inhibitors are released when entering parent mode.
+The old global keyd setup is retired. See [system/README.md](system/README.md).
 
 ---
 
@@ -54,7 +54,7 @@ ToddlerBox ignores some keys in-app, but the most robust approach is to no-op es
 │  (Fullscreen Launcher)     │
 │                            │
 │  [ Paint ] [ Photos ]      │
-│          [ Typing ]        │
+│  [ Typing ] [ Music ]      │
 │                            │
 └─────────────┬──────────────┘
               │ switches scenes in-process
@@ -63,6 +63,7 @@ ToddlerBox ignores some keys in-app, but the most robust approach is to no-op es
 │  - Paint                   │
 │  - Photos                  │
 │  - Typing                  │
+│  - Music                   │
 │                            │
 │  Fullscreen, no chrome     │
 │  Exit = return to launcher │
@@ -104,19 +105,26 @@ Large-format typing surface with per-character styling controls and recall.
 
 ![ToddlerBox Typing App](assets/screenshots/typing.png)
 
+### Music
+
+Six short piano arrangements with song choices, autoplay, pause and a passive
+falling-note keyboard. Audio and note cues are generated from the same score.
+
+![ToddlerBox Music App](assets/screenshots/music.png)
+
 ---
 
 ## Components
 
 ### Launcher
 
-- Fullscreen home screen with three icons
-- Runs built-in apps in-process (`paint`, `photos`, `typing`)
-- Subprocess fallback for non-built-in commands in config
+- Fullscreen home screen with four icons
+- Runs built-in apps in-process (`paint`, `photos`, `typing`, `music`)
+- Subprocess fallback only in unsupervised desktop development
 - No clickable "exit" control on-screen
 - Ignores function keys (`F1`-`F12`)
 - **Parent escape chord:** `Ctrl + Alt + Home`
-  - Exits the launcher/Cage session and returns to `tty1`
+  - Hold for two seconds in the system image to open the parent GNOME login
 
 ### Paint App
 
@@ -155,7 +163,23 @@ Large-format typing surface with per-character styling controls and recall.
 - Styling changes apply to newly typed text from the cursor forward
 - Undo and New supported (`Undo` depth 20)
 - Recall overlay in the left panel shows saved session previews
-- Session logs archived silently as rich glyph JSON in `sessions.jsonl`
+- Current rich text saved periodically and on Home; restored on re-entry
+- Sessions archived silently as individual JSON files; legacy `sessions.jsonl` remains readable
+
+### Music App
+
+- Mary Had a Little Lamb, Twinkle, Ode to Joy, Frère Jacques, Row Your Boat and Minuet in G
+- Short piano arrangements, 21–33 seconds each, with quiet accompaniment
+- Fixed two-octave keyboard: blue melody, gold accompaniment, held keys matching note cues
+- Select a song, pause/resume, or let autoplay continue through the collection
+- Home and parent recovery stop playback; unavailable audio remains quiet and responsive
+- Offline audio, scores, notices and reproducible generation recipe in [assets/music](assets/music/README.md)
+
+Paint and Typing archive limits are capacities, not automatic deletion policies.
+At capacity, New/Recall replacement keeps current work and logs the reason for a
+parent. Export or remove archives in parent mode to make space. Default capacities
+are 100 Paint archives and 200 Typing archives/256 MiB; archiving also leaves a
+16 MiB free-space reserve for current saves.
 
 ---
 
@@ -175,7 +199,9 @@ All child-generated data lives under a single directory, configured by `data_roo
 │   ├── toddlerbox.log
 │   └── toddlerbox.log.1
 └── typing/
-    └── sessions.jsonl
+    ├── current.json
+    ├── archive/
+    └── sessions.jsonl  # legacy archives
 ```
 
 - No file dialogs
@@ -186,12 +212,18 @@ All child-generated data lives under a single directory, configured by `data_roo
 
 ## Configuration
 
-Runtime configuration is read from `config.yaml` (repo root for dev) or `/opt/toddlerbox/config.yaml` (deployment). Key settings:
+Runtime configuration is read from `config.yaml` (repo root for dev) or `/etc/toddlerbox/config.yaml` (system image, selected by `KIDBOX_CONFIG`). Key settings:
 
 - `data_root` (default dev config: `./data`)
 - `launcher.apps` (icon paths + commands)
 - `paint.autosave_seconds`
 - `paint.palette`
+- `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
+- `music.volume` (0–1, default 0.25), `music.autoplay`, `music.latency_ms`
+
+App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
+a three-app installation, add the Music launcher entry from this repository's
+`config.yaml` in parent mode. Fresh system images already include all four apps.
 
 ---
 
@@ -213,6 +245,11 @@ assets/icons/
 
 ## Development Setup
 
+The primary target is the [bootable Ubuntu system](system/README.md), built
+with `./system/build.sh` and tested with `./system/vm.sh`. See the
+[validation record and remaining qualification](VALIDATION.md) before installing
+it on hardware. The commands below run individual apps during development.
+
 ### Requirements
 
 - Ubuntu 22.04 or 24.04
@@ -224,7 +261,7 @@ assets/icons/
 Development uses `uv` with a local `.venv`:
 
 ```bash
-uv sync
+uv sync --extra dev
 ```
 
 ## Convenience Script
@@ -258,91 +295,30 @@ uv run python -m toddlerbox.launcher
 uv run python -m toddlerbox.paint
 uv run python -m toddlerbox.photos
 uv run python -m toddlerbox.typing
+uv run python -m toddlerbox.music
 ```
 
 ---
 
-## Cage GDM Kiosk Setup (Deployment)
+## Bootable Ubuntu system
 
-ToddlerBox default deployment now boots into a GDM-controlled session where the `toddlerbox` user is automatically logged into a dedicated `toddlerbox` Wayland session that runs `scripts/kiosk-session.sh` inside Cage.
-
-### 1) Install system packages
-
-```bash
-sudo apt update
-sudo apt install -y cage seatd dconf-cli
-sudo systemctl enable --now seatd
-sudo usermod -aG seat,input,video,render toddlerbox
-```
-
-Or run the repo helper:
+The development and deployment target is now the shared Ubuntu 24.04 x86-64
+system recipe in [system/README.md](system/README.md). It produces a VM disk and
+USB installation media from the same assembled filesystem.
 
 ```bash
-./scripts/configure-kiosk-system.sh <user>
+./system/build.sh
+./system/vm.sh start
 ```
 
-This helper now installs the toddlerbox Wayland session, configures `/etc/gdm3/custom.conf` for automatic login, and enables GDM so the kiosk session starts immediately after boot.
+GDM starts a standalone Cage child session. Hold `Ctrl+Alt+Home` for two seconds
+to reach the separate parent account's GNOME login. An independent controller
+handles that chord and bounded crash/hang recovery. The boot menu also provides
+parent recovery. First boot asks you to create the parent password.
 
-Note: after group changes, log out/in or reboot before testing kiosk startup.
-
-### 2) Install/update ToddlerBox runtime
-
-From repo root:
-
-```bash
-./scripts/install-runtime.sh
-```
-
-This runs a lockfile-based install:
-
-```bash
-uv sync --frozen --no-dev
-```
-
-### 3) Create the toddlerbox Wayland session
-
-Create `/usr/share/wayland-sessions/toddlerbox.desktop` with the following contents:
-
-```ini
-[Desktop Entry]
-Name=toddlerbox
-Comment=toddlerbox
-Exec=/home/<user>/git/ToddlerBox/scripts/kiosk-session.sh
-Type=Application
-DesktopNames=Cage
-```
-
-This session entry is what GDM launches for the kiosk user so that Cage starts with the launcher on login.
-
-### 4) Configure GDM automatic login
-
-Edit `/etc/gdm3/custom.conf` (or `/etc/gdm/custom.conf` on some systems) and replace the `[daemon]` block with:
-
-```ini
-[daemon]
-AutomaticLoginEnable=true
-AutomaticLogin=toddlerbox
-DefaultSession=toddlerbox
-```
-
-After editing, `sudo systemctl enable --now gdm3` ensures the display manager is running at boot.
-
-### 5) Parent escape behavior
-
-`Ctrl + Alt + Home` exits the launcher, closes Cage, and returns parents to a shell on `tty1` (or follows the action configured in `system.parent_escape_action`).
-
-### Rollback to GNOME boot
-
-1. Remove `/usr/share/wayland-sessions/toddlerbox.desktop` (or rename it so GDM falls back to a standard session).
-2. Restore `/etc/gdm3/custom.conf` with `AutomaticLoginEnable=false` (use the `.bak` copy if it exists).
-3. Run:
-
-```bash
-sudo systemctl set-default graphical.target
-sudo systemctl enable gdm3
-```
-
-4. Reboot and log in through the GNOME greeter as usual.
+See the system guide for prerequisites, graphical VM inspection, installation,
+release rollback, and qualification limits. The former tty-autologin, GDM-masking,
+and global keyd setup scripts are retired.
 
 ---
 

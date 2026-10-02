@@ -1,0 +1,21 @@
+[Unit]
+Description=Set up the parent password on the local console
+After=systemd-user-sessions.service plymouth-quit-wait.service
+Before=toddlerbox-controller.service display-manager.service
+ConditionPathExists=!/var/lib/toddlerbox-system/setup-complete
+Conflicts=getty@tty1.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/toddlerbox-firstboot
+StandardInput=tty
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+RemainAfterExit=yes
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=graphical.target

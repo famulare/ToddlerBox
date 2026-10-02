@@ -1,0 +1,63 @@
+#!/bin/sh
+# This path runs only when explicitly selected in the installer boot menu.
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in prereqs) prereqs; exit 0 ;; esac
+case " $(cat /proc/cmdline) " in *' toddlerbox.install=1 '*) ;; *) exit 0 ;; esac
+exec </dev/console >/dev/console 2>&1
+set -eu
+modprobe isofs
+modprobe usb_storage || true
+modprobe uas || true
+udevadm settle
+mkdir -p /media/toddlerbox
+media=''
+for attempt in 1 2 3 4 5 6 7 8 9 10; do
+    media=$(blkid -L TODDLERBOX || true)
+    [ -n "$media" ] && break
+    sleep 1
+done
+fail() { echo "$*"; echo 'Installation stopped. Power off or use this recovery shell.'; exec sh; }
+[ -n "$media" ] || fail 'Installer media not found.'
+mount -o ro "$media" /media/toddlerbox
+cd /media/toddlerbox
+sha256sum -c toddlerbox.img.zst.sha256 || fail 'Installer checksum failed.'
+echo
+echo 'ToddlerBox Ubuntu installer — the selected disk will be completely erased.'
+echo 'Only proceed after backing up the computer. Enter a whole-disk path from this list.'
+lsblk -d -o NAME,PATH,SIZE,MODEL,SERIAL,TYPE
+printf 'Target whole disk (or power off to cancel): '
+read -r target
+[ -b "$target" ] || fail 'Not a block device.'
+[ "$(lsblk -dn -o TYPE "$target")" = disk ] || fail 'Target must be a whole disk.'
+target=$(readlink -f "$target")
+for parent in $(lsblk -snr -o PATH "$media"); do
+    [ "$target" != "$parent" ] || fail 'Refusing to overwrite installer media.'
+done
+lsblk -nr -o MOUNTPOINT "$target" | grep -q / && fail 'Target has mounted filesystems.'
+size=$(lsblk -bdn -o SIZE "$target")
+required=$(cat image-bytes)
+[ "$size" -ge "$required" ] || fail 'Target is too small.'
+printf 'To erase %s, type exactly ERASE %s: ' "$target" "$target"
+read -r confirmation
+[ "$confirmation" = "ERASE $target" ] || fail 'Cancelled. No disk was written.'
+# Preserve decompressor status independently: busybox sh has no portable pipefail.
+rm -f /run/toddlerbox-decompress-ok
+(zstd -dc toddlerbox.img.zst && touch /run/toddlerbox-decompress-ok) | /usr/lib/toddlerbox-installer/dd of="$target" bs=4M conv=fsync || fail 'Disk write failed.'
+[ -e /run/toddlerbox-decompress-ok ] || fail 'Image decompression failed.'
+sgdisk -e "$target" || fail 'Could not relocate GPT backup.'
+if ! growth=$(growpart "$target" 2 2>&1); then
+    case "$growth" in *NOCHANGE:*) ;; *) fail "Could not expand root partition: $growth" ;; esac
+fi
+udevadm settle
+rootpart=$(lsblk -nr -o PATH,PARTN "$target" | awk '$2 == 2 {print $1}')
+[ -b "$rootpart" ] || fail 'Root partition not found.'
+e2fsck -fy "$rootpart" || [ "$?" -eq 1 ] || fail 'Filesystem check failed.'
+resize2fs "$rootpart" || fail 'Filesystem expansion failed.'
+sync
+echo 'Installed. Remove USB after shutdown; on first boot set the parent password.'
+echo 'Press Enter to power off.'
+read -r unused
+poweroff -f
+sleep 5
+exec sh

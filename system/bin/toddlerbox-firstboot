@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+[[ ! -e /var/lib/toddlerbox-system/setup-complete ]] || exit 0
+echo 'Welcome to ToddlerBox. Create the parent account password.'
+echo 'This password unlocks the ordinary Ubuntu GNOME desktop and administration.'
+echo 'The parent account name is: parent'
+passwd parent
+install -d -m 0700 /var/lib/toddlerbox-system
+touch /var/lib/toddlerbox-system/setup-complete
+sync
+echo 'Setup complete. Starting ToddlerBox.'

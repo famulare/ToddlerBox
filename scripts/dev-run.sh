@@ -19,14 +19,14 @@ uv pip install -e ".[dev]"
 
 APP="${1:-launcher}"
 case "$APP" in
-  launcher|paint|photos|typing)
+  launcher|paint|photos|typing|music)
     uv run python -m "toddlerbox.${APP}"
     ;;
   tests|test)
     uv run pytest
     ;;
   *)
-    echo "Usage: $0 [launcher|paint|photos|typing|tests]" >&2
+    echo "Usage: $0 [launcher|paint|photos|typing|music|tests]" >&2
     exit 2
     ;;
 esac

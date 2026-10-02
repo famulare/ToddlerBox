@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "keyboard_low": 48,
+  "keyboard_high": 72,
+  "tracks": [
+    {
+      "id": "mary",
+      "title": "Mary Had a Little Lamb",
+      "audio": "mary.wav",
+      "cues": "mary.json",
+      "duration_ms": 21461.54195011338
+    },
+    {
+      "id": "twinkle",
+      "title": "Twinkle, Twinkle, Little Star",
+      "audio": "twinkle.wav",
+      "cues": "twinkle.json",
+      "duration_ms": 31800.0
+    },
+    {
+      "id": "ode",
+      "title": "Ode to Joy",
+      "audio": "ode.wav",
+      "cues": "ode.json",
+      "duration_ms": 22200.0
+    },
+    {
+      "id": "frere",
+      "title": "Frère Jacques",
+      "audio": "frere.wav",
+      "cues": "frere.json",
+      "duration_ms": 23000.0
+    },
+    {
+      "id": "row",
+      "title": "Row, Row, Row Your Boat",
+      "audio": "row.wav",
+      "cues": "row.json",
+      "duration_ms": 33000.0
+    },
+    {
+      "id": "minuet",
+      "title": "Minuet in G",
+      "audio": "minuet.wav",
+      "cues": "minuet.json",
+      "duration_ms": 29666.666666666668
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+libpam-gnome-keyring
+upower
+rtkit
+at-spi2-core
+gjs
+ibus
+power-profiles-daemon
+gnome-menus
+xdg-desktop-portal-gnome
+xserver-xorg

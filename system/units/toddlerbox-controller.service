@@ -1,0 +1,25 @@
+[Unit]
+Description=ToddlerBox independent input and session supervisor
+After=systemd-logind.service toddlerbox-firstboot.service
+Requires=toddlerbox-firstboot.service
+Before=display-manager.service gdm3.service
+OnFailure=toddlerbox-recovery.service
+StartLimitIntervalSec=120
+StartLimitBurst=3
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/python3 /usr/local/lib/toddlerbox-system/controller.py
+Restart=on-failure
+RestartSec=3
+TimeoutStartSec=15
+TimeoutStopSec=3
+TimeoutAbortSec=3
+WatchdogSec=10
+LimitCORE=0
+RuntimeDirectory=toddlerbox-system
+RuntimeDirectoryPreserve=yes
+UMask=0022
+
+[Install]
+WantedBy=graphical.target

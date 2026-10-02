@@ -1,0 +1,8 @@
+ARG UBUNTU_IMAGE
+FROM ${UBUNTU_IMAGE}
+ARG UBUNTU_SNAPSHOT
+RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
+    printf 'Types: deb\nURIs: https://snapshot.ubuntu.com/ubuntu/%s/\nSuites: noble noble-updates noble-security\nComponents: main universe\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' "$UBUNTU_SNAPSHOT" >/etc/apt/sources.list.d/ubuntu.sources && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca update && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca install -y --no-install-recommends qemu-system-x86 qemu-utils ovmf xorriso grub-pc-bin grub-efi-amd64-bin grub-common mtools dosfstools e2fsprogs gdisk zstd openssh-client python3 ca-certificates && \
+    rm -rf /var/lib/apt/lists/*

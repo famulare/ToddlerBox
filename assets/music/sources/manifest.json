@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "verified_date": "2026-10-02",
+  "files": [
+    {
+      "file": "sources/mary-reference.mid",
+      "sha256": "4e59a8134a6837eab007b2b5bbbcb0cf151f9b0f1c799b571fdb2e3618355c26",
+      "license": "MIT",
+      "url": "https://github.com/vishnubob/python-midi/blob/3fe5d295edb18ee211e163cb8369f4c3e691e418/mary.mid",
+      "revision": "3fe5d295edb18ee211e163cb8369f4c3e691e418",
+      "contributor": "Giles F. Hall"
+    },
+    {
+      "file": "sources/mary-reference.py",
+      "sha256": "684ea1b6a86ffd17f8be151d61aa4fd0dbd86ae89810969f81eaa28595212ea1",
+      "license": "MIT",
+      "url": "https://github.com/vishnubob/python-midi/blob/3fe5d295edb18ee211e163cb8369f4c3e691e418/tests/mary_test.py",
+      "revision": "3fe5d295edb18ee211e163cb8369f4c3e691e418",
+      "contributor": "Giles F. Hall"
+    },
+    {
+      "file": "sources/twinkle.ly",
+      "sha256": "be0528c8703839e9a22f3f4fbee76acf0ed9fba2bd80353f5bcf74645a7f6e6d",
+      "license": "Public Domain",
+      "url": "https://www.mutopiaproject.org/ftp/MozartWA/KV265/guitar-duo-complete/guitar-duo-complete-lys.zip",
+      "revision": "Mutopia-2018/12/07-2236",
+      "contributor": "J. J. Olson"
+    },
+    {
+      "file": "sources/ode.ly",
+      "sha256": "a0c865aa9f71221605362622d281405071e0734540e86ce131131757cc803a71",
+      "license": "Public Domain",
+      "url": "https://www.mutopiaproject.org/ftp/BeethovenLv/ode/ode.ly",
+      "revision": "Mutopia-2009/08/05-528",
+      "contributor": "Peter Chubb"
+    },
+    {
+      "file": "sources/minuet.ly",
+      "sha256": "1a7932ea8ef8df96506a339a88189451bd18b66a9205264e09324e7ec0559d43",
+      "license": "Public Domain",
+      "url": "https://github.com/MutopiaProject/MutopiaProject/blob/master/ftp/BachJS/BWVAnh114/anna-magdalena-04/anna-magdalena-04.ly",
+      "revision": "Mutopia-2017/01/19-75",
+      "contributor": "Allen Garvin"
+    },
+    {
+      "file": "sources/frere-source.json",
+      "sha256": "ee5bbed6055af02f54502ad04dab61f035631ee63a4097390d8c6b684874eb45",
+      "license": "CC0-1.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Fr%C3%A8re_Jacques.svg",
+      "revision": "image upload2012-01-05T00:08:40Z; page1038864400",
+      "contributor": "Mysid"
+    },
+    {
+      "file": "sources/row-source.json",
+      "sha256": "008c14b6f228306cea5c241d8a33b2a11bb22d0e52b9c0cdc2fe60912d9aa0e1",
+      "license": "CC0-1.0",
+      "url": "https://commons.wikimedia.org/wiki/File:Row_your_boat.svg",
+      "revision": "image upload2012-01-04T23:39:13Z",
+      "contributor": "Mysid"
+    },
+    {
+      "file": "sources/UprightPiano.sfz",
+      "sha256": "9c88ebcf6ea66d5694c377e4119fd38c1875c3c211bb2e61c2e41f96a8e4364a",
+      "license": "CC0-1.0",
+      "url": "https://github.com/sgossner/VSCO-2-CE/blob/6dd651d55dde97fd4028699be9d4481f26917891/UprightPiano.sfz",
+      "revision": "6dd651d55dde97fd4028699be9d4481f26917891",
+      "contributor": "Versilian Studios / Sam Gossner; Ivy Audio / Simon Dalzell; Elan Hickler / Soundemote"
+    },
+    {
+      "file": "sources/VSCO-Readme.txt",
+      "sha256": "e0c398cff9660ccc52588b8e4e1554941709996488805f04298bd6e0a7993fcf",
+      "license": "CC0-1.0",
+      "url": "https://github.com/sgossner/VSCO-2-CE/blob/6dd651d55dde97fd4028699be9d4481f26917891/Readme.txt",
+      "revision": "6dd651d55dde97fd4028699be9d4481f26917891",
+      "contributor": "Versilian Studios"
+    }
+  ]
+}

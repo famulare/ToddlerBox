@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import OrderedDict
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 import json
@@ -8,8 +10,9 @@ import time
 from typing import List, Optional, Tuple
 
 import pygame
+from toddlerbox.runtime import health
 try:
-    from PIL import Image
+    from PIL import Image, ImageOps
 except Exception:
     Image = None
 
@@ -19,12 +22,14 @@ FINGERMOTION = getattr(pygame, "FINGERMOTION", None)
 DRAG_THRESHOLD = 10
 SWIPE_THRESHOLD = 80
 SCROLL_STEP = 40
+MAX_PHOTO_PIXELS = 40_000_000
 
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.ui.common import (
     Button,
+    PointerInput,
     create_fullscreen_window,
     draw_home_button,
     ignore_system_shortcut,
@@ -88,14 +93,65 @@ def _thumb_name(path: Path) -> str:
     return f"{path.stem}_{suffix}.png"
 
 
+def _decode_photo(path: Path, size: Optional[Tuple[int, int]] = None, upscale: bool = False) -> tuple[bytes, Tuple[int, int]]:
+    """Prepare immutable, oriented pixels without calling pygame in the worker."""
+    with Image.open(path) as image:
+        # PNG/BMP orientation and conversion can allocate full-resolution copies.
+        # Check the header before decoding, even when the requested result is tiny.
+        if image.width * image.height > MAX_PHOTO_PIXELS:
+            raise ValueError(f"Photo exceeds supported {MAX_PHOTO_PIXELS}-pixel limit: {path}")
+        if size is not None:
+            # JPEG decoders can downsample before allocating the full image.
+            image.draft("RGB", (max(size), max(size)))
+        image = ImageOps.exif_transpose(image)
+        if size is not None:
+            if upscale:
+                image = ImageOps.contain(image, size, Image.Resampling.LANCZOS)
+            else:
+                image.thumbnail(size, Image.Resampling.LANCZOS)
+        image = image.convert("RGBA")
+        return image.tobytes(), image.size
+
+
+def _surface_from_pixels(pixels: tuple[bytes, Tuple[int, int]]) -> pygame.Surface:
+    data, size = pixels
+    return pygame.image.frombytes(data, size, "RGBA").convert_alpha()
+
+
 def _load_photo_surface(path: Path, *, for_thumbnail: bool = False) -> pygame.Surface:
-    image = pygame.image.load(str(path))
-    suffix = path.suffix.lower()
-    if for_thumbnail and suffix in {".jpg", ".jpeg", ".bmp"}:
-        return image.convert()
-    if suffix in {".jpg", ".jpeg", ".bmp"}:
-        return image.convert()
-    return image.convert_alpha()
+    return _surface_from_pixels(_decode_photo(path))
+
+
+def _prepare_thumbnail(path: Path, thumb_path: Path, size: Tuple[int, int]):
+    try:
+        if thumb_path.stat().st_mtime_ns >= path.stat().st_mtime_ns:
+            return _decode_photo(thumb_path, size)
+    except (OSError, ValueError):
+        pass
+    pixels = _decode_photo(path, size)
+    try:
+        thumb_path.parent.mkdir(parents=True, exist_ok=True)
+        image = Image.frombytes("RGBA", pixels[1], pixels[0])
+        tmp_path = thumb_path.with_suffix(".tmp")
+        image.save(tmp_path, format="PNG")
+        tmp_path.replace(thumb_path)
+    except OSError:
+        pass  # A discardable disk cache must not prevent displaying a photo.
+    return pixels
+
+
+def _scan_library(library_dir: Path, thumb_dir: Path) -> List[Path]:
+    # Re-read metadata on entry: parent imports can replace a file in place.
+    paths, _dirty = _list_photos(library_dir, {})
+    valid_names = {_thumb_name(path) for path in paths}
+    if thumb_dir.exists():
+        for path in thumb_dir.glob("*.png"):
+            if path.name not in valid_names:
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+    return paths
 
 
 def _scale_to_fit(surface: pygame.Surface, size: Tuple[int, int]) -> pygame.Surface:
@@ -216,7 +272,7 @@ class PhotosApp:
         dirs = ensure_directories(self.data_root)
         self.photos_dir = dirs["photos"]
         self.library_dir = self.photos_dir / "library"
-        self.thumb_dir = self.photos_dir / "thumbs"
+        self.thumb_dir = self.photos_dir / "thumbs" / "oriented-v1"
         self.exif_cache_path = self.thumb_dir / "exif_cache.json"
 
         if screen is None:
@@ -242,22 +298,22 @@ class PhotosApp:
         self.thumb_size = self.thumb_width
         self.scroll_y = 0
 
-        self.exif_cache = _load_exif_cache(self.exif_cache_path)
-        photo_paths, cache_dirty = _list_photos(self.library_dir, self.exif_cache)
-        self.items = [PhotoItem(path) for path in photo_paths]
+        self.items: List[PhotoItem] = []
         self.current_index = 0
         self.current_image: Optional[pygame.Surface] = None
-        self.initial_thumb_count = int(self.config.get("photos", {}).get("initial_thumbs", 10))
-        self.thumb_load_batch = int(self.config.get("photos", {}).get("thumb_batch", 2))
-        self.thumb_idle_ms = int(self.config.get("photos", {}).get("thumb_idle_ms", 400))
-        self.thumb_scroll_idle_ms = int(self.config.get("photos", {}).get("thumb_scroll_idle_ms", 700))
-        self.thumb_time_budget_ms = int(self.config.get("photos", {}).get("thumb_time_budget_ms", 3))
-        self._init_thumb_queue()
-        self._load_initial_thumbnails()
-        if cache_dirty:
-            _save_exif_cache(self.exif_cache_path, self.exif_cache)
-        self._cleanup_caches()
-        self._load_current_image()
+        photo_config = self.config.get("photos", {})
+        self.thumb_idle_ms = int(photo_config.get("thumb_idle_ms", 400))
+        self.thumb_scroll_idle_ms = int(photo_config.get("thumb_scroll_idle_ms", 700))
+        self.thumb_cache_limit = max(8, min(256, int(photo_config.get("thumb_cache_limit", 48))))
+        self._thumb_lru: OrderedDict[int, None] = OrderedDict()
+        self._failed_thumbs: set[int] = set()
+        self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="photos")
+        self._future: Optional[Future] = None
+        self._job_kind = ""
+        self._job_key = None
+        self._generation = 0
+        self._main_ready_key = None
+        self._refresh_requested = False
 
         self.drag_start: Optional[Tuple[int, int]] = None
         self.drag_delta: Tuple[int, int] = (0, 0)
@@ -265,6 +321,7 @@ class PhotosApp:
         self.strip_pressed_index: Optional[int] = None
         self.strip_drag_distance = 0
         self.pointer_down = False
+        self.pointer_input = PointerInput()
         self.show_arrows = bool(self.config.get("photos", {}).get("show_arrows", False))
         self.font = pygame.font.SysFont("sans", 18)
 
@@ -272,8 +329,11 @@ class PhotosApp:
         self.left_arrow = Button(rect=pygame.Rect(self.main_rect.left + 20, self.screen_rect.centery - 30, 50, 60), fill=(245, 245, 245))
         self.right_arrow = Button(rect=pygame.Rect(self.main_rect.right - 70, self.screen_rect.centery - 30, 50, 60), fill=(245, 245, 245))
 
+        self._refresh_library()
+
     def _handle_resume(self, reason: str) -> None:
         self.logger.info(f"Photos resume handling triggered: {reason}")
+        self.pointer_input.reset()
         self.pointer_down = False
         self.drag_start = None
         self.drag_delta = (0, 0)
@@ -311,9 +371,10 @@ class PhotosApp:
         self.screen = screen
         self.screen_rect = screen_rect
         self.clock = clock
+        self.pointer_input.reset()
         self.scroll_y = 0
         self.current_index = 0
-        self._load_current_image()
+        self._refresh_library()
         self.drag_start = None
         self.drag_delta = (0, 0)
         self.strip_drag_last_y = None
@@ -321,10 +382,74 @@ class PhotosApp:
         self.strip_drag_distance = 0
         self.pointer_down = False
 
-    def _init_thumb_queue(self) -> None:
-        self._pending_order = list(range(len(self.items)))
-        self._pending_set = set(self._pending_order)
-        self._pending_cursor = 0
+    def _refresh_library(self) -> None:
+        self._generation += 1
+        self._refresh_requested = True
+        self.current_image = None
+        self.items = []
+        self._thumb_lru.clear()
+        self._failed_thumbs.clear()
+        self._main_ready_key = None
+        self._service_preparation(thumbnails=False)
+
+    def _service_preparation(self, prefer_indices=None, *, thumbnails: bool = True) -> None:
+        """Poll one bounded job, then submit at most one; never wait in a frame."""
+        if self._future is not None:
+            if not self._future.done():
+                return
+            kind, key = self._job_kind, self._job_key
+            try:
+                result = self._future.result()
+            except Exception:
+                result = None
+                self.logger.exception("Photos background preparation failed")
+            self._future = None
+            if key[0] == self._generation:
+                if kind == "scan":
+                    self.items = [PhotoItem(path) for path in (result or [])]
+                    self.current_index = 0
+                elif kind == "main" and key == (self._generation, self.current_index):
+                    self.current_image = _surface_from_pixels(result) if result else None
+                    self._main_ready_key = key
+                elif kind == "thumb":
+                    idx = key[1]
+                    if result:
+                        self.items[idx].thumb = _surface_from_pixels(result)
+                        self._thumb_lru[idx] = None
+                        self._trim_thumbnail_cache()
+                    else:
+                        self._failed_thumbs.add(idx)
+        if self._refresh_requested:
+            self._refresh_requested = False
+            self._submit_preparation("scan", (self._generation,), _scan_library, self.library_dir, self.thumb_dir)
+        elif self.items:
+            key = (self._generation, self.current_index)
+            if self._main_ready_key != key:
+                self._submit_preparation("main", key, _decode_photo, self.items[self.current_index].path, self.main_rect.size, True)
+            elif thumbnails:
+                indices = self._visible_indices() if prefer_indices is None else prefer_indices
+                for idx in indices:
+                    if idx in self._thumb_lru:
+                        self._thumb_lru.move_to_end(idx)
+                for idx in indices:
+                    if self.items[idx].thumb is None and idx not in self._failed_thumbs:
+                        item = self.items[idx]
+                        self._submit_preparation("thumb", (self._generation, idx), _prepare_thumbnail,
+                                                 item.path, self.thumb_dir / _thumb_name(item.path),
+                                                 (self.thumb_width, self.thumb_size))
+                        break
+
+    def _submit_preparation(self, kind, key, function, *args) -> None:
+        self._job_kind, self._job_key = kind, key
+        self._future = self._executor.submit(function, *args)
+
+    def _trim_thumbnail_cache(self) -> None:
+        while len(self._thumb_lru) > self.thumb_cache_limit:
+            idx, _ = self._thumb_lru.popitem(last=False)
+            self.items[idx].thumb = None
+
+    def close(self) -> None:
+        self._executor.shutdown(wait=False, cancel_futures=True)
 
     def _thumb_slot(self) -> int:
         return self.thumb_size + self.thumb_gap
@@ -340,113 +465,20 @@ class PhotosApp:
         end = min(len(self.items) - 1, (self.scroll_y + self.screen_rect.height - self.thumb_gap) // slot + 1)
         return (int(start), int(end))
 
-    def _load_initial_thumbnails(self) -> None:
-        initial_count = max(0, min(self.initial_thumb_count, len(self._pending_order)))
-        for idx in range(initial_count):
-            self._load_thumbnail_for_index(idx)
-            self._pending_set.discard(idx)
-        self._pending_cursor = initial_count
-
     def _visible_indices(self) -> List[int]:
         start, end = self._visible_index_bounds()
         if end < start:
             return []
         return list(range(start, end + 1))
 
-    def _next_pending_index(self, prefer_indices: Optional[List[int]]) -> Optional[int]:
-        if prefer_indices:
-            for idx in prefer_indices:
-                if idx in self._pending_set:
-                    return idx
-        while self._pending_cursor < len(self._pending_order):
-            idx = self._pending_order[self._pending_cursor]
-            self._pending_cursor += 1
-            if idx in self._pending_set:
-                return idx
-        return None
-
     def _load_next_thumbnail(self, prefer_indices: Optional[List[int]] = None) -> None:
-        if not self._pending_set:
-            return
-        idx = self._next_pending_index(prefer_indices)
-        if idx is None:
-            return
-        self._load_thumbnail_for_index(idx)
-        self._pending_set.discard(idx)
-
-    def _load_thumbnail_for_index(self, idx: int) -> None:
-        if idx < 0 or idx >= len(self.items):
-            return
-        item = self.items[idx]
-        if item.thumb is not None:
-            return
-        thumb_path = self.thumb_dir / _thumb_name(item.path)
-        try:
-            source_mtime = item.path.stat().st_mtime
-        except OSError:
-            return
-        if thumb_path.exists():
-            try:
-                if thumb_path.stat().st_mtime >= source_mtime:
-                    loaded_thumb = _load_photo_surface(thumb_path, for_thumbnail=True)
-                    item.thumb = self._fit_thumb_surface(loaded_thumb)
-                    return
-            except Exception:
-                pass
-        try:
-            image = _load_photo_surface(item.path, for_thumbnail=True)
-            thumb = self._fit_thumb_surface(image)
-            pygame.image.save(thumb, str(thumb_path))
-            item.thumb = thumb
-        except Exception:
-            item.thumb = None
-
-    def _cleanup_caches(self) -> None:
-        try:
-            library_set = {str(path.relative_to(self.library_dir)) for path in self.library_dir.iterdir() if _is_image(path)}
-        except Exception:
-            library_set = set()
-
-        cache_dirty = False
-        for rel in list(self.exif_cache.keys()):
-            if rel not in library_set:
-                self.exif_cache.pop(rel, None)
-                cache_dirty = True
-        if cache_dirty:
-            _save_exif_cache(self.exif_cache_path, self.exif_cache)
-
-        try:
-            for thumb_path in self.thumb_dir.iterdir():
-                if thumb_path.name == self.exif_cache_path.name or thumb_path.suffix.lower() != ".png":
-                    continue
-                name = thumb_path.stem
-                if "_" not in name:
-                    continue
-                stem, suffix = name.rsplit("_", 1)
-                source_path = self.library_dir / f"{stem}.{suffix}"
-                if not source_path.exists():
-                    try:
-                        thumb_path.unlink()
-                    except Exception:
-                        pass
-        except Exception:
-            pass
-
-    def _fit_thumb_surface(self, surface: pygame.Surface) -> pygame.Surface:
-        if surface.get_width() <= self.thumb_width and surface.get_height() <= self.thumb_size:
-            return surface
-        return _scale_to_fit(surface, (self.thumb_width, self.thumb_size))
+        # Kept as the launcher's nonblocking prewarm entry point.
+        self._service_preparation(prefer_indices)
 
     def _load_current_image(self) -> None:
-        if not self.items:
-            self.current_image = None
-            return
-        path = self.items[self.current_index].path
-        try:
-            image = _load_photo_surface(path, for_thumbnail=False)
-            self.current_image = _scale_to_fit(image, self.main_rect.size)
-        except Exception:
-            self.current_image = None
+        self.current_image = None
+        self._main_ready_key = None
+        self._service_preparation(thumbnails=False)
 
     def _change_index(self, delta: int) -> None:
         if not self.items:
@@ -484,7 +516,7 @@ class PhotosApp:
         if self.current_image:
             image_rect = self.current_image.get_rect(center=self.main_rect.center)
             self.screen.blit(self.current_image, image_rect)
-        else:
+        elif not self.items and self._future is None:
             text = self.font.render("No photos found", True, (50, 50, 50))
             self.screen.blit(text, text.get_rect(center=self.main_rect.center))
 
@@ -514,139 +546,146 @@ class PhotosApp:
         pygame.display.flip()
 
     def run(self, *, quit_on_exit: bool = True) -> None:
-        running = True
-        self._render()
-        last_input_ms = pygame.time.get_ticks()
-        last_scroll_ms = last_input_ms
-        last_frame_time = time.monotonic()
-        while running:
-            now = time.monotonic()
-            if now - last_frame_time > 2.0:
-                self._handle_resume("frame-time gap")
-            last_frame_time = now
-            for event in pygame.event.get():
-                if event.type in _INPUT_RESET_EVENTS:
-                    self._handle_resume("window/input state event")
-                    continue
-                if self._should_reset_for_key(event):
-                    self._handle_resume("ignored keyboard shortcut")
-                    continue
-                if event.type in {
-                    pygame.MOUSEMOTION,
-                    pygame.MOUSEBUTTONDOWN,
-                    pygame.MOUSEBUTTONUP,
-                    pygame.MOUSEWHEEL,
-                    pygame.KEYDOWN,
-                    getattr(pygame, "FINGERDOWN", None),
-                    getattr(pygame, "FINGERUP", None),
-                    FINGERMOTION,
-                }:
-                    last_input_ms = pygame.time.get_ticks()
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    running = False
-                elif is_primary_pointer_event(event, is_down=True):
-                    if self.pointer_down:
-                        continue
-                    pos = pointer_event_pos(event, self.screen_rect)
-                    if pos is None:
-                        continue
-                    self.pointer_down = True
-                    if self.home_button.hit(pos):
-                        running = False
-                    elif self.strip_rect.collidepoint(pos):
-                        self.strip_drag_last_y = pos[1]
-                        self.strip_pressed_index = self._thumb_index_at_pos(pos)
-                        self.strip_drag_distance = 0
-                    elif self.main_rect.collidepoint(pos):
-                        self.drag_start = pos
-                        self.drag_delta = (0, 0)
-                    if self.show_arrows:
-                        if self.left_arrow.hit(pos):
-                            self._change_index(-1)
-                        elif self.right_arrow.hit(pos):
-                            self._change_index(1)
-                elif event.type == pygame.MOUSEMOTION:
-                    if not self.pointer_down:
-                        continue
-                    if self.drag_start:
-                        self.drag_delta = (event.pos[0] - self.drag_start[0], event.pos[1] - self.drag_start[1])
-                    if self.strip_drag_last_y is not None:
-                        dy = event.pos[1] - self.strip_drag_last_y
-                        self._scroll_thumbnails(-dy)
-                        last_scroll_ms = pygame.time.get_ticks()
-                        self.strip_drag_distance += abs(dy)
-                        self.strip_drag_last_y = event.pos[1]
-                elif FINGERMOTION is not None and event.type == FINGERMOTION and self.pointer_down:
-                    pos = (int(event.x * self.screen_rect.width), int(event.y * self.screen_rect.height))
-                    if self.drag_start:
-                        self.drag_delta = (pos[0] - self.drag_start[0], pos[1] - self.drag_start[1])
-                    if self.strip_drag_last_y is not None:
-                        dy = pos[1] - self.strip_drag_last_y
-                        self._scroll_thumbnails(-dy)
-                        last_scroll_ms = pygame.time.get_ticks()
-                        self.strip_drag_distance += abs(dy)
-                        self.strip_drag_last_y = pos[1]
-                elif is_primary_pointer_event(event, is_down=False):
-                    if not self.pointer_down:
-                        continue
-                    self.pointer_down = False
-                    pos = pointer_event_pos(event, self.screen_rect)
-                    if pos is None:
-                        continue
-                    if self.drag_start:
-                        dx, dy = self.drag_delta
-                        if abs(dx) > SWIPE_THRESHOLD and abs(dx) > abs(dy):
-                            if dx < 0:
-                                self._change_index(1)
-                            else:
-                                self._change_index(-1)
-                        self.drag_start = None
-                        self.drag_delta = (0, 0)
-                    if (
-                        self.strip_pressed_index is not None
-                        and self.strip_drag_distance < DRAG_THRESHOLD
-                        and self._thumb_index_at_pos(pos) == self.strip_pressed_index
-                    ):
-                        self.current_index = self.strip_pressed_index
-                        self._load_current_image()
-                    self.strip_drag_last_y = None
-                    self.strip_pressed_index = None
-                    self.strip_drag_distance = 0
-                elif event.type == pygame.MOUSEWHEEL:
-                    if self.strip_rect.collidepoint(pygame.mouse.get_pos()):
-                        self._scroll_thumbnails(-event.y * SCROLL_STEP)
-                        last_scroll_ms = pygame.time.get_ticks()
-                elif event.type == pygame.MOUSEBUTTONDOWN and event.button in {4, 5}:
-                    if self.strip_rect.collidepoint(event.pos):
-                        self._scroll_thumbnails(-SCROLL_STEP if event.button == 4 else SCROLL_STEP)
-                        last_scroll_ms = pygame.time.get_ticks()
-
+        try:
+            running = True
             self._render()
-            now_ms = pygame.time.get_ticks()
-            scroll_active = now_ms - last_scroll_ms < self.thumb_scroll_idle_ms
-            active_input = now_ms - last_input_ms < self.thumb_idle_ms
-            budget_end = now_ms + self.thumb_time_budget_ms
-            visible_indices = self._visible_indices()
-            if not scroll_active:
-                batch = 1 if active_input else self.thumb_load_batch
-                for _ in range(batch):
-                    self._load_next_thumbnail(visible_indices)
-                    if pygame.time.get_ticks() >= budget_end:
+            last_input_ms = pygame.time.get_ticks()
+            last_scroll_ms = last_input_ms
+            last_frame_time = time.monotonic()
+            while running and not health.stopping():
+                now = time.monotonic()
+                if now - last_frame_time > 2.0:
+                    self._handle_resume("frame-time gap")
+                last_frame_time = now
+                discard_input = False
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        running = False
                         break
-            self.clock.tick(60)
+                    if discard_input:
+                        continue
+                    if event.type in _INPUT_RESET_EVENTS:
+                        self._handle_resume("window/input state event")
+                        # clear() cannot remove events already in this batch.
+                        discard_input = True
+                        continue
+                    if self._should_reset_for_key(event):
+                        self._handle_resume("ignored keyboard shortcut")
+                        discard_input = True
+                        continue
+                    if not self.pointer_input.accept(event):
+                        continue
+                    if event.type in {
+                        pygame.MOUSEMOTION,
+                        pygame.MOUSEBUTTONDOWN,
+                        pygame.MOUSEBUTTONUP,
+                        pygame.MOUSEWHEEL,
+                        pygame.KEYDOWN,
+                        getattr(pygame, "FINGERDOWN", None),
+                        getattr(pygame, "FINGERUP", None),
+                        FINGERMOTION,
+                    }:
+                        last_input_ms = pygame.time.get_ticks()
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        running = False
+                        break
+                    elif is_primary_pointer_event(event, is_down=True):
+                        if self.pointer_down:
+                            continue
+                        pos = pointer_event_pos(event, self.screen_rect)
+                        if pos is None:
+                            continue
+                        self.pointer_down = True
+                        if self.home_button.hit(pos):
+                            running = False
+                            break
+                        elif self.strip_rect.collidepoint(pos):
+                            self.strip_drag_last_y = pos[1]
+                            self.strip_pressed_index = self._thumb_index_at_pos(pos)
+                            self.strip_drag_distance = 0
+                        elif self.main_rect.collidepoint(pos):
+                            self.drag_start = pos
+                            self.drag_delta = (0, 0)
+                        if self.show_arrows:
+                            if self.left_arrow.hit(pos):
+                                self._change_index(-1)
+                            elif self.right_arrow.hit(pos):
+                                self._change_index(1)
+                    elif event.type in {pygame.MOUSEMOTION, FINGERMOTION}:
+                        if not self.pointer_down:
+                            continue
+                        pos = pointer_event_pos(event, self.screen_rect)
+                        if pos is None:
+                            continue
+                        if self.drag_start:
+                            self.drag_delta = (pos[0] - self.drag_start[0], pos[1] - self.drag_start[1])
+                        if self.strip_drag_last_y is not None:
+                            dy = pos[1] - self.strip_drag_last_y
+                            self._scroll_thumbnails(-dy)
+                            last_scroll_ms = pygame.time.get_ticks()
+                            self.strip_drag_distance += abs(dy)
+                            self.strip_drag_last_y = pos[1]
+                    elif is_primary_pointer_event(event, is_down=False):
+                        if not self.pointer_down:
+                            continue
+                        self.pointer_down = False
+                        pos = pointer_event_pos(event, self.screen_rect)
+                        if pos is None:
+                            continue
+                        if self.drag_start:
+                            dx, dy = self.drag_delta
+                            if abs(dx) > SWIPE_THRESHOLD and abs(dx) > abs(dy):
+                                if dx < 0:
+                                    self._change_index(1)
+                                else:
+                                    self._change_index(-1)
+                            self.drag_start = None
+                            self.drag_delta = (0, 0)
+                        if (
+                            self.strip_pressed_index is not None
+                            and self.strip_drag_distance < DRAG_THRESHOLD
+                            and self._thumb_index_at_pos(pos) == self.strip_pressed_index
+                        ):
+                            self.current_index = self.strip_pressed_index
+                            self._load_current_image()
+                        self.strip_drag_last_y = None
+                        self.strip_pressed_index = None
+                        self.strip_drag_distance = 0
+                    elif event.type == pygame.MOUSEWHEEL:
+                        if self.strip_rect.collidepoint(pygame.mouse.get_pos()):
+                            self._scroll_thumbnails(-event.y * SCROLL_STEP)
+                            last_scroll_ms = pygame.time.get_ticks()
+                    elif event.type == pygame.MOUSEBUTTONDOWN and event.button in {4, 5}:
+                        if self.strip_rect.collidepoint(event.pos):
+                            self._scroll_thumbnails(-SCROLL_STEP if event.button == 4 else SCROLL_STEP)
+                            last_scroll_ms = pygame.time.get_ticks()
 
-        if quit_on_exit:
-            pygame.quit()
+                self._render()
+                now_ms = pygame.time.get_ticks()
+                scroll_active = now_ms - last_scroll_ms < self.thumb_scroll_idle_ms
+                active_input = now_ms - last_input_ms < self.thumb_idle_ms
+                self._service_preparation(thumbnails=not scroll_active and not active_input)
+                self.clock.tick(60)
+                health.frame_complete()
+
+        finally:
+            self.pointer_input.reset()
+            if quit_on_exit:
+                self.close()
+                pygame.quit()
 
 
 def main() -> None:
+    app = None
     try:
-        PhotosApp().run(quit_on_exit=True)
+        app = PhotosApp()
+        app.run(quit_on_exit=True)
     except Exception:
         logger = get_runtime_logger(get_data_root(load_config()))
         logger.exception("Photos app crashed in main()")
+    finally:
+        if app is not None:
+            app.close()
         pygame.quit()
 
 
@@ -661,7 +700,11 @@ def run_embedded(
         app = PhotosApp(screen=screen, screen_rect=screen_rect, clock=clock)
     else:
         app.relaunch(screen, screen_rect, clock)
-    app.run(quit_on_exit=False)
+    try:
+        app.run(quit_on_exit=False)
+    except BaseException:
+        app.close()
+        raise
     return app
 
 

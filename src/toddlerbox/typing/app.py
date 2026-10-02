@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import json
-from collections import deque
 from dataclasses import dataclass
 from datetime import datetime
+from heapq import nlargest
 from pathlib import Path
 import time
-from typing import Deque, Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import pygame
 
@@ -16,12 +16,16 @@ FINGERMOTION = getattr(pygame, "FINGERMOTION", None)
 DRAG_THRESHOLD = 10
 SCROLL_STEP = 40
 UNDO_MAX_DEPTH = 20
+RECALL_READ_BYTES = 16 * 1024 * 1024
 
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
+from toddlerbox.runtime import health
+from toddlerbox.runtime.persistence import has_archive_reserve, write_bytes, sync_directory
 from toddlerbox.ui.common import (
     Button,
+    PointerInput,
     create_fullscreen_window,
     draw_home_button,
     is_primary_pointer_event,
@@ -178,35 +182,72 @@ def _rich_to_text(lines: List[List[Glyph]]) -> str:
     return "\n".join("".join(g.char for g in line) for line in lines)
 
 
-def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession]:
-    if not path.exists():
-        return []
-    recent: Deque[RecallSession] = deque(maxlen=limit)
+def _recall_session(raw: bytes) -> Optional[RecallSession]:
     try:
-        with path.open("r", encoding="utf-8") as handle:
-            for raw in handle:
-                line = raw.strip()
-                if not line:
-                    continue
-                try:
-                    record = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                rich_lines = _deserialize_rich_lines(record.get("rich_lines"))
-                if rich_lines is None:
-                    continue
-                text = _rich_to_text(rich_lines)
-                label = str(record.get("timestamp") or "Saved")
-                recent.append(
-                    RecallSession(
-                        label=label,
-                        preview=_preview_text(text),
-                        rich_lines=rich_lines,
-                    )
-                )
-    except OSError:
+        record = json.loads(raw)
+        if not isinstance(record, dict) or record.get("version", 1) != 1:
+            return None
+        rich_lines = _deserialize_rich_lines(record.get("rich_lines"))
+        if rich_lines is None:
+            return None
+        return RecallSession(
+            label=str(record.get("timestamp") or "Saved"),
+            preview=_preview_text(_rich_to_text(rich_lines)),
+            rich_lines=rich_lines,
+        )
+    except (ValueError, UnicodeError):
+        return None
+
+
+def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession]:
+    """Read a bounded recent window, preserving all older work on disk.
+
+    Atomic archives supersede the legacy append-only log. Limit both candidate
+    files and bytes read so damaged or unusually large history cannot cause an
+    unbounded recall scan. Oversized records remain available for parent recovery.
+    """
+    if limit <= 0:
         return []
-    return list(reversed(recent))
+    recent: List[RecallSession] = []
+    budget = RECALL_READ_BYTES
+    for archive in nlargest(limit, (path.parent / "archive").glob("*.json")):
+        if budget <= 0:
+            break
+        try:
+            with archive.open("rb") as handle:
+                size = archive.stat().st_size
+                if size > budget:
+                    continue
+                raw = handle.read(budget)
+            budget -= len(raw)
+            item = _recall_session(raw)
+            if item is not None:
+                recent.append(item)
+        except OSError:
+            continue
+    if len(recent) >= limit or budget <= 0:
+        return recent
+
+    # Seek from the end: old JSONL files can grow indefinitely. A partial first
+    # record in the bounded tail is discarded; complete later records survive.
+    try:
+        with path.open("rb") as handle:
+            handle.seek(0, 2)
+            start = max(0, handle.tell() - budget)
+            handle.seek(start)
+            tail = handle.read(budget)
+        records = tail.splitlines()
+        if start and records:
+            records = records[1:]
+        for raw in reversed(records):
+            item = _recall_session(raw)
+            if item is not None:
+                recent.append(item)
+                if len(recent) == limit:
+                    break
+    except OSError:
+        pass
+    return recent
 
 
 class TypingApp:
@@ -223,6 +264,14 @@ class TypingApp:
         dirs = ensure_directories(self.data_root)
         self.typing_dir = dirs["typing"]
         self.sessions_path = self.typing_dir / "sessions.jsonl"
+        self.current_path = self.typing_dir / "current.json"
+        self.last_autosave = time.monotonic()
+        self.autosave_interval = max(1, int(self.config.get("typing", {}).get("autosave_seconds", 5)))
+        self._saved_payload: bytes | None = None
+        self._save_blocked = False
+        self._layout_key = None
+        self._layout_revision = 0
+        self._visual_lines: List[VisualLine] = []
 
         if screen is None:
             self.screen, self.screen_rect = create_fullscreen_window()
@@ -331,6 +380,7 @@ class TypingApp:
         self.recall_pressed_index: Optional[int] = None
         self.recall_drag_distance = 0
         self.pointer_down = False
+        self.pointer_input = PointerInput()
 
         self._recall_overlay = pygame.Surface(self.screen_rect.size, pygame.SRCALPHA)
         self._recall_overlay.fill((0, 0, 0, 140))
@@ -340,9 +390,11 @@ class TypingApp:
         self.text_pad_top = 20
         self.line_gap = 6
         self.recall_button.image = self._build_recall_button_thumbnail()
+        self._restore_current()
 
     def _handle_resume(self, reason: str) -> None:
         self.logger.info(f"Typing resume handling triggered: {reason}")
+        self.pointer_input.reset()
         self.pointer_down = False
         self.recall_drag_last_y = None
         self.recall_pressed_index = None
@@ -368,10 +420,15 @@ class TypingApp:
     def _line_text(self, row: int) -> str:
         return "".join(g.char for g in self.rich_lines[row])
 
+    def _invalidate_layout(self) -> None:
+        self._layout_revision = getattr(self, "_layout_revision", 0) + 1
+
     def _sync_text_line(self, row: int) -> None:
+        self._invalidate_layout()
         self.text_lines[row] = self._line_text(row)
 
     def _sync_all_text_lines(self) -> None:
+        self._invalidate_layout()
         self.text_lines = ["".join(g.char for g in line) for line in self.rich_lines]
         if not self.text_lines:
             self.text_lines = [""]
@@ -396,6 +453,7 @@ class TypingApp:
             self.undo_stack.pop(0)
 
     def _insert_newline_at(self, row: int, col: int) -> None:
+        self._invalidate_layout()
         left = self.rich_lines[row][:col]
         right = self.rich_lines[row][col:]
         self.rich_lines[row] = left
@@ -413,6 +471,7 @@ class TypingApp:
     def _remove_newline_at(self, row: int) -> None:
         if row + 1 >= len(self.rich_lines):
             return
+        self._invalidate_layout()
         self.rich_lines[row].extend(self.rich_lines[row + 1])
         self.rich_lines.pop(row + 1)
         if len(self.line_styles) > row + 1:
@@ -518,21 +577,104 @@ class TypingApp:
         self.cursor_col = op.cursor_col
         self._mark_cursor_x_target_dirty()
 
-    def _archive_session(self) -> None:
+    def _record(self) -> dict:
+        return {"version": 1, "rich_lines": _serialize_rich_lines(self.rich_lines),
+                "cursor": [self.cursor_row, self.cursor_col],
+                "size": self.current_text_size, "style": self.text_style}
+
+    def _save_current(self) -> bool:
+        if self._save_blocked:
+            return False
+        payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
+        if payload == self._saved_payload:
+            return True
+        try:
+            write_bytes(self.current_path, payload)
+        except OSError:
+            self.logger.exception("Typing current document save failed")
+            return False
+        self._saved_payload = payload
+        return True
+
+    def _restore_current(self) -> None:
+        if not self.current_path.exists():
+            return
+        try:
+            record = json.loads(self.current_path.read_text(encoding="utf-8"))
+            if isinstance(record, dict) and record.get("version", 1) != 1:
+                # Rollbacks must never classify a newer save as corrupt or
+                # overwrite it. Continue this release's work in a named sidecar.
+                fallback = self.typing_dir / "current-v1.json"
+                self.logger.warning(
+                    f"Unsupported typing document version at {self.current_path}; "
+                    f"preserving it and using {fallback}"
+                )
+                if self.current_path == fallback:
+                    self._save_blocked = True
+                    return
+                self.current_path = fallback
+                self._restore_current()
+                return
+            restored = _deserialize_rich_lines(record.get("rich_lines"))
+            if restored is None or record.get("version") != 1:
+                raise ValueError("invalid current document")
+            self.rich_lines = restored
+            self._sync_all_text_lines()
+            cursor = record.get("cursor", [0, 0])
+            self.cursor_row = max(0, min(int(cursor[0]), len(restored) - 1))
+            self.cursor_col = max(0, min(int(cursor[1]), len(restored[self.cursor_row])))
+            size, style = record.get("size"), record.get("style")
+            if size in self.size_values and style in {"plain", "bold", "italic"}:
+                self.current_text_size, self.text_style = size, style
+        except (OSError, ValueError, TypeError, AttributeError, IndexError):
+            self.logger.exception("Preserving unreadable typing document")
+            self.current_path.rename(self.typing_dir / f"corrupt-{time.time_ns()}.json")
+            sync_directory(self.typing_dir)
+
+    def _archive_session(self) -> bool:
         record = {
+            "version": 1,
             "timestamp": datetime.now().isoformat(timespec="seconds"),
             "rich_lines": _serialize_rich_lines(self.rich_lines),
         }
+        payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
         try:
-            with self.sessions_path.open("a", encoding="utf-8") as handle:
-                handle.write(json.dumps(record, ensure_ascii=False) + "\n")
+            directory = self.typing_dir / "archive"
+            options = self.config.get("typing", {})
+            try:
+                max_archives = max(0, int(options.get("max_archives", 200)))
+                max_bytes = max(0, int(options.get("max_archive_bytes", 256 * 1024 * 1024)))
+            except (TypeError, ValueError, OverflowError):
+                max_archives, max_bytes = 200, 256 * 1024 * 1024
+            # Archives are children's work, not a disposable cache. Refuse a
+            # new archive at capacity, leaving New/Recall and current work intact.
+            count, total_bytes = 0, len(payload)
+            if self.sessions_path.exists():
+                total_bytes += self.sessions_path.stat().st_size
+            for archive in directory.glob("*.json"):
+                count += 1
+                total_bytes += archive.stat().st_size
+                if count >= max_archives or total_bytes > max_bytes:
+                    break
+            if count >= max_archives or total_bytes > max_bytes:
+                self.logger.warning("Typing archive capacity reached; keeping current document")
+                return False
+            if not has_archive_reserve(self.typing_dir, len(payload)):
+                self.logger.warning("Typing archive reserve reached; keeping current document")
+                return False
+            directory.mkdir(exist_ok=True)
+            sync_directory(self.typing_dir)
+            write_bytes(directory / f"{time.time_ns()}.json", payload)
         except OSError:
             self.logger.warning("Typing session archive write failed")
+            return False
+        return True
 
     def _current_text(self) -> str:
         return "\n".join(self.text_lines).rstrip()
 
     def _clear_text(self) -> None:
+        self._invalidate_layout()
         self.rich_lines = [[]]
         self.line_styles = [self.default_line_style]
         self.text_lines = [""]
@@ -663,6 +805,12 @@ class TypingApp:
 
     def _build_visual_lines(self) -> List[VisualLine]:
         max_width = max(1, self.text_rect.width - self.text_pad_x * 2)
+        # Only an empty row's height depends on the insertion style/cursor.
+        empty_cursor_row = self.cursor_row if not self.rich_lines[self.cursor_row] else None
+        key = (getattr(self, "_layout_revision", 0), max_width,
+               self.current_text_size, self.text_style, empty_cursor_row)
+        if key == getattr(self, "_layout_key", None):
+            return self._visual_lines
         lines: List[VisualLine] = []
         for row_idx, row in enumerate(self.rich_lines):
             if not row:
@@ -698,6 +846,8 @@ class TypingApp:
         if not lines:
             height = self._visual_line_height(self.cursor_row, [])
             lines.append(VisualLine(row=self.cursor_row, start_col=0, end_col=0, glyphs=[], widths=[], height=height))
+        self._visual_lines = lines
+        self._layout_key = key
         return lines
 
     def _cursor_x_offset_in_line(self, line: VisualLine, cursor_col: int) -> int:
@@ -859,6 +1009,8 @@ class TypingApp:
         if item.is_current:
             self.recall_open = False
             return
+        if not self._archive_session():
+            return
         self.rich_lines = _clone_rich_lines(item.rich_lines)
         self._sync_all_text_lines()
         self.undo_stack = []
@@ -868,6 +1020,7 @@ class TypingApp:
         self._cursor_x_target_dirty = True
         self.text_scroll_y = 0
         self.recall_open = False
+        self._save_current()
 
     def _wrap_preview_lines(self, text: str, max_width: int, max_lines: int) -> List[str]:
         if not text:
@@ -1047,26 +1200,43 @@ class TypingApp:
         pygame.display.flip()
 
     def run(self, *, quit_on_exit: bool = True) -> None:
+        try:
+            self._run()
+        finally:
+            self._save_current()
+            if quit_on_exit:
+                pygame.quit()
+
+    def _run(self) -> None:
         running = True
         self._render()
         last_frame_time = time.monotonic()
-        while running:
+        while running and not health.stopping():
             now = time.monotonic()
             if now - last_frame_time > 2.0:
                 self._handle_resume("frame-time gap")
             last_frame_time = now
+            ignore_remaining_input = False
             for event in pygame.event.get():
                 if event.type in {WINDOW_FOCUS_GAINED, APP_DID_ENTER_FOREGROUND}:
                     self._handle_resume("focus/background event")
+                    # Clear cannot remove input already fetched in this batch.
+                    ignore_remaining_input = True
                     continue
                 if event.type == pygame.QUIT:
-                    running = False
+                    running = not self._save_current()
+                    if not running:
+                        break
+                if ignore_remaining_input:
+                    continue
+                if not self.pointer_input.accept(event):
+                    continue
                 if self.recall_open:
                     self._handle_recall_event(event)
                     continue
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        running = False
+                        running = not self._save_current()
                     elif event.key == pygame.K_BACKSPACE:
                         op = self._delete_backward()
                         if op:
@@ -1113,10 +1283,11 @@ class TypingApp:
                     if pos is None:
                         continue
                     if self.home_button.hit(pos):
-                        running = False
+                        running = not self._save_current()
                     elif self.new_button.hit(pos):
-                        self._archive_session()
-                        self._clear_text()
+                        if self._archive_session():
+                            self._clear_text()
+                            self._save_current()
                     elif self.undo_button.hit(pos):
                         self._undo()
                     elif self.recall_button.hit(pos):
@@ -1137,12 +1308,15 @@ class TypingApp:
                                 break
                         if handled:
                             continue
+                if not running:
+                    break
 
+            if time.monotonic() - self.last_autosave >= self.autosave_interval:
+                self._save_current()
+                self.last_autosave = time.monotonic()
             self._render()
+            health.frame_complete()
             self.clock.tick(60)
-
-        if quit_on_exit:
-            pygame.quit()
 
 
 def main() -> None:

@@ -11,6 +11,9 @@ launcher:
     - name: Typing
       icon_path: assets/icons/typing/typing_512.png
       command: "python -m toddlerbox.typing"
+    - name: Music
+      icon_path: ""
+      command: "python -m toddlerbox.music"
 
 paint:
   autosave_seconds: 10
@@ -36,3 +39,8 @@ photos:
   thumb_idle_ms: 120
   thumb_scroll_idle_ms: 120
   thumb_time_budget_ms: 5
+
+music:
+  volume: 0.25
+  autoplay: true
+  latency_ms: 0

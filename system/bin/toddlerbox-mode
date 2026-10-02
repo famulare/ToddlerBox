@@ -1,0 +1,23 @@
+#!/usr/bin/python3
+"""Root-only client; use pkexec from the parent desktop."""
+import os
+from pathlib import Path
+import socket
+import sys
+import uuid
+
+if len(sys.argv) != 2 or sys.argv[1] not in {"parent", "child", "rollback", "status"}:
+    sys.exit("Usage: toddlerbox-mode parent|child|rollback|status")
+if sys.argv[1] == "status":
+    print(Path("/run/toddlerbox-system/status.json").read_text(), end="")
+else:
+    if os.geteuid() != 0:
+        sys.exit("Run with sudo or pkexec from the parent account.")
+    with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as client:
+        client.bind("\0toddlerbox-mode-" + uuid.uuid4().hex)
+        client.settimeout(8)
+        client.sendto(sys.argv[1].encode(), "/run/toddlerbox-control.sock")
+        reply = client.recv(1024).decode()
+        if reply != "OK":
+            sys.exit(reply)
+        print(f"Accepted: {sys.argv[1]}. Check toddlerbox-mode status for runtime state.")

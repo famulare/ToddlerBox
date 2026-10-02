@@ -25,6 +25,11 @@ DEFAULT_CONFIG: Dict[str, Any] = {
                 "icon_path": "assets/icons/typing.png",
                 "command": "python -m toddlerbox.typing",
             },
+            {
+                "name": "Music",
+                "icon_path": "",
+                "command": "python -m toddlerbox.music",
+            },
         ]
     },
     "paint": {
@@ -48,6 +53,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
             [255, 99, 71],
         ],
     },
+    "music": {"volume": 0.25, "autoplay": True, "latency_ms": 0},
 }
 
 

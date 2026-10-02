@@ -3,19 +3,24 @@ from __future__ import annotations
 import math
 import os
 import time
+from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import pygame
+from PIL import Image
 
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
+from toddlerbox.runtime import health
+from toddlerbox.runtime.persistence import atomic_write, has_archive_reserve, sync_directory
 from toddlerbox.ui.common import (
     Button,
     FINGER_EVENTS,
+    PointerInput,
     create_fullscreen_window,
     draw_home_button,
     ignore_system_shortcut,
@@ -111,23 +116,17 @@ class Stroke:
 
 @dataclass
 class RecallItem:
-    thumb: pygame.Surface
+    thumb: Optional[pygame.Surface]
     source: Optional[Path] = None
 
 
 def _save_surface_atomic(surface: pygame.Surface, path: Path) -> None:
-    # Keep a .png suffix so pygame writes a PNG-encoded file.
-    tmp_path = path.with_name(f".{path.stem}.tmp{path.suffix}")
-    try:
-        pygame.image.save(surface, str(tmp_path))
-        os.replace(tmp_path, path)
-    except Exception:
-        try:
-            if tmp_path.exists():
-                tmp_path.unlink()
-        except OSError:
-            pass
-        raise
+    atomic_write(path, lambda temporary: pygame.image.save(surface, str(temporary)))
+
+
+def _save_pixels_atomic(pixels: bytes, size: Tuple[int, int], path: Path) -> None:
+    image = Image.frombytes("RGB", size, pixels)
+    atomic_write(path, lambda temporary: image.save(temporary, format="PNG"))
 
 
 def _list_archives(paint_dir: Path) -> List[Path]:
@@ -158,7 +157,7 @@ def _coerce_archive_limit(value: object, default: int) -> int:
         limit = int(value)
     except (TypeError, ValueError):
         return default
-    return max(0, limit)
+    return max(1, limit)
 
 
 def _load_icon(path: Path, size: Tuple[int, int], *, preserve_aspect: bool = True) -> Optional[pygame.Surface]:
@@ -259,15 +258,8 @@ def _bucket_fill(surface: pygame.Surface, pos: Point, color: Color) -> None:
     target_mapped = surface.map_rgb(target)
     replacement = surface.map_rgb(color)
     pixels: Optional[pygame.PixelArray] = None
-    use_slice_fill = False
     try:
         pixels = pygame.PixelArray(surface)
-        try:
-            pixels[0:1, y] = replacement
-            use_slice_fill = True
-            pixels[0:1, y] = target_mapped
-        except Exception:
-            use_slice_fill = False
         lx = x
         while lx - 1 >= 0 and pixels[lx - 1, y] == target_mapped:
             lx -= 1
@@ -277,11 +269,7 @@ def _bucket_fill(surface: pygame.Surface, pos: Point, color: Color) -> None:
         stack = [(lx, rx, y)]
         while stack:
             lx, rx, sy = stack.pop()
-            if use_slice_fill:
-                pixels[lx : rx + 1, sy] = replacement
-            else:
-                for fx in range(lx, rx + 1):
-                    pixels[fx, sy] = replacement
+            pixels[lx : rx + 1, sy] = replacement
 
             for ny in (sy - 1, sy + 1):
                 if ny < 0 or ny >= height:
@@ -310,6 +298,17 @@ def _load_thumbnail(path: Path, size: Tuple[int, int]) -> Optional[pygame.Surfac
     except (pygame.error, OSError):
         return None
     return pygame.transform.smoothscale(image, size)
+
+
+def _recall_pixels(path: Path, size: Tuple[int, int]) -> Optional[bytes]:
+    """Decode on the worker; pygame surfaces stay on the display thread."""
+    try:
+        with Image.open(path) as source:
+            if source.width * source.height > 40_000_000:
+                return None
+            return source.convert("RGB").resize(size).tobytes()
+    except (OSError, ValueError, Image.DecompressionBombError):
+        return None
 
 
 def _load_canvas_image(path: Path, size: Tuple[int, int]) -> Optional[pygame.Surface]:
@@ -355,7 +354,6 @@ class PaintApp:
         self.logger: RuntimeLogger = get_runtime_logger(self.data_root)
         dirs = ensure_directories(self.data_root)
         self.paint_dir = dirs["paint"]
-        _rollover_latest_snapshot(self.paint_dir)
 
         if screen is None:
             self.screen, self.screen_rect = create_fullscreen_window()
@@ -386,6 +384,19 @@ class PaintApp:
         self.base_surface = pygame.Surface(self.canvas_rect.size)
         self.base_surface.fill((255, 255, 255))
         self.canvas_surface = self.base_surface.copy()
+        self._canvas_revision = 0
+        self._saved_revision = -1
+        latest = self.paint_dir / "latest.png"
+        if latest.exists():
+            restored = _load_canvas_image(latest, self.canvas_rect.size)
+            if restored is not None:
+                self.canvas_surface = restored
+                self._saved_revision = 0
+            else:
+                # Keep damaged media for parent inspection before making a new save.
+                latest.rename(latest.with_name(f"corrupt-{time.time_ns()}.png"))
+                sync_directory(self.paint_dir)
+                self.logger.warning("Preserved unreadable paint save as corrupt media")
 
         self.palette = [tuple(color) for color in self.config.get("paint", {}).get("palette", [])]
         self.current_color: Color = self.palette[0] if self.palette else (0, 0, 0)
@@ -399,7 +410,7 @@ class PaintApp:
 
         self.font = pygame.font.SysFont("sans", 18)
         self.last_autosave = time.monotonic()
-        self.autosave_interval = int(self.config.get("paint", {}).get("autosave_seconds", 10))
+        self.autosave_interval = max(1, int(self.config.get("paint", {}).get("autosave_seconds", 10)))
 
         self.action_buttons: Dict[str, Button] = {}
         self.tool_buttons: Dict[str, Button] = {}
@@ -420,17 +431,24 @@ class PaintApp:
         self.recall_pressed_index: Optional[int] = None
         self.recall_drag_distance = 0
         self.pointer_down = False
+        self.pointer_input = PointerInput()
+        self._recall_worker: Optional[ThreadPoolExecutor] = None
+        self._recall_pending: Optional[tuple[int, Future]] = None
+        self._recall_generation = 0
+        self._save_worker: Optional[ThreadPoolExecutor] = None
+        self._save_pending: Optional[tuple[int, Future]] = None
         self._recall_overlay = pygame.Surface(self.screen_rect.size, pygame.SRCALPHA)
         self._recall_overlay.fill((0, 0, 0, 140))
 
     def _handle_resume(self, reason: str) -> None:
         self.logger.info(f"Paint resume handling triggered: {reason}")
         self.pointer_down = False
+        if hasattr(self, "pointer_input"):
+            self.pointer_input.reset()
         self.current_stroke = None
         self.recall_strip_drag_last_y = None
         self.recall_pressed_index = None
         self.recall_drag_distance = 0
-        self.last_autosave = time.monotonic()
         pointer_events = [
             pygame.MOUSEMOTION,
             pygame.MOUSEBUTTONDOWN,
@@ -587,17 +605,17 @@ class PaintApp:
             palette_bottom = palette_top
         palette_rect = pygame.Rect(left, palette_top, inner_w, palette_bottom - palette_top)
 
-        swatch_gap = 8
-        rows = max(1, len(self.palette))
-        swatch_height = max(
-            14,
-            (palette_rect.height - swatch_gap * (rows - 1)) // rows if rows > 0 else 14,
-        )
+        swatch_gap = 6
+        # Use additional columns instead of extending below the allotted area.
+        columns = 1 if len(self.palette) * 30 + max(0, len(self.palette) - 1) * swatch_gap <= palette_rect.height else 2
+        rows = max(1, math.ceil(len(self.palette) / columns))
+        swatch_height = max(1, (palette_rect.height - swatch_gap * (rows - 1)) // rows)
+        swatch_width = max(1, (palette_rect.width - swatch_gap * (columns - 1)) // columns)
         for idx, color in enumerate(self.palette):
             rect = pygame.Rect(
-                palette_rect.left,
-                palette_rect.top + idx * (swatch_height + swatch_gap),
-                palette_rect.width,
+                palette_rect.left + (idx % columns) * (swatch_width + swatch_gap),
+                palette_rect.top + (idx // columns) * (swatch_height + swatch_gap),
+                swatch_width,
                 swatch_height,
             )
             self.palette_buttons.append(Button(rect=rect, fill=color))
@@ -682,11 +700,16 @@ class PaintApp:
         if self.undo_stack:
             self.redo_stack.append(self.canvas_surface.copy())
             self.canvas_surface = self.undo_stack.pop()
+            self._mark_canvas_changed()
 
     def _redo(self) -> None:
         if self.redo_stack:
             self.undo_stack.append(self.canvas_surface.copy())
             self.canvas_surface = self.redo_stack.pop()
+            self._mark_canvas_changed()
+
+    def _mark_canvas_changed(self) -> None:
+        self._canvas_revision = getattr(self, "_canvas_revision", 0) + 1
 
     def _current_draw_color(self) -> Color:
         if self.current_tool == "eraser":
@@ -695,13 +718,14 @@ class PaintApp:
 
     def _handle_pointer_down(self, pos: Point) -> bool:
         if self.action_buttons["home"].hit(pos):
-            return True
+            return self._autosave_latest()
 
         if self.canvas_rect.collidepoint(pos):
             local_pos = (pos[0] - self.canvas_rect.left, pos[1] - self.canvas_rect.top)
             if self.current_tool == "bucket":
                 self._push_undo()
                 _bucket_fill(self.canvas_surface, local_pos, self.current_color)
+                self._mark_canvas_changed()
                 return False
             self._push_undo()
             self.current_stroke = Stroke(
@@ -710,6 +734,9 @@ class PaintApp:
                 color=self._current_draw_color(),
                 points=[local_pos],
             )
+            _draw_stamp(self.canvas_surface, self.current_tool, self.current_size,
+                        self._current_draw_color(), local_pos)
+            self._mark_canvas_changed()
             return False
 
         for tool, button in self.tool_buttons.items():
@@ -734,8 +761,9 @@ class PaintApp:
             self._redo()
             return False
         if self.action_buttons["new"].hit(pos):
-            self._archive_current()
-            self._reset_canvas()
+            if self._archive_current():
+                self._reset_canvas()
+                self._autosave_latest()
             return False
         if self.action_buttons["recall"].hit(pos):
             self._open_recall()
@@ -745,6 +773,7 @@ class PaintApp:
     def _handle_pointer_move(self, pos: Point) -> None:
         if not self.current_stroke:
             return
+        self._mark_canvas_changed()
         local_pos = (pos[0] - self.canvas_rect.left, pos[1] - self.canvas_rect.top)
         last_point = self.current_stroke.points[-1]
         if self.current_stroke.tool == "fountain":
@@ -772,41 +801,67 @@ class PaintApp:
                     smoothed_width,
                 )
                 width = smoothed_width
-                self.current_stroke.points.append(next_point)
+                self.current_stroke.points[:] = [next_point]
                 prev = next_point
             self.current_stroke.fountain_width = width
             return
-        self.current_stroke.points.append(local_pos)
+        self.current_stroke.points[:] = [local_pos]
         _draw_segment(self.canvas_surface, self.current_stroke, last_point, local_pos)
 
     def _handle_pointer_up(self) -> None:
         self.current_stroke = None
 
     def _update_thumbnail_button(self) -> None:
-        archives = _list_archives(self.paint_dir)
         size = self.action_buttons["recall"].rect.size
         icon_size = (max(1, size[0] - 6), max(1, size[1] - 6))
-        icon = None
-        for candidate in archives:
-            if not candidate.exists():
-                continue
-            icon = _load_icon(candidate, icon_size)
-            if icon is not None:
-                break
-        if icon is None and self.recall_demo_path.exists():
-            icon = _load_icon(self.recall_demo_path, icon_size)
-        self.action_buttons["recall"].image = icon
+        self.action_buttons["recall"].image = pygame.transform.smoothscale(self.canvas_surface, icon_size)
 
     def _autosave_latest(self) -> bool:
+        # Serialize Home/New/Recall commits after any older periodic snapshot.
+        # Only explicit transitions wait; normal frames never wait on storage.
+        self._finish_pending_save(wait=True)
+        if self._saved_revision == self._canvas_revision:
+            return True
         latest_path = self.paint_dir / "latest.png"
         try:
             _save_surface_atomic(self.canvas_surface, latest_path)
         except Exception:
             self.logger.exception("Paint autosave failed")
             return False
+        self._saved_revision = self._canvas_revision
+        self.logger.info("Paint current canvas committed")
         return True
 
+    def _finish_pending_save(self, *, wait: bool = False) -> None:
+        if self._save_pending is None:
+            return
+        revision, future = self._save_pending
+        if not wait and not future.done():
+            return
+        self._save_pending = None
+        try:
+            future.result()
+        except Exception:
+            self.logger.exception("Paint background autosave failed; canvas remains dirty")
+        else:
+            self._saved_revision = revision
+            self.logger.info("Paint current canvas committed")
+
+    def _request_autosave(self) -> None:
+        self._finish_pending_save()
+        if self._save_pending is not None or self._saved_revision == self._canvas_revision:
+            return
+        if self._save_worker is None:
+            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paint-save")
+        # Immutable copy: the child can continue drawing while PNG/fsync runs.
+        pixels = pygame.image.tobytes(self.canvas_surface, "RGB")
+        future = self._save_worker.submit(_save_pixels_atomic, pixels, self.canvas_surface.get_size(),
+                                          self.paint_dir / "latest.png")
+        self._save_pending = (self._canvas_revision, future)
+
     def _archive_current(self) -> bool:
+        if not self._archive_capacity_available():
+            return False
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
         archive_path = self.paint_dir / f"{timestamp}.png"
         counter = 1
@@ -818,30 +873,39 @@ class PaintApp:
         except Exception:
             self.logger.exception("Paint archive write failed")
             return False
-        self._enforce_archive_limit()
         self._update_thumbnail_button()
         return True
 
-    def _enforce_archive_limit(self) -> None:
+    def _archive_capacity_available(self) -> bool:
         max_archives = _coerce_archive_limit(
             self.config.get("paint", {}).get("max_archives", MAX_ARCHIVES),
             MAX_ARCHIVES,
         )
-        archives = _list_archives(self.paint_dir)
-        # Exclude latest.png from the count
-        archives = [p for p in archives if p.name != "latest.png"]
-        while len(archives) > max_archives and archives:
-            oldest = archives.pop()  # list is sorted newest-first
-            try:
-                oldest.unlink()
-            except OSError:
-                break
+        archives = self._recall_archives()
+        if len(archives) >= max_archives:
+            self.logger.warning("Paint archive capacity reached; preserving current and archived work")
+            return False
+        try:
+            # PNG worst case is near raw RGB plus compression overhead.
+            estimate = self.canvas_surface.get_width() * self.canvas_surface.get_height() * 4 + 65536
+            if not has_archive_reserve(self.paint_dir, estimate):
+                self.logger.warning("Paint archive refused to preserve free space for current saves")
+                return False
+        except OSError:
+            self.logger.exception("Cannot check free space for Paint archive")
+            return False
+        return True
+
+    def _recall_archives(self) -> List[Path]:
+        return [path for path in _list_archives(self.paint_dir)
+                if path.name != "latest.png" and not path.name.startswith(("corrupt-", "."))]
 
     def _reset_canvas(self) -> None:
         self.base_surface.fill((255, 255, 255))
         self.canvas_surface = self.base_surface.copy()
         self.undo_stack = []
         self.redo_stack = []
+        self._mark_canvas_changed()
 
     def _open_recall(self) -> None:
         # Persist current canvas before showing recall so latest work appears immediately.
@@ -852,20 +916,43 @@ class PaintApp:
         self.recall_items = [
             RecallItem(thumb=pygame.transform.smoothscale(self.canvas_surface, (self.recall_thumb_size, self.recall_thumb_size)))
         ]
-        archives = [path for path in _list_archives(self.paint_dir) if path.name != "latest.png"]
+        archives = self._recall_archives()
         if not archives and self.recall_demo_path.exists():
             archives = [self.recall_demo_path]
+        self._recall_generation += 1
         for path in archives:
-            image = _load_thumbnail(path, (self.recall_thumb_size, self.recall_thumb_size))
-            if image is None:
-                continue
-            self.recall_items.append(RecallItem(thumb=image, source=path))
+            self.recall_items.append(RecallItem(thumb=None, source=path))
         self.recall_scroll_y = 0
         self.recall_strip_drag_last_y = None
         self.recall_pressed_index = None
         self.recall_drag_distance = 0
         self.recall_max_scroll = self._recall_max_scroll()
         self.recall_open = True
+
+    def _pump_recall_thumbnail(self) -> None:
+        if self._recall_pending is not None:
+            generation, future = self._recall_pending
+            if not future.done():
+                return
+            self._recall_pending = None
+            index, pixels = future.result()
+            if generation == self._recall_generation and index < len(self.recall_items):
+                item = self.recall_items[index]
+                size = (self.recall_thumb_size, self.recall_thumb_size)
+                item.thumb = pygame.image.frombytes(pixels, size, "RGB") if pixels else pygame.Surface(size)
+        if not self.recall_open:
+            return
+        for index, item in enumerate(self.recall_items):
+            if item.thumb is not None or item.source is None:
+                continue
+            if not self._recall_item_rect(index).colliderect(self.recall_strip_rect):
+                continue
+            if self._recall_worker is None:
+                self._recall_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paint-recall")
+            def decode(index=index, path=item.source, size=self.recall_thumb_size):
+                return index, _recall_pixels(path, (size, size))
+            self._recall_pending = (self._recall_generation, self._recall_worker.submit(decode))
+            break
 
     def _recall_max_scroll(self) -> int:
         total_height = len(self.recall_items) * (self.recall_thumb_size + self.recall_thumb_gap) + self.recall_thumb_gap
@@ -890,7 +977,10 @@ class PaintApp:
         loaded = _load_canvas_image(item.source, self.canvas_rect.size)
         if loaded is None:
             return
+        if not self._archive_current():
+            return
         self.canvas_surface = loaded.copy()
+        self._mark_canvas_changed()
         self.undo_stack = []
         self.redo_stack = []
         # Always promote selected archive into latest working copy.
@@ -968,7 +1058,8 @@ class PaintApp:
             rect = self._recall_item_rect(idx)
             if rect.bottom < self.recall_strip_rect.top or rect.top > self.recall_strip_rect.bottom:
                 continue
-            self.screen.blit(item.thumb, rect)
+            if item.thumb is not None:
+                self.screen.blit(item.thumb, rect)
             border_color = (200, 60, 60) if idx == 0 else (120, 120, 120)
             pygame.draw.rect(self.screen, border_color, rect, width=3 if idx == 0 else 2)
 
@@ -1014,28 +1105,51 @@ class PaintApp:
         pygame.display.flip()
 
     def run(self, *, quit_on_exit: bool = True) -> None:
+        try:
+            self._run()
+        finally:
+            self._autosave_latest()
+            if self._recall_worker is not None:
+                self._recall_worker.shutdown(wait=False, cancel_futures=True)
+            if self._save_worker is not None:
+                self._save_worker.shutdown(wait=False, cancel_futures=True)
+            if quit_on_exit:
+                pygame.quit()
+
+    def _run(self) -> None:
         running = True
         self._render()
         last_frame_time = time.monotonic()
-        while running:
+        while running and not health.stopping():
             now = time.monotonic()
             if now - last_frame_time > 2.0:
                 self._handle_resume("frame-time gap")
             last_frame_time = now
+            discard_input = False
             for event in pygame.event.get():
+                if discard_input and event.type != pygame.QUIT:
+                    continue
                 if event.type in _INPUT_RESET_EVENTS:
                     self._handle_resume("window/input state event")
+                    discard_input = True
                     continue
                 if self._should_reset_for_key(event):
                     self._handle_resume("ignored keyboard shortcut")
+                    discard_input = True
+                    continue
+                if not self.pointer_input.accept(event):
                     continue
                 if event.type == pygame.QUIT:
-                    running = False
+                    running = not self._autosave_latest()
+                    if not running:
+                        break
                 if self.recall_open:
                     self._handle_recall_event(event)
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    running = False
+                    running = not self._autosave_latest()
+                    if not running:
+                        break
                 elif is_primary_pointer_event(event, is_down=True):
                     pos = self._event_pos(event)
                     if pos is None:
@@ -1043,6 +1157,7 @@ class PaintApp:
                     self.pointer_down = True
                     if self._handle_pointer_down(pos):
                         running = False
+                        break
                 elif event.type == pygame.MOUSEMOTION or (FINGERMOTION is not None and event.type == FINGERMOTION):
                     if event.type == pygame.MOUSEMOTION:
                         if not (self.pointer_down or event.buttons[0]):
@@ -1059,14 +1174,14 @@ class PaintApp:
 
             now = time.monotonic()
             if now - self.last_autosave >= self.autosave_interval:
-                self._autosave_latest()
+                self._request_autosave()
                 self.last_autosave = now
 
+            self._finish_pending_save()
+            self._pump_recall_thumbnail()
             self._render()
+            health.frame_complete()
             self.clock.tick(60)
-
-        if quit_on_exit:
-            pygame.quit()
 
 
 def main() -> None:

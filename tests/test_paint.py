@@ -48,7 +48,7 @@ def test_list_archives_orders_by_mtime(tmp_path):
 
 def test_coerce_archive_limit_clamps_and_falls_back():
     assert _coerce_archive_limit("5", 100) == 5
-    assert _coerce_archive_limit(-2, 100) == 0
+    assert _coerce_archive_limit(-2, 100) == 1
     assert _coerce_archive_limit("bad", 100) == 100
 
 def test_rollover_latest_snapshot_archives_existing_latest(tmp_path):
@@ -199,8 +199,9 @@ def test_event_pos_keeps_finger_event_unscaled(monkeypatch):
     assert app._event_pos(event) == (960, 540)
 
 
-def test_handle_pointer_down_home_returns_true():
+def test_handle_pointer_down_home_returns_true(monkeypatch):
     app = _make_pointer_resolution_app()
+    monkeypatch.setattr(app, "_autosave_latest", lambda: True)
     assert app._handle_pointer_down((1840, 60)) is True
 
 
@@ -208,8 +209,9 @@ def test_handle_pointer_down_new_archives_and_resets(monkeypatch):
     app = _make_pointer_resolution_app()
     calls: list[str] = []
 
-    monkeypatch.setattr(app, "_archive_current", lambda: calls.append("archive"))
+    monkeypatch.setattr(app, "_archive_current", lambda: calls.append("archive") or True)
     monkeypatch.setattr(app, "_reset_canvas", lambda: calls.append("reset"))
+    monkeypatch.setattr(app, "_autosave_latest", lambda: True)
 
     assert app._handle_pointer_down((40, 920)) is False
     assert calls == ["archive", "reset"]
@@ -273,7 +275,7 @@ def test_handle_resume_resets_pointer_state_and_clears_motion(monkeypatch):
     assert app.recall_strip_drag_last_y is None
     assert app.recall_pressed_index is None
     assert app.recall_drag_distance == 0
-    assert app.last_autosave == 123.0
+    assert app.last_autosave == 0.0  # Input noise must not postpone a due save.
     assert pygame.MOUSEMOTION in cleared
     assert pygame.MOUSEBUTTONDOWN in cleared
     assert pygame.MOUSEBUTTONUP in cleared

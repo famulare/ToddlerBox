@@ -6,6 +6,8 @@ from typing import Optional, Tuple
 
 import pygame
 
+from toddlerbox.runtime.health import install_shutdown_handlers
+
 
 Color = Tuple[int, int, int]
 Point = Tuple[int, int]
@@ -15,7 +17,48 @@ _HOME_ICON: Optional[pygame.Surface] = None
 _HOME_ICON_SIZE: Optional[Tuple[int, int]] = None
 FINGERDOWN = getattr(pygame, "FINGERDOWN", None)
 FINGERUP = getattr(pygame, "FINGERUP", None)
-FINGER_EVENTS = {event for event in (FINGERDOWN, FINGERUP) if event is not None}
+FINGERMOTION = getattr(pygame, "FINGERMOTION", None)
+FINGER_EVENTS = {event for event in (FINGERDOWN, FINGERUP, FINGERMOTION) if event is not None}
+
+
+class PointerInput:
+    """Admit one physical pointer gesture, using SDL's raw touch stream.
+
+    SDL sends both FINGER* and touch-emulated mouse events by default. Always
+    discard the latter, including when they arrive before their finger event.
+    Real mouse/trackpad events remain supported. Activities own one instance
+    and reset it on focus loss or scene changes; unowned moves/ups are ignored.
+    """
+
+    def __init__(self) -> None:
+        self.owner: tuple | None = None
+
+    def reset(self) -> None:
+        self.owner = None
+
+    def accept(self, event: pygame.event.Event) -> bool:
+        if event.type in FINGER_EVENTS:
+            source = ("finger", getattr(event, "touch_id", 0), getattr(event, "finger_id", 0))
+            down, up = event.type == FINGERDOWN, event.type == FINGERUP
+        elif event.type in {pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION}:
+            if getattr(event, "touch", False):
+                return False
+            if event.type != pygame.MOUSEMOTION and getattr(event, "button", 1) not in {0, 1}:
+                return True  # Preserve wheel and other non-primary controls.
+            source = ("mouse",)
+            down, up = event.type == pygame.MOUSEBUTTONDOWN, event.type == pygame.MOUSEBUTTONUP
+        else:
+            return True
+        if down:
+            if self.owner is not None:
+                return False
+            self.owner = source
+            return True
+        if self.owner != source:
+            return False
+        if up:
+            self.owner = None
+        return True
 
 
 @dataclass
@@ -51,6 +94,7 @@ class Button:
 
 
 def create_fullscreen_window() -> Tuple[pygame.Surface, pygame.Rect]:
+    install_shutdown_handlers()
     pygame.init()
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     pygame.mouse.set_visible(True)
