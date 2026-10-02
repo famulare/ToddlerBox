@@ -131,8 +131,9 @@ class SpeechPlayer:
         elapsed = (self.clock() - self._started) * 1000
         # SDL may return -1 just after the last buffer. Allow one short polling
         # interval, not a stream that never played or stopped much too early.
-        finished = (self.position_ms >= self.speech.duration_ms - 100 or
-                    (self.position_ms > 0 and elapsed >= self.speech.duration_ms - 50))
+        finished = self.position_ms > 0 and (
+            self.position_ms >= self.speech.duration_ms - 100 or
+            elapsed >= self.speech.duration_ms - 50)
         self._stop()
         if not finished:
             self.logger.info("Reading recording stopped early")

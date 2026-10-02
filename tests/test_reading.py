@@ -124,6 +124,17 @@ def test_early_end_and_stuck_stream_never_reveal(card):
     assert not audio.playing and player.state == "unavailable" and not player.revealed
 
 
+def test_short_recording_that_never_started_does_not_reveal(card):
+    audio = Audio()
+    player = SpeechPlayer(Mock(), audio=audio)
+    short = Speech(Path("short.wav"), RATE // 20, (Cue(0, RATE // 20, -1),))
+    player.select(replace(card, sequence=short))
+    player.play()
+    audio.playing = False
+    player.update()
+    assert player.state == "unavailable" and not player.revealed
+
+
 @pytest.mark.parametrize("bad", [None, [], "numbers", {"volume": float("nan"), "number_max": True},
                                   {"word_sets": [{"bad": 1}], "mode": []}])
 def test_invalid_parent_settings_fall_back_without_crashing(bad):
