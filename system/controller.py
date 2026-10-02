@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import glob
+from contextlib import contextmanager
+import fcntl
 import json
 import os
 from pathlib import Path
 import pwd
 import selectors
+import signal
 import socket
 import struct
 import subprocess
@@ -17,8 +20,18 @@ STATE = Path("/var/lib/toddlerbox-system")
 RUNTIME = Path("/run/toddlerbox-system")
 HEALTH = "/run/toddlerbox-health.sock"
 CONTROL = "/run/toddlerbox-control.sock"
+RELEASE_ROOT = Path("/opt/toddlerbox")
+DATA_SCHEMA = {"version": 1, "typing": 1, "paint": 1}
 INPUT_EVENT = struct.Struct("llHHi")  # Linux input_event, native timeval
 CTRL, ALT, HOME = {29, 97}, {56, 100}, 102
+
+
+def sync_directory(path: Path) -> None:
+    fd = os.open(path, os.O_DIRECTORY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
 
 
 def durable_text(path: Path, text: str) -> None:
@@ -28,11 +41,7 @@ def durable_text(path: Path, text: str) -> None:
         handle.flush()
         os.fsync(handle.fileno())
     os.replace(temporary, path)
-    fd = os.open(path.parent, os.O_DIRECTORY)
-    try:
-        os.fsync(fd)
-    finally:
-        os.close(fd)
+    sync_directory(path.parent)
 
 
 class Watchdog:
@@ -93,18 +102,79 @@ def configure_gdm(mode: str) -> None:
     durable_text(RUNTIME / "mode", mode + "\n")
 
 
-def restart_gdm() -> None:
-    # Give the app a bounded chance to save before terminating the graphical seat.
-    subprocess.run(["pkill", "-TERM", "-u", "toddlerbox", "-fx", ".venv/bin/python -m toddlerbox.launcher"],
-                   check=False)
-    time.sleep(2)
-    # A SIGSTOPed/frozen app cannot process TERM. Bound shutdown before GDM restart.
-    subprocess.run(["pkill", "-KILL", "-u", "toddlerbox", "-fx", ".venv/bin/python -m toddlerbox.launcher"],
-                   check=False)
+def launcher_processes(child_uid: int) -> dict[int, int]:
+    """Pin process identity before inspecting argv; a reused PID is never signalled."""
+    processes = {}
+    for path in Path("/proc").iterdir():
+        if not path.name.isdecimal():
+            continue
+        pidfd = None
+        try:
+            pid = int(path.name)
+            pidfd = os.pidfd_open(pid)
+            if path.stat().st_uid != child_uid:
+                continue
+            args = (path / "cmdline").read_bytes().split(b"\0")
+            if len(args) < 3 or args[1:3] != [b"-m", b"toddlerbox.launcher"]:
+                continue
+            processes[pid] = pidfd
+            pidfd = None
+        except OSError:
+            # Exiting processes and unreadable /proc entries need no fallback kill.
+            continue
+        finally:
+            if pidfd is not None:
+                os.close(pidfd)
+    return processes
+
+
+def stop_launchers(health: socket.socket, child_uid: int, *, grace: float = 5) -> None:
+    """Wait for cleanup acknowledgement or exit, with one bounded save deadline."""
+    processes = launcher_processes(child_uid)
+    pending = set(processes)
+    try:
+        with selectors.DefaultSelector() as selector:
+            selector.register(health, selectors.EVENT_READ, None)
+            for pid, pidfd in processes.items():
+                selector.register(pidfd, selectors.EVENT_READ, pid)
+                try:
+                    signal.pidfd_send_signal(pidfd, signal.SIGTERM)
+                except ProcessLookupError:
+                    pending.discard(pid)
+            deadline = time.monotonic() + grace
+            while pending:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                for key, _mask in selector.select(remaining):
+                    if key.data is not None:
+                        pending.discard(key.data)
+                        selector.unregister(key.fd)
+                    else:
+                        try:
+                            message, ancillary, _flags, _address = health.recvmsg(128, socket.CMSG_SPACE(12))
+                        except BlockingIOError:
+                            continue
+                        credentials = sender_credentials(ancillary)
+                        if (credentials and credentials[1] == child_uid
+                                and message == b"shutdown-complete"):
+                            pending.discard(credentials[0])
+            for pid in pending:
+                try:
+                    signal.pidfd_send_signal(processes[pid], signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+    finally:
+        for pidfd in processes.values():
+            os.close(pidfd)
+
+
+def restart_gdm(health: socket.socket, child_uid: int) -> None:
+    stop_launchers(health, child_uid)
     environment = dict(os.environ)
     environment.pop("NOTIFY_SOCKET", None)
     subprocess.run(["systemctl", "restart", "--no-block", "gdm3.service"],
-                   env=environment, check=True)
+                   env=environment, check=True, timeout=2)
 
 
 def bind_socket(path: str, mode: int, uid: int = 0) -> socket.socket:
@@ -118,37 +188,87 @@ def bind_socket(path: str, mode: int, uid: int = 0) -> socket.socket:
     return server
 
 
-def sender_uid(ancillary: list) -> int | None:
+def sender_credentials(ancillary: list) -> tuple[int, int, int] | None:
     for level, kind, data in ancillary:
         if level == socket.SOL_SOCKET and kind == socket.SCM_CREDENTIALS:
-            return struct.unpack("3i", data)[1]
+            if len(data) == 12:
+                return struct.unpack("3i", data)
     return None
 
 
-def rollback() -> None:
-    root = Path("/opt/toddlerbox")
-    current = (root / "current").resolve(strict=True)
-    previous = (root / "previous").resolve(strict=True)
-    if previous.parent != root / "releases" or current.parent != root / "releases":
+def sender_uid(ancillary: list) -> int | None:
+    credentials = sender_credentials(ancillary)
+    return credentials[1] if credentials else None
+
+
+@contextmanager
+def release_lock(root: Path):
+    with (root / ".release.lock").open("a") as handle:
+        # Parent recovery must never wait indefinitely for an installer.
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        yield
+
+
+def release_target(root: Path, name: str) -> Path:
+    target = (root / name).resolve(strict=True)
+    if target.parent != root / "releases" or not target.is_dir():
         raise ValueError("release symlink outside releases directory")
-    for name, target in [("current", previous), ("previous", current)]:
-        temporary = root / f".{name}.next"
-        temporary.unlink(missing_ok=True)
-        temporary.symlink_to(target)
-        os.replace(temporary, root / name)
+    return target
+
+
+def data_schema(release: Path, *, legacy: bool = True) -> dict:
+    marker = release / "data-schema.json"
+    if not marker.exists() and legacy:
+        # Only already-installed, pre-marker releases get the original v1 schema.
+        return DATA_SCHEMA.copy()
+    record = json.loads(marker.read_text())
+    if (not isinstance(record, dict) or record.keys() != DATA_SCHEMA.keys()
+            or any(type(value) is not int or value < 1 for value in record.values())
+            or record["version"] != 1):
+        raise ValueError("invalid release data-schema.json")
+    return record
+
+
+def replace_release_link(root: Path, name: str, target: Path) -> None:
+    temporary = root / f".{name}.next"
+    temporary.unlink(missing_ok=True)
+    temporary.symlink_to(target)
+    os.replace(temporary, root / name)
+    sync_directory(root)
+
+
+def rollback(root: Path = RELEASE_ROOT) -> None:
+    with release_lock(root):
+        current = release_target(root, "current")
+        previous = release_target(root, "previous")
+        if current == previous:
+            raise ValueError("previous release is already current")
+        if data_schema(current) != data_schema(previous):
+            raise ValueError("release data schemas differ; restore a compatible data backup first")
+        # Keep the fallback identifiable even if power fails during the switch.
+        # Rollback is one durable replacement, not a two-link swap/toggle.
+        replace_release_link(root, "current", previous)
+
+
+def startup_mode() -> tuple[str, bool]:
+    cmdline = Path("/proc/cmdline").read_text().split()
+    recovered = (RUNTIME / "controller-started").exists()
+    mode = "parent" if recovered or (STATE / "parent-mode").exists() or "toddlerbox.parent=1" in cmdline else "child"
+    if recovered:
+        try:
+            durable_text(STATE / "parent-mode", "controller restarted\n")
+        except OSError as error:
+            print(f"Cannot persist recovery latch: {error}", flush=True)
+    (RUNTIME / "controller-started").touch()
+    configure_gdm(mode)
+    return mode, recovered
 
 
 def main() -> None:
     STATE.mkdir(mode=0o700, exist_ok=True)
     RUNTIME.mkdir(mode=0o755, exist_ok=True)
     child_uid = pwd.getpwnam("toddlerbox").pw_uid
-    cmdline = Path("/proc/cmdline").read_text().split()
-    mode = "parent" if (STATE / "parent-mode").exists() or "toddlerbox.parent=1" in cmdline else "child"
-    # A controller crash itself must fail into parent mode on its next start.
-    if (RUNTIME / "controller-started").exists():
-        mode = "parent"
-    (RUNTIME / "controller-started").touch()
-    configure_gdm(mode)
+    mode, recovered = startup_mode()
     selector = selectors.DefaultSelector()
     health = bind_socket(HEALTH, 0o600, child_uid)
     control = bind_socket(CONTROL, 0o600)
@@ -165,6 +285,10 @@ def main() -> None:
     if address:
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as notify:
             notify.sendto(b"READY=1", address.replace("@", "\0", 1) if address.startswith("@") else address)
+    if recovered:
+        # READY first avoids ordering deadlock with GDM's After=controller.
+        # Merely changing autologin does not end an already-running child seat.
+        restart_gdm(health, child_uid)
 
     def transition(target: str, reason: str) -> None:
         nonlocal mode, watchdog
@@ -176,11 +300,15 @@ def main() -> None:
             except OSError as error:
                 print(f"Cannot persist recovery latch: {error}", flush=True)
         else:
-            (STATE / "parent-mode").unlink(missing_ok=True)
-        configure_gdm(target)
+            with release_lock(RELEASE_ROOT):
+                (STATE / "parent-mode").unlink(missing_ok=True)
+                sync_directory(STATE)
+                configure_gdm(target)
+        if target == "parent":
+            configure_gdm(target)
         mode = target
         watchdog = Watchdog(time.monotonic())
-        restart_gdm()
+        restart_gdm(health, child_uid)
 
     while True:
         now = time.monotonic()
@@ -201,7 +329,12 @@ def main() -> None:
                     continue
         for key, _mask in selector.select(0.1):
             if key.data in {"health", "control"}:
-                message, ancillary, _flags, _address = key.fileobj.recvmsg(128, socket.CMSG_SPACE(12))
+                try:
+                    message, ancillary, _flags, _address = key.fileobj.recvmsg(128, socket.CMSG_SPACE(12))
+                except BlockingIOError:
+                    # A preceding control event can drain health during shutdown,
+                    # leaving a stale readability notification in this batch.
+                    continue
                 uid = sender_uid(ancillary)
                 if key.data == "health" and uid == child_uid and mode == "child":
                     if message == b"frame":
@@ -209,9 +342,14 @@ def main() -> None:
                 elif key.data == "control" and uid == 0:
                     reply = b"OK"
                     if message in {b"parent", b"child"}:
-                        transition(message.decode(), "parent command")
+                        try:
+                            transition(message.decode(), "parent command")
+                        except BlockingIOError as error:
+                            reply = f"ERROR: {error}".encode()
                     elif message == b"rollback":
                         try:
+                            if mode != "parent":
+                                raise ValueError("enter parent mode before rollback")
                             rollback()
                             transition("parent", "release rolled back; inspect then start child mode")
                         except (OSError, ValueError) as error:
@@ -248,7 +386,7 @@ def main() -> None:
                 transition("parent", "watchdog restart budget exhausted")
             elif action == "restart":
                 print(f"Watchdog restarting GDM, attempt {watchdog.restarts}/{watchdog.max_restarts}", flush=True)
-                restart_gdm()
+                restart_gdm(health, child_uid)
         status = {"mode": mode, "restarts": watchdog.restarts,
                   "seen_frame": watchdog.seen_frame}
         # /run is a tmpfs: diagnostic status must not generate disk writes each frame.

@@ -30,10 +30,22 @@ def frame_complete() -> None:
     if not address or now - _last_frame < 1:
         return
     _last_frame = now
+    _send(b"frame")
+
+
+def shutdown_complete() -> None:
+    """Acknowledge only after the activity has saved and released its resources."""
+    _send(b"shutdown-complete")
+
+
+def _send(message: bytes) -> None:
+    address = os.environ.get("TODDLERBOX_HEALTH_SOCKET")
+    if not address:
+        return
     try:
         with socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM) as client:
             client.setblocking(False)
-            client.sendto(b"frame", address)
+            client.sendto(message, address)
     except OSError:
         # The system service handles missing health reports; never show an error UI.
         pass

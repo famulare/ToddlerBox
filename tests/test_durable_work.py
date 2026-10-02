@@ -48,6 +48,16 @@ def test_failed_flush_preserves_previous_file(tmp_path, monkeypatch):
     assert path.read_bytes() == b"previous work"
 
 
+def test_failed_directory_sync_reports_visible_but_unconfirmed_commit(tmp_path, monkeypatch):
+    path = tmp_path / "current.json"
+    path.write_bytes(b"previous work")
+    monkeypatch.setattr(persistence, "sync_directory", disk_full)
+    with pytest.raises(persistence.CommitUncertainError, match="Replacement visible"):
+        persistence.write_bytes(path, b"next work")
+    assert path.read_bytes() == b"next work"
+    assert list(tmp_path.iterdir()) == [path]
+
+
 def test_typing_restores_current_work_and_style_after_exit(screen):
     app = TypingApp(screen=screen)
     app._set_text_font(size=50, style="bold")

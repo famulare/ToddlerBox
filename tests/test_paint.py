@@ -48,7 +48,7 @@ def test_list_archives_orders_by_mtime(tmp_path):
 
 def test_coerce_archive_limit_clamps_and_falls_back():
     assert _coerce_archive_limit("5", 100) == 5
-    assert _coerce_archive_limit(-2, 100) == 0
+    assert _coerce_archive_limit(-2, 100) == 1
     assert _coerce_archive_limit("bad", 100) == 100
 
 def test_rollover_latest_snapshot_archives_existing_latest(tmp_path):
@@ -275,7 +275,7 @@ def test_handle_resume_resets_pointer_state_and_clears_motion(monkeypatch):
     assert app.recall_strip_drag_last_y is None
     assert app.recall_pressed_index is None
     assert app.recall_drag_distance == 0
-    assert app.last_autosave == 123.0
+    assert app.last_autosave == 0.0  # Input noise must not postpone a due save.
     assert pygame.MOUSEMOTION in cleared
     assert pygame.MOUSEBUTTONDOWN in cleared
     assert pygame.MOUSEBUTTONUP in cleared

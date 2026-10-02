@@ -3,57 +3,80 @@
 import hashlib
 import os
 from pathlib import Path, PurePosixPath
-import shutil
 import sys
 import tarfile
 import tempfile
 
-if os.geteuid() != 0 or len(sys.argv) != 3:
-    sys.exit("Usage: sudo toddlerbox-install-release BUNDLE.tar.gz EXPECTED_SHA256")
-if Path("/run/toddlerbox-system/mode").read_text().strip() != "parent":
-    sys.exit("Enter parent mode before installing a release.")
-bundle = Path(sys.argv[1])
-with bundle.open("rb") as handle:
-    digest = hashlib.file_digest(handle, "sha256").hexdigest()
-if digest != sys.argv[2]:
-    sys.exit("Bundle checksum does not match.")
-root = Path("/opt/toddlerbox")
-with tarfile.open(bundle, "r:gz") as archive:
-    members = archive.getmembers()
-    ids = {PurePosixPath(m.name).parts[0] for m in members if m.name}
-    if len(ids) != 1:
-        sys.exit("Bundle must contain exactly one release.")
-    release_id = ids.pop()
-    if len(release_id) != 16 or any(c not in "0123456789abcdef" for c in release_id):
-        sys.exit("Invalid release ID.")
-    destination = root / "releases" / release_id
-    if destination.exists():
-        sys.exit("Release already installed; no files changed.")
-    def safe_member(member, directory):
-        path = PurePosixPath(member.name)
-        if path.is_absolute() or ".." in path.parts or path.parts[0] != release_id:
-            raise ValueError("Unsafe archive path")
-        # uv's interpreter link is the only allowed absolute symlink.
-        if member.issym() and member.name == f"{release_id}/.venv/bin/python" and member.linkname == "/usr/bin/python3":
-            return member.replace(uid=0, gid=0, uname="root", gname="root")
-        filtered = tarfile.data_filter(member, directory)
-        if filtered is not None:
-            filtered = filtered.replace(uid=0, gid=0, uname="root", gname="root")
-        return filtered
-    with tempfile.TemporaryDirectory(dir=root / "releases", prefix=".install-") as staging:
-        archive.extractall(staging, filter=safe_member)
-        candidate = Path(staging) / release_id
-        for required in ["src/toddlerbox/launcher.py", ".venv/bin/python", "uv.lock"]:
-            if not (candidate / required).exists():
-                sys.exit(f"Bundle missing {required}")
-        # Everything is root-owned; child accounts have no release write access.
-        os.rename(candidate, destination)
-os.sync()
-current = (root / "current").resolve(strict=True)
-for name, target in [("previous", current), ("current", destination)]:
-    temporary = root / f".{name}.next"
-    temporary.unlink(missing_ok=True)
-    temporary.symlink_to(target)
-    os.replace(temporary, root / name)
-os.sync()
-print(f"Installed {release_id}; previous release retained. Start child mode to validate.")
+# Shared helpers are root-owned and ship with this system image, not the bundle.
+sys.path.insert(0, "/usr/local/lib/toddlerbox-system")
+from controller import (data_schema, release_lock, release_target,
+                        replace_release_link, sync_directory)
+
+
+def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddlerbox"),
+            mode_file: Path = Path("/run/toddlerbox-system/mode")) -> str:
+    # Keep the verified file descriptor open: replacing the bundle pathname after
+    # hashing cannot substitute a different archive during extraction.
+    with release_lock(root), bundle.open("rb") as handle:
+        if mode_file.read_text().strip() != "parent":
+            raise ValueError("Enter parent mode before installing a release.")
+        digest = hashlib.file_digest(handle, "sha256").hexdigest()
+        if digest != expected_digest:
+            raise ValueError("Bundle checksum does not match.")
+        handle.seek(0)
+        current = release_target(root, "current")
+        with tarfile.open(fileobj=handle, mode="r:gz") as archive:
+            members = archive.getmembers()
+            ids = {PurePosixPath(m.name).parts[0] for m in members if PurePosixPath(m.name).parts}
+            if len(ids) != 1:
+                raise ValueError("Bundle must contain exactly one release.")
+            release_id = ids.pop()
+            if len(release_id) != 16 or any(c not in "0123456789abcdef" for c in release_id):
+                raise ValueError("Invalid release ID.")
+            destination = root / "releases" / release_id
+            if destination.exists() or destination.is_symlink():
+                raise ValueError("Release already installed; no files changed.")
+
+            def safe_member(member, directory):
+                path = PurePosixPath(member.name)
+                if not path.parts or path.is_absolute() or ".." in path.parts or path.parts[0] != release_id:
+                    raise ValueError("Unsafe archive path")
+                # uv's interpreter link is the only allowed absolute symlink.
+                if member.issym() and member.name == f"{release_id}/.venv/bin/python" and member.linkname == "/usr/bin/python3":
+                    return member.replace(uid=0, gid=0, uname="root", gname="root")
+                filtered = tarfile.data_filter(member, directory)
+                if filtered is not None:
+                    filtered = filtered.replace(uid=0, gid=0, uname="root", gname="root")
+                return filtered
+
+            with tempfile.TemporaryDirectory(dir=root / "releases", prefix=".install-") as staging:
+                archive.extractall(staging, filter=safe_member)
+                candidate = Path(staging) / release_id
+                for required in ["src/toddlerbox/launcher.py", ".venv/bin/python", "uv.lock"]:
+                    if not (candidate / required).exists():
+                        raise ValueError(f"Bundle missing {required}")
+                if data_schema(candidate, legacy=False) != data_schema(current):
+                    raise ValueError("Release data schemas differ; a supported migration is required.")
+                # Everything is root-owned; child accounts have no release write access.
+                os.rename(candidate, destination)
+        os.sync()
+        sync_directory(root / "releases")
+        # Persist fallback first. If interrupted before current changes, the old
+        # current remains available through both links; neither target is lost.
+        replace_release_link(root, "previous", current)
+        replace_release_link(root, "current", destination)
+        return release_id
+
+
+def main() -> None:
+    if os.geteuid() != 0 or len(sys.argv) != 3:
+        sys.exit("Usage: sudo toddlerbox-install-release BUNDLE.tar.gz EXPECTED_SHA256")
+    try:
+        release_id = install(Path(sys.argv[1]), sys.argv[2])
+    except (OSError, ValueError, tarfile.TarError) as error:
+        sys.exit(str(error))
+    print(f"Installed {release_id}; previous release retained. Start child mode to validate.")
+
+
+if __name__ == "__main__":
+    main()
