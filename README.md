@@ -8,6 +8,11 @@ By default it boots into a fullscreen launcher with four large buttons:
 - **Typing**
 - **Music**
 
+All four activities share a cream-and-sage interface, simple pictograms, and the
+same Home button. Shared pygame styling lives in `src/toddlerbox/ui/theme.py`.
+
+![ToddlerBox shared interface](assets/screenshots/overview.png)
+
 There is no desktop environment visible, no file browser, no login/logout flow, and no network dependency during normal use. The system is intentionally constrained, predictable, and robust against accidental input, while remaining easy for a parent to administer and extend.
 
 This is not a general-purpose “kids OS.”

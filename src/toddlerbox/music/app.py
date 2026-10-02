@@ -11,12 +11,11 @@ from toddlerbox.music.playback import MusicPlayer
 from toddlerbox.music.visuals import HARMONY, INK, MELODY, SONG_COLORS, draw_song_icon, piano_keys
 from toddlerbox.paths import get_data_root
 from toddlerbox.runtime import get_runtime_logger, health
+from toddlerbox.ui import theme
 from toddlerbox.ui.common import (PointerInput, create_fullscreen_window, draw_home_button,
                                   is_escape_chord, is_primary_pointer_event, pointer_event_pos)
 
-BACKGROUND = (248, 246, 238)
-PAPER = (255, 253, 247)
-MUTED = (115, 128, 136)
+BACKGROUND, PAPER, MUTED = theme.BACKGROUND, theme.PAPER, theme.MUTED
 FOCUS_EVENTS = {getattr(pygame,"WINDOWFOCUSLOST",-1), getattr(pygame,"WINDOWFOCUSGAINED",-2),
                 getattr(pygame,"APP_DIDENTERFOREGROUND",-3)}
 
@@ -35,10 +34,10 @@ class MusicApp:
                                   autoplay=bool(options.get("autoplay", True)),
                                   latency_ms=options.get("latency_ms", 0))
         self.pointer = PointerInput()
-        self.font = pygame.font.SysFont("sans", 20)
-        self.small = pygame.font.SysFont("sans", 16)
-        self.heading = pygame.font.SysFont("sans", max(24, min(34, screen_rect.h//19)), bold=True)
-        self.title = pygame.font.SysFont("sans", 24, bold=True)
+        self.font = theme.ui_font(20)
+        self.small = theme.ui_font(16)
+        self.heading = theme.ui_font(max(24, min(34, screen_rect.h//19)), bold=True)
+        self.title = theme.ui_font(24, bold=True)
         self._layout()
         self._static = self._background()
         self._scan_index = 0
@@ -48,7 +47,7 @@ class MusicApp:
     def _layout(self) -> None:
         margin = max(12, min(24, self.rect.w//44))
         rail = max(170, min(236, round(self.rect.w*.23)))
-        self.home_rect = pygame.Rect(self.rect.right-margin-58, margin, 58, 58)
+        self.home_rect = theme.home_rect(self.rect)
         self.rail_rect = pygame.Rect(margin, 100, rail-margin, self.rect.h-100-margin)
         self.keyboard_rect = pygame.Rect(rail+margin*2, self.rect.h-margin-min(150,self.rect.h//4),
                                          self.rect.w-rail-margin*3, min(150,self.rect.h//4))
@@ -69,10 +68,10 @@ class MusicApp:
             label = short_titles.get(track.id,track.title)
             self.song_kinds.append(ids.index(track.id) if track.id in ids else 5)
             size = 20
-            font = pygame.font.SysFont("sans",size)
+            font = theme.ui_font(size)
             while font.size(label)[0] > rect.w-65 and size > 12:
                 size -= 1
-                font = pygame.font.SysFont("sans",size)
+                font = theme.ui_font(size)
             self.song_labels.append(font.render(label,True,INK))
 
     def _background(self) -> pygame.Surface:
@@ -92,9 +91,7 @@ class MusicApp:
     def _draw_controls(self) -> None:
         for i,rect in enumerate(self.song_rects):
             selected = i == self.player.index
-            pygame.draw.rect(self.screen,(228,239,231) if selected else PAPER,rect,border_radius=13)
-            if selected:
-                pygame.draw.rect(self.screen,(144,186,172),rect,2,border_radius=13)
+            theme.card(self.screen, rect, selected=selected)
             icon_rect = pygame.Rect(rect.x+7,rect.y+4,46,rect.h-8)
             kind = self.song_kinds[i]
             draw_song_icon(self.screen,icon_rect,kind,SONG_COLORS[kind])
@@ -109,7 +106,7 @@ class MusicApp:
             pygame.draw.polygon(self.screen,PAPER,[(x-6,y-10),(x-6,y+10),(x+10,y)])
         text = self.font.render("Pause" if playing else "Play",True,PAPER)
         self.screen.blit(text,(self.pause_rect.x+54,y-text.get_height()//2))
-        pygame.draw.rect(self.screen,(231,235,226),self.auto_rect,border_radius=12)
+        theme.card(self.screen, self.auto_rect, fill=theme.PANEL)
         label = self.small.render("Autoplay",True,INK)
         self.screen.blit(label,(self.auto_rect.x+14,self.auto_rect.centery-label.get_height()//2))
         toggle = pygame.Rect(self.auto_rect.right-55,self.auto_rect.centery-11,42,22)

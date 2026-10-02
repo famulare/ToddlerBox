@@ -10,6 +10,10 @@ Hardware qualification remains separate from application and VM tests.
 - UI framework: pygame / SDL
 - Fullscreen, borderless kiosk-style UI
 - Child-facing screens never show dialogs or crash traces
+- Shared pygame theme: cream backgrounds, paper cards, dark ink, sage selection
+  highlights, and simple pictograms. The same 58px Home control sits at the
+  top-right of every activity. Artwork/photo colors and saved data are independent
+  of the interface palette.
 - System parent escape: hold `Ctrl + Alt + Home` for two seconds; handled independently of the app
 - Data root is configurable via `data_root` (defaults: dev `./data`, runtime fallback `/data`)
 - Dedicated Cage child session; session-scoped inhibitors; normal GNOME controls in parent mode

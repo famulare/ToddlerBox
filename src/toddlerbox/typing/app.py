@@ -23,6 +23,7 @@ from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.runtime import health
 from toddlerbox.runtime.persistence import has_archive_reserve, write_bytes, sync_directory
+from toddlerbox.ui import theme
 from toddlerbox.ui.common import (
     Button,
     PointerInput,
@@ -280,7 +281,7 @@ class TypingApp:
             self.screen_rect = screen_rect or screen.get_rect()
         self.clock = clock or pygame.time.Clock()
 
-        self.ui_font = pygame.font.SysFont("sans", 20)
+        self.ui_font = theme.ui_font(20)
         self.default_text_size = 25
         self.size_values = [self.default_text_size, self.default_text_size * 2, self.default_text_size * 4]
         self.text_style = "plain"
@@ -302,7 +303,7 @@ class TypingApp:
         self.margin = 16
         self.menu_pad = 10
         self.menu_gap = 10
-        self.menu_bg = (238, 234, 226)
+        self.menu_bg = theme.PANEL
         self.tool_size = max(44, min(56, int(self.screen_rect.height * 0.06)))
         base_panel_width = self.tool_size * 2 + self.menu_gap + self.menu_pad * 2
         panel_width = min(self.screen_rect.width - (self.margin * 3 + 240), base_panel_width * 2)
@@ -319,16 +320,7 @@ class TypingApp:
             self.screen_rect.height - 2 * self.margin,
         )
 
-        home_size = max(40, int(self.tool_size * 0.85))
-        self.home_button = Button(
-            rect=pygame.Rect(
-                self.screen_rect.right - self.margin - home_size,
-                self.margin,
-                home_size,
-                home_size,
-            ),
-            fill=self.menu_bg,
-        )
+        self.home_button = Button(rect=theme.home_rect(self.screen_rect), fill=theme.PAPER)
 
         inner_w = self.controls_rect.width - self.menu_pad * 2
         left = self.controls_rect.left + self.menu_pad
@@ -337,12 +329,12 @@ class TypingApp:
         self.new_button = Button(
             rect=pygame.Rect(left, top, inner_w, action_h),
             label="New",
-            fill=(245, 245, 245),
+            fill=theme.PAPER,
         )
         self.undo_button = Button(
             rect=pygame.Rect(left, self.new_button.rect.bottom + self.menu_gap, inner_w, action_h),
             label="Undo",
-            fill=(245, 245, 245),
+            fill=theme.PAPER,
         )
 
         tri_gap = max(6, self.menu_gap // 2)
@@ -352,20 +344,20 @@ class TypingApp:
         self.size_buttons: Dict[int, Button] = {}
         for idx, size in enumerate(self.size_values):
             rect = pygame.Rect(left + idx * (tri_w + tri_gap), size_top, tri_w, size_h)
-            self.size_buttons[size] = Button(rect=rect, fill=(245, 245, 245))
+            self.size_buttons[size] = Button(rect=rect, fill=theme.PAPER)
 
         style_top = size_top + size_h + self.menu_gap
         self.style_buttons: Dict[str, Button] = {}
         for idx, (style, label) in enumerate([("plain", "Plain"), ("bold", "Bold"), ("italic", "Italic")]):
             rect = pygame.Rect(left + idx * (tri_w + tri_gap), style_top, tri_w, action_h)
-            self.style_buttons[style] = Button(rect=rect, label=label, fill=(245, 245, 245))
+            self.style_buttons[style] = Button(rect=rect, label=label, fill=theme.PAPER)
 
         recall_top = style_top + action_h + self.menu_gap
         recall_h = min(inner_w, max(80, self.controls_rect.bottom - self.menu_pad - recall_top))
         self.recall_button = Button(
             rect=pygame.Rect(left, recall_top, inner_w, recall_h),
             label="Recall",
-            fill=self.menu_bg,
+            fill=theme.PAPER,
         )
 
         self.recall_open = False
@@ -383,7 +375,7 @@ class TypingApp:
         self.pointer_input = PointerInput()
 
         self._recall_overlay = pygame.Surface(self.screen_rect.size, pygame.SRCALPHA)
-        self._recall_overlay.fill((0, 0, 0, 140))
+        self._recall_overlay.fill((*theme.INK, 110))
         pygame.key.set_repeat(400, 30)
 
         self.text_pad_x = 24
@@ -741,9 +733,9 @@ class TypingApp:
     def _build_recall_button_thumbnail(self) -> pygame.Surface:
         size = self.recall_button.rect.size
         thumb = pygame.Surface((max(1, size[0] - 6), max(1, size[1] - 6)))
-        thumb.fill((248, 248, 248))
-        pygame.draw.rect(thumb, (120, 120, 120), thumb.get_rect(), width=2)
-        preview_font = pygame.font.SysFont("sans", max(14, self.ui_font.get_height() - 2))
+        thumb.fill(theme.PAPER)
+        pygame.draw.rect(thumb, theme.BORDER, thumb.get_rect(), width=1)
+        preview_font = theme.ui_font(max(14, self.ui_font.get_height() - 2))
         message = "I'm Rosie's ToddlerBox. Touch here to see what you've written."
         max_width = thumb.get_width() - 16
         words = message.split(" ")
@@ -763,7 +755,7 @@ class TypingApp:
         for line in lines:
             if y + preview_font.get_height() > thumb.get_height() - 8:
                 break
-            surf = preview_font.render(line, True, (40, 40, 40))
+            surf = preview_font.render(line, True, theme.INK)
             thumb.blit(surf, (8, y))
             y += preview_font.get_height() + 4
         return thumb
@@ -1113,7 +1105,7 @@ class TypingApp:
 
     def _draw_recall_overlay(self) -> None:
         self.screen.blit(self._recall_overlay, (0, 0))
-        pygame.draw.rect(self.screen, (230, 230, 230), self.recall_strip_rect)
+        theme.card(self.screen, self.recall_strip_rect, fill=theme.PANEL)
 
         preview_x_pad = 10
         preview_y_pad = 10
@@ -1121,11 +1113,11 @@ class TypingApp:
             rect = self._recall_item_rect(idx)
             if rect.bottom < self.recall_strip_rect.top or rect.top > self.recall_strip_rect.bottom:
                 continue
-            pygame.draw.rect(self.screen, (248, 248, 248), rect)
-            border = (200, 60, 60) if item.is_current else (120, 120, 120)
+            theme.card(self.screen, rect)
+            border = theme.ACCENT if item.is_current else theme.BORDER
             pygame.draw.rect(self.screen, border, rect, width=3 if item.is_current else 2)
 
-            label_surface = self.ui_font.render(item.label, True, (30, 30, 30))
+            label_surface = self.ui_font.render(item.label, True, theme.INK)
             self.screen.blit(label_surface, (rect.left + preview_x_pad, rect.top + preview_y_pad))
 
             preview_top = rect.top + preview_y_pad + self.ui_font.get_height() + 6
@@ -1138,30 +1130,26 @@ class TypingApp:
                 y = preview_top + line_idx * line_step
                 if y + self.ui_font.get_height() > rect.bottom - preview_y_pad:
                     break
-                line_surface = self.ui_font.render(line, True, (40, 40, 40))
+                line_surface = self.ui_font.render(line, True, theme.INK)
                 self.screen.blit(line_surface, (rect.left + preview_x_pad, y))
 
     def _render(self) -> None:
-        self.screen.fill((248, 248, 248))
+        self.screen.fill(theme.BACKGROUND)
 
-        pygame.draw.rect(self.screen, self.menu_bg, self.controls_rect)
-        pygame.draw.rect(self.screen, (255, 255, 255), self.text_rect)
-        pygame.draw.rect(self.screen, (200, 200, 200), self.text_rect, width=2)
+        pygame.draw.rect(self.screen, self.menu_bg, self.controls_rect, border_radius=18)
+        pygame.draw.rect(self.screen, theme.PAPER, self.text_rect)
+        pygame.draw.rect(self.screen, theme.BORDER, self.text_rect, width=1)
 
         draw_home_button(self.screen, self.home_button.rect)
         self.new_button.draw(self.screen, self.ui_font)
         self.undo_button.draw(self.screen, self.ui_font)
         for size, button in self.size_buttons.items():
-            button.draw(self.screen)
-            sample = self.size_sample_fonts[size].render("A", True, (25, 25, 25))
+            button.draw(self.screen, selected=size == self.current_text_size)
+            sample = self.size_sample_fonts[size].render("A", True, theme.INK)
             sample_rect = sample.get_rect(center=button.rect.center)
             self.screen.blit(sample, sample_rect)
-            if size == self.current_text_size:
-                pygame.draw.rect(self.screen, (200, 60, 60), button.rect, width=3, border_radius=12)
         for style, button in self.style_buttons.items():
-            button.draw(self.screen, self.ui_font)
-            if style == self.text_style:
-                pygame.draw.rect(self.screen, (200, 60, 60), button.rect, width=3, border_radius=12)
+            button.draw(self.screen, self.ui_font, selected=style == self.text_style)
         if self.recall_button.image is None:
             self.recall_button.draw(self.screen, self.ui_font)
         else:
@@ -1186,13 +1174,13 @@ class TypingApp:
                 x = text_x
                 for glyph, glyph_w in zip(line.glyphs, line.widths):
                     font = self._get_font(glyph.size, glyph.style)
-                    surf = font.render(glyph.char, True, (20, 20, 20))
+                    surf = font.render(glyph.char, True, theme.INK)
                     glyph_y = y + (line.height - font.get_height())
                     self.screen.blit(surf, (x, glyph_y))
                     x += glyph_w
             content_y += line.height + self.line_gap
 
-        pygame.draw.rect(self.screen, (30, 30, 30), (cursor_x, cursor_y, 6, cursor_h))
+        pygame.draw.rect(self.screen, theme.INK, (cursor_x, cursor_y, 6, cursor_h))
 
         if self.recall_open:
             self._draw_recall_overlay()
