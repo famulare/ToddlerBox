@@ -8,8 +8,9 @@ By default it boots into a fullscreen launcher with four large buttons:
 - **Typing**
 - **Music**
 
-All four activities share a cream-and-sage interface, simple pictograms, and the
-same Home button. Shared pygame styling lives in `src/toddlerbox/ui/theme.py`.
+All four activities share a cream-and-sage interface and the same Home button.
+The original illustrated icons are preserved; Music has a matching piano icon.
+Shared pygame styling lives in `src/toddlerbox/ui/theme.py`.
 
 ![ToddlerBox shared interface](assets/screenshots/overview.png)
 

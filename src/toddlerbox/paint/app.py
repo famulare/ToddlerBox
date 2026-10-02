@@ -78,6 +78,8 @@ FOUNTAIN_SMOOTHING = 0.35
 FOUNTAIN_DENSITY = 1.5
 SCROLL_STEP = 40
 MAX_ARCHIVES = 100
+ICON_CACHE_MAX_ENTRIES = 128
+_ICON_CACHE: Dict[Tuple[str, Tuple[int, int], bool], pygame.Surface] = {}
 
 
 
@@ -157,6 +159,32 @@ def _coerce_archive_limit(value: object, default: int) -> int:
     except (TypeError, ValueError):
         return default
     return max(1, limit)
+
+
+def _load_icon(path: Path, size: Tuple[int, int], *, preserve_aspect: bool = True) -> Optional[pygame.Surface]:
+    if not path.exists():
+        return None
+    key = (str(path), size, preserve_aspect)
+    cached = _ICON_CACHE.get(key)
+    if cached is not None:
+        return cached
+    try:
+        image = pygame.image.load(str(path)).convert_alpha()
+    except pygame.error:
+        return None
+    max_w, max_h = size
+    if preserve_aspect:
+        width, height = image.get_size()
+        scale = min(max_w / width, max_h / height)
+        target = (max(1, int(width * scale)), max(1, int(height * scale)))
+        image = pygame.transform.smoothscale(image, target)
+    else:
+        image = pygame.transform.smoothscale(image, (max_w, max_h))
+    if len(_ICON_CACHE) >= ICON_CACHE_MAX_ENTRIES:
+        oldest_key = next(iter(_ICON_CACHE))
+        _ICON_CACHE.pop(oldest_key, None)
+    _ICON_CACHE[key] = image
+    return image
 
 
 def _draw_stamp(
@@ -476,7 +504,13 @@ class PaintApp:
 
         tool_top = top
         icon_pad = 6
-        for idx, tool in enumerate(["round", "fountain", "eraser", "bucket"]):
+        tool_icons = [
+            ("round", Path(__file__).resolve().parents[3] / "assets" / "icons" / "paint" / "brush_round" / "brush_round_256.png"),
+            ("fountain", Path(__file__).resolve().parents[3] / "assets" / "icons" / "paint" / "fountain_pen" / "fountain_pen_256.png"),
+            ("eraser", Path(__file__).resolve().parents[3] / "assets" / "icons" / "paint" / "eraser" / "eraser_256.png"),
+            ("bucket", Path(__file__).resolve().parents[3] / "assets" / "icons" / "paint" / "paint_bucket" / "paint_bucket_256.png"),
+        ]
+        for idx, (tool, icon_path) in enumerate(tool_icons):
             row = idx // 2
             col = idx % 2
             rect = pygame.Rect(
@@ -485,7 +519,11 @@ class PaintApp:
                 tool_size,
                 tool_size,
             )
-            icon = theme.icon(tool, (tool_size - icon_pad, tool_size - icon_pad))
+            icon = _load_icon(
+                icon_path,
+                (max(1, tool_size - icon_pad), max(1, tool_size - icon_pad)),
+                preserve_aspect=True,
+            )
             self.tool_buttons[tool] = Button(rect=rect, image=icon, fill=theme.PAPER)
 
         size_gap = max(2, gap // 4)
@@ -493,14 +531,25 @@ class PaintApp:
         size_height = max(24, int(tool_size * 1.1))
         size_left = left
         size_top = tool_top + 2 * tool_size + gap
-        for idx, size in enumerate(self.size_values):
+        size_icons = [
+            Path(__file__).resolve().parents[3] / "assets" / "icons" / "paint" / "line_thin" / "line_thin_256.png",
+            Path(__file__).resolve().parents[3] / "assets" / "icons" / "paint" / "line_medium" / "line_medium_256.png",
+            Path(__file__).resolve().parents[3] / "assets" / "icons" / "paint" / "line_fat" / "line_fat_256.png",
+        ]
+        for idx, (size, icon_path) in enumerate(zip(self.size_values, size_icons)):
             rect = pygame.Rect(
                 size_left + idx * (size_width + size_gap),
                 size_top,
                 size_width,
                 size_height,
             )
-            icon = theme.icon(f"size-{idx}", (size_width - 6, size_height - 6))
+            icon = _load_icon(
+                icon_path,
+                (max(1, size_height - icon_pad), max(1, size_width - icon_pad)),
+                preserve_aspect=False,
+            )
+            if icon is not None:
+                icon = pygame.transform.rotate(icon, 90)
             self.size_buttons[size] = Button(rect=rect, image=icon, fill=theme.PAPER)
 
         size_bottom = size_top + size_height

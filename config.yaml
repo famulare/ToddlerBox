@@ -12,7 +12,7 @@ launcher:
       icon_path: assets/icons/typing/typing_512.png
       command: "python -m toddlerbox.typing"
     - name: Music
-      icon_path: ""
+      icon_path: assets/icons/music/music.png
       command: "python -m toddlerbox.music"
 
 paint:

@@ -142,7 +142,7 @@ def draw_home_button(
     if border_width > 0:
         pygame.draw.rect(surface, border_color, rect, width=border_width, border_radius=10)
 
-    glyph = theme.icon("home", (max(1, rect.w - 8), max(1, rect.h - 8)))
+    glyph = theme.artwork("home", (max(1, rect.w - 8), max(1, rect.h - 8)))
     surface.blit(glyph, glyph.get_rect(center=rect.center))
 
 

@@ -11,7 +11,7 @@ Hardware qualification remains separate from application and VM tests.
 - Fullscreen, borderless kiosk-style UI
 - Child-facing screens never show dialogs or crash traces
 - Shared pygame theme: cream backgrounds, paper cards, dark ink, sage selection
-  highlights, and simple pictograms. The same 58px Home control sits at the
+  highlights, and the original illustrated icon family. The same 58px Home control sits at the
   top-right of every activity. Artwork/photo colors and saved data are independent
   of the interface palette.
 - System parent escape: hold `Ctrl + Alt + Home` for two seconds; handled independently of the app

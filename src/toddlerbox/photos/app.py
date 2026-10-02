@@ -330,9 +330,9 @@ class PhotosApp:
         self.left_arrow = Button(rect=pygame.Rect(self.main_rect.left + 20, self.screen_rect.centery - 30, 50, 60), fill=theme.PAPER)
         self.right_arrow = Button(rect=pygame.Rect(self.main_rect.right - 70, self.screen_rect.centery - 30, 50, 60), fill=theme.PAPER)
 
-        self.left_arrow.image = theme.icon("left", (40, 48))
-        self.right_arrow.image = theme.icon("right", (40, 48))
-        self.empty_icon = theme.icon("photos", (96, 96))
+        self.left_arrow.image = theme.arrow("left", (40, 48))
+        self.right_arrow.image = theme.arrow("right", (40, 48))
+        self.empty_icon = theme.artwork("photos", (96, 96))
         self._refresh_library()
 
     def _handle_resume(self, reason: str) -> None:

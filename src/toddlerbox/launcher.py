@@ -103,12 +103,11 @@ def _build_buttons(apps: List[LauncherApp], screen_rect: pygame.Rect) -> List[Bu
     for idx, app in enumerate(apps):
         rect = pygame.Rect(start_x + idx * (icon_size + gap), y, icon_size, icon_size)
         module = _module_name_for_command(app.command)
-        kind = module.rsplit(".", 1)[-1] if module else ""
-        default_icon = f"assets/icons/{kind}/{kind}_512.png"
-        if kind in {"paint", "photos", "typing", "music"} and app.icon_path in {"", default_icon}:
-            image = theme.activity_tile(kind, app.name, icon_size)
-        else:
-            image = load_image(app.icon_path, (icon_size, icon_size))
+        image = load_image(app.icon_path)
+        if image is None and module == "toddlerbox.music":
+            image = theme.artwork("music", (icon_size, icon_size))
+        if image is not None:
+            image = theme.activity_tile(image, app.name, icon_size)
         buttons.append(
             Button(
                 rect=rect,
