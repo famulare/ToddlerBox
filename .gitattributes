@@ -1,0 +1,2 @@
+# Preserve the exact upstream bytes recorded in the music source manifest.
+assets/music/sources/** -whitespace

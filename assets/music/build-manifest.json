@@ -1,0 +1,73 @@
+{
+  "renderer": "toddlerbox-sampled-piano-1",
+  "renderer_sha256": "06247b9cb2a568addd2e8738a67f8fa5f7c96fc006a701e9b961b080086a985e",
+  "numpy": "2.2.6",
+  "sample_rate": 22050,
+  "channels": 1,
+  "sample_width": 2,
+  "release_ms": 600,
+  "collection_gain": 1,
+  "instrument_manifest_sha256": "444306d6e945bc3038632891f9a594d08e97d2cdc3b4825b4820b684bdf6f6c5",
+  "tracks": [
+    {
+      "id": "mary",
+      "score_sha256": "7faee76e4e4a62fd65d82f814c042d219ad7161b83114c5b6ea1c0ce3eee421e",
+      "audio_sha256": "6b7cbb7d056d31b72a2128719106e55d097b8ae6346bbe40b24e7118189f28c1",
+      "cues_sha256": "c21421235d3faa9b5bf3b6f206c00e3311c6eac55119b3af62305f8a6363141f",
+      "peak": 0.5618936404166964,
+      "rms": 0.08841805267017266,
+      "frames": 473227,
+      "notes": 34
+    },
+    {
+      "id": "twinkle",
+      "score_sha256": "1e4a7c779fae29cffdf5aaf2adbf9aaaae57bdb227f8fd3b94bb72050a51a159",
+      "audio_sha256": "6d40f56768ddba0b540624d909b60fd1998c9ae9410562ce27324045c4c88878",
+      "cues_sha256": "89c7a9cb9945008892e22d45590e5fb0a3f7c2e77ab418e8bcf884aa04d7fd34",
+      "peak": 0.5091094560046675,
+      "rms": 0.09289588037046671,
+      "frames": 701190,
+      "notes": 56
+    },
+    {
+      "id": "ode",
+      "score_sha256": "5a879fb9ac31e6cbb11d2666753cc6e8035a3cf0e0327630462b1e96bbfa3f4d",
+      "audio_sha256": "c6d2686ac3d19174a3790f6c843ca55f95de18e5aeda2e56517e3cc7136f2788",
+      "cues_sha256": "d771795057a96a955058da449a7b8c61df98731d97bec59d09723c12d049df7e",
+      "peak": 0.513942026353498,
+      "rms": 0.09691605939719304,
+      "frames": 489510,
+      "notes": 38
+    },
+    {
+      "id": "frere",
+      "score_sha256": "92fdeb8841c6d1eab7379d4d5f0c903b27f30432c12ec87b197a0caeba83d276",
+      "audio_sha256": "3fbdb86af824b153da7cba05856107c3eed80c8ea7f960d425c7d579fee52c02",
+      "cues_sha256": "b4b32336e323fffc3a08d3f443df17bc2a10adce29215423ac114b5523fae312",
+      "peak": 0.5605392092045837,
+      "rms": 0.08943687764345142,
+      "frames": 507150,
+      "notes": 40
+    },
+    {
+      "id": "row",
+      "score_sha256": "9406a481765967539fa200ead316b84c68fc432fbccd1c8fad522c79d83bc398",
+      "audio_sha256": "c5d1d4e6960254fb0bc88c60399fe289902ff1b83135a804b085d5c44a59501f",
+      "cues_sha256": "820c2e49b01fc8f501c5506d619b2425832093ec61989eae1fc2c929563260e8",
+      "peak": 0.5098466059319509,
+      "rms": 0.1057117244801414,
+      "frames": 727650,
+      "notes": 70
+    },
+    {
+      "id": "minuet",
+      "score_sha256": "3d7d300dee8450f9644a7e91b06eb72b0eca07fd017aa2e7a76d8178f44d2a9c",
+      "audio_sha256": "3d137354dc50adf6346f06dfa80707571845c888ecfa00536061426dd4161c3c",
+      "cues_sha256": "c27ce4b73fe245282caf14a1a2eaadceafa73c5b1de5ddd2b9950a07790fb7d1",
+      "peak": 0.6067328974019497,
+      "rms": 0.10748380176978395,
+      "frames": 654150,
+      "notes": 80
+    }
+  ]
+}

@@ -60,6 +60,12 @@ a listening VNC or SSH port. Connect a local VNC client to `build/vm/vnc.sock`,
 or use QMP screenshots and input through `system/qmp.py`. Serial console and
 logs are available at `build/vm/serial.sock` and `build/vm/serial.log`.
 
+An emulated Intel HDA device records guest output to `build/vm/audio.wav` using
+QEMU's WAV backend, without host speakers. Stop the VM to finalize the WAV header
+before ordinary playback/inspection; a new VM start overwrites that capture.
+Verify output during Music and silence after Home or parent recovery. Physical
+speaker volume and latency still need HP testing.
+
 The first boot asks for the `parent` password on tty1. There are no default
 passwords or built-in SSH keys. This is the same first-boot flow on hardware.
 Use a disposable password for VM tests. Keep independent serial console access
@@ -108,13 +114,20 @@ journalctl -b -u toddlerbox-controller -u gdm3
 sudo journalctl -b _UID="$(id -u toddlerbox)"
 ```
 
-The launcher, Paint, Photos and Typing report health only after processing and
+The launcher, Paint, Photos, Typing and Music report health only after processing and
 rendering a frame. The controller allows 90 seconds for startup and 20 seconds
 without a frame once running. It restarts the graphical session at most three
 times per child-mode entry. Successful frames do not reset that budget. Exhaustion
 opens parent login and persists a recovery latch across reboot. Explicitly
-starting child mode clears the latch. The controller itself has a systemd watchdog.
-Runtime session configuration is in `/run`, so disk-full does not block recovery.
+starting child mode clears the latch. The controller itself has a systemd watchdog;
+after a controller restart it persists parent recovery and reconciles GDM. Runtime
+session configuration is in `/run`, reducing dependence on free root-disk space;
+full-disk parent login and latch durability still need explicit qualification.
+
+Mode transitions signal the authenticated launcher's pidfd, then allow up to five
+seconds for activity save/audio cleanup acknowledgement before forced termination.
+The acknowledgement is accepted only from the matched process/UID. A stuck save
+cannot hold parent recovery indefinitely; unsaved in-memory changes may be lost.
 
 The GRUB menu always offers **Parent recovery — Ubuntu GNOME login**. That bypasses
 child autologin before the application starts. Serial login remains independent
@@ -137,6 +150,15 @@ preserved for inspection. New Typing archives use separate atomic JSON files;
 legacy `sessions.jsonl` archives remain readable. Physical power-loss behavior
 still depends on the storage device honoring flushes.
 
+A failure after replacement but during directory fsync means the new file is
+visible with uncertain power-loss durability; it does not restore the previous
+file automatically. Paint periodic encoding/fsync uses a bounded background
+worker and skips unchanged canvases. Explicit save/navigation paths wait for a
+confirmed commit. Archive capacities never silently delete work: defaults are
+100 Paint archives and 200 Typing archives/256 MiB. New/Recall replacement refuses
+at capacity, leaving current work intact. Parent export/cleanup makes space;
+archive writes leave a 16 MiB reserve for current saves.
+
 App code and its uv-created environment live in `/opt/toddlerbox/releases/<id>`.
 Runtime directly executes the installed Python environment and does not resolve
 or download dependencies. To update from a trusted build of the same system ABI,
@@ -147,9 +169,16 @@ sudo toddlerbox-install-release toddlerbox-app-<id>.tar.gz <expected-sha256>
 sudo toddlerbox-mode child
 ```
 
+New bundles include `data-schema.json`. Installation/rollback refuse incompatible
+schema declarations, serialize changes, and fsync replaced links. Existing
+unmarked releases use the established v1 schema. Typing preserves unsupported
+newer current documents and uses a v1 sidecar instead of overwriting them.
+
 The installer keeps `previous` before switching `current`. In parent mode,
 `sudo toddlerbox-mode rollback` restores that previous app release. A first
-installation has no previous release yet. Keep the last qualified system image
+installation has no previous release yet. Rollback leaves the previous target
+identifiable; repeating the same rollback is refused rather than toggling back.
+Keep the last qualified system image
 as the OS-level rollback artifact and back up `/var/lib/toddlerbox` before any
 reinstallation; the USB installer erases its selected disk. App rollback does
 not revert the OS or child data. Qualify a candidate before calling it known-good.
@@ -165,6 +194,9 @@ Record results and actual artifact IDs, not just intended behavior:
 - Authenticate to ordinary GNOME, then return to child mode.
 - Crash the app, freeze its event loop, and break startup; inspect bounded
   retries and parent recovery, including persistence across reboot.
+- Kill and stop the controller itself; verify systemd recovery reaches parent
+  login, stops child audio, and persists across reboot.
+- Exercise Music playback, pause, selection, autoplay and cleanup with guest audio capture.
 - Test a corrupt photo, corrupt save, failed save, and a disposable full filesystem.
 - Install from the ISO to an empty VM disk, reboot the installed disk, and repeat
   child/parent smoke checks. Cancellation must leave the target untouched.

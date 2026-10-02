@@ -7,7 +7,7 @@ RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
     --mount=from=uv,source=/uv,target=/run/uv \
     cp /run/uv /usr/local/bin/uv && \
     mkdir -p /opt/toddlerbox/releases/${RELEASE_ID} && \
-    cp -a /source/src /source/assets /source/pyproject.toml /source/uv.lock /source/README.md /source/LICENSE /source/config.yaml /opt/toddlerbox/releases/${RELEASE_ID}/ && \
+    cp -a /source/src /source/assets /source/pyproject.toml /source/uv.lock /source/README.md /source/LICENSE /source/config.yaml /source/data-schema.json /opt/toddlerbox/releases/${RELEASE_ID}/ && \
     cp -a /source/system /usr/local/share/toddlerbox-build && \
     apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca update && \
     apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca install -y --no-install-recommends $(cat /source/system/desktop-extras.txt) && \

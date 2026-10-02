@@ -12,6 +12,8 @@ from typing import Any, Callable, Dict, List, Optional
 import pygame
 
 from toddlerbox.config import load_config
+from toddlerbox.music.app import run_embedded as run_music_embedded
+from toddlerbox.music.visuals import draw_music_icon
 from toddlerbox.paths import get_data_root
 from toddlerbox.paint.app import run_embedded as run_paint_embedded
 from toddlerbox.photos.app import PhotosApp, run_embedded as run_photos_embedded
@@ -20,6 +22,7 @@ from toddlerbox.runtime import health
 from toddlerbox.typing.app import run_embedded as run_typing_embedded
 from toddlerbox.ui.common import (
     Button,
+    PointerInput,
     create_fullscreen_window,
     draw_placeholder_icon,
     ignore_system_shortcut,
@@ -44,6 +47,7 @@ class LauncherApp:
 _EMBEDDED_RUNNERS: Dict[str, Callable[[pygame.Surface, pygame.Rect, pygame.time.Clock], None]] = {
     "toddlerbox.paint": run_paint_embedded,
     "toddlerbox.typing": run_typing_embedded,
+    "toddlerbox.music": run_music_embedded,
 }
 
 
@@ -126,6 +130,9 @@ def _launch_app(
             photos_app = run_photos_embedded(screen, screen_rect, clock, app=photos_app)
         except Exception:
             logger.exception("Photos app crashed in embedded mode")
+            if photos_app is not None:
+                photos_app.close()
+            photos_app = None
         return False, photos_app
 
     runner = _EMBEDDED_RUNNERS.get(module_name) if module_name else None
@@ -137,6 +144,9 @@ def _launch_app(
             return False, photos_app
         return False, photos_app
 
+    if os.environ.get("TODDLERBOX_HEALTH_SOCKET"):
+        logger.info(f"Unsupported external activity refused in supervised child session: {app.name}")
+        return False, photos_app
     command = _resolve_command(app.command)
     if not command:
         return False, photos_app
@@ -184,7 +194,9 @@ def _draw_launcher_frame(
 ) -> None:
     screen.fill(background)
     for app, button in zip(apps, buttons):
-        if button.image is None:
+        if button.image is None and _module_name_for_command(app.command) == "toddlerbox.music":
+            draw_music_icon(screen, button.rect)
+        elif button.image is None:
             draw_placeholder_icon(screen, button.rect, app.name, border_width=0)
         else:
             button.draw(screen)
@@ -199,87 +211,102 @@ def main() -> None:
     clock = pygame.time.Clock()
     background = (248, 244, 236)
 
-    buttons = _build_buttons(apps, screen_rect)
-    prewarm_enabled = bool(config.get("launcher", {}).get("photos_prewarm", True))
-    prewarm_idle_ms = int(config.get("launcher", {}).get("photos_prewarm_idle_ms", 600))
-    prewarm_batch = int(config.get("launcher", {}).get("photos_prewarm_batch", 2))
     photos_app: Optional[PhotosApp] = None
-    if prewarm_enabled:
-        try:
-            photos_app = PhotosApp(screen=screen, screen_rect=screen_rect, clock=clock)
-        except Exception:
-            logger.exception("Photos prewarm initialization failed")
-            photos_app = None
-    pointer_block_until = 0.0
-    last_input = time.monotonic()
-    last_frame_time = time.monotonic()
+    try:
+        buttons = _build_buttons(apps, screen_rect)
+        prewarm_enabled = bool(config.get("launcher", {}).get("photos_prewarm", True))
+        prewarm_idle_ms = int(config.get("launcher", {}).get("photos_prewarm_idle_ms", 600))
+        prewarm_batch = int(config.get("launcher", {}).get("photos_prewarm_batch", 2))
+        if prewarm_enabled:
+            try:
+                photos_app = PhotosApp(screen=screen, screen_rect=screen_rect, clock=clock)
+            except Exception:
+                logger.exception("Photos prewarm initialization failed")
+                photos_app = None
+        pointer_block_until = 0.0
+        pointer = PointerInput()
+        last_input = time.monotonic()
+        last_frame_time = time.monotonic()
 
-    running = True
-    _draw_launcher_frame(screen, background, apps, buttons)
-    while running and not health.stopping():
-        now = time.monotonic()
-        if now - last_frame_time > 2.0:
-            logger.info("Launcher resume detected via frame-time gap")
-            pygame.event.clear(_pointer_event_types())
-            pointer_block_until = now + 0.25
-        last_frame_time = now
-        for event in pygame.event.get():
-            if _is_resume_event(event):
-                logger.info("Launcher resumed from focus/background event")
-                pygame.event.clear(_pointer_event_types())
-                pointer_block_until = time.monotonic() + 0.25
-                continue
-            if event.type in {
-                pygame.MOUSEMOTION,
-                pygame.MOUSEBUTTONDOWN,
-                pygame.MOUSEBUTTONUP,
-                pygame.MOUSEWHEEL,
-                pygame.KEYDOWN,
-            }:
-                last_input = time.monotonic()
-            if event.type == pygame.QUIT:
-                running = False
-            elif is_escape_chord(event) and not os.environ.get("TODDLERBOX_HEALTH_SOCKET"):
-                pygame.quit()
-                sys.exit(0)
-            elif ignore_system_shortcut(event):
-                continue
-            elif is_primary_pointer_event(event, is_down=True):
-                last_input = time.monotonic()
-                if time.monotonic() < pointer_block_until:
-                    continue
-                pos = pointer_event_pos(event, screen_rect)
-                if pos is None:
-                    continue
-                for app, button in zip(apps, buttons):
-                    if button.hit(pos):
-                        logger.info(f"Launching app: {app.name}")
-                        used_subprocess, photos_app = _launch_app(
-                            app, screen, screen_rect, clock, logger, photos_app=photos_app,
-                        )
-                        if used_subprocess:
-                            screen, screen_rect = _restore_launcher_window()
-                            buttons = _build_buttons(apps, screen_rect)
-                        pygame.event.clear(_pointer_event_types())
-                        pointer_block_until = time.monotonic() + 0.25
-                        last_input = time.monotonic()
-                        logger.info(f"Returned to launcher from app: {app.name}")
-                        _draw_launcher_frame(screen, background, apps, buttons)
-                        break
-
+        running = True
         _draw_launcher_frame(screen, background, apps, buttons)
-        now = time.monotonic()
-        if photos_app and now - last_input >= (prewarm_idle_ms / 1000.0) and now >= pointer_block_until:
-            for _ in range(prewarm_batch):
-                try:
-                    photos_app._load_next_thumbnail()
-                except Exception:
-                    logger.exception("Photos prewarm thumbnail load failed")
+        while running and not health.stopping():
+            now = time.monotonic()
+            if now - last_frame_time > 2.0:
+                logger.info("Launcher resume detected via frame-time gap")
+                pygame.event.clear(_pointer_event_types())
+                pointer.reset()
+                pointer_block_until = now + 0.25
+            last_frame_time = now
+            for event in pygame.event.get():
+                if _is_resume_event(event):
+                    logger.info("Launcher resumed from focus/background event")
+                    pygame.event.clear(_pointer_event_types())
+                    pointer.reset()
+                    pointer_block_until = time.monotonic() + 0.25
+                    continue
+                if not pointer.accept(event):
+                    continue
+                if event.type in {
+                    pygame.MOUSEMOTION,
+                    pygame.MOUSEBUTTONDOWN,
+                    pygame.MOUSEBUTTONUP,
+                    pygame.MOUSEWHEEL,
+                    pygame.KEYDOWN,
+                }:
+                    last_input = time.monotonic()
+                if event.type == pygame.QUIT:
+                    running = False
+                elif is_escape_chord(event) and not os.environ.get("TODDLERBOX_HEALTH_SOCKET"):
+                    running = False
                     break
-        clock.tick(60)
-        health.frame_complete()
+                elif ignore_system_shortcut(event):
+                    continue
+                elif is_primary_pointer_event(event, is_down=True):
+                    last_input = time.monotonic()
+                    if time.monotonic() < pointer_block_until:
+                        continue
+                    pos = pointer_event_pos(event, screen_rect)
+                    if pos is None:
+                        continue
+                    for app, button in zip(apps, buttons):
+                        if button.hit(pos):
+                            logger.info(f"Launching app: {app.name}")
+                            used_subprocess, photos_app = _launch_app(
+                                app, screen, screen_rect, clock, logger, photos_app=photos_app,
+                            )
+                            if used_subprocess:
+                                screen, screen_rect = _restore_launcher_window()
+                                buttons = _build_buttons(apps, screen_rect)
+                            pygame.event.clear(_pointer_event_types())
+                            pointer.reset()
+                            pointer_block_until = time.monotonic() + 0.25
+                            last_input = time.monotonic()
+                            logger.info(f"Returned to launcher from app: {app.name}")
+                            _draw_launcher_frame(screen, background, apps, buttons)
+                            break
+                    else:
+                        continue
+                    # Scene entry invalidates the remainder of this fetched input batch.
+                    break
 
-    pygame.quit()
+            _draw_launcher_frame(screen, background, apps, buttons)
+            now = time.monotonic()
+            if photos_app and now - last_input >= (prewarm_idle_ms / 1000.0) and now >= pointer_block_until:
+                for _ in range(prewarm_batch):
+                    try:
+                        photos_app._load_next_thumbnail()
+                    except Exception:
+                        logger.exception("Photos prewarm thumbnail load failed")
+                        break
+            clock.tick(60)
+            health.frame_complete()
+
+    finally:
+        if photos_app is not None:
+            photos_app.close()
+        pygame.quit()
+        health.shutdown_complete()
 
 
 if __name__ == "__main__":

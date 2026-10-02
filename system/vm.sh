@@ -25,7 +25,8 @@ case "$action" in
         docker run --rm -e "VM_UID=$(id -u)" -e "VM_GID=$(id -g)" \
             -e "VM_FIRMWARE=$firmware" -e "VM_ACTION=$action" \
             -v "$PWD/build:/build" toddlerbox-image-tools bash -c '
-            if [[ "$VM_ACTION" == installer || ! -f "/build/vm/$VM_FIRMWARE" ]]; then
+            if [[ "$VM_ACTION" == installer || ! -f "/build/vm/$VM_FIRMWARE" ||
+                  ( "$VM_ACTION" == start && ! -f /build/vm/disk.qcow2 ) ]]; then
                 cp /usr/share/OVMF/OVMF_VARS_4M.fd "/build/vm/$VM_FIRMWARE"
             fi
             if [[ ! -f /build/vm/disk.qcow2 ]]; then
@@ -61,6 +62,8 @@ case "$action" in
             -drive "if=pflash,format=raw,file=/build/vm/$firmware" \
             -drive "if=virtio,format=qcow2,discard=unmap,detect-zeroes=unmap,file=/build/vm/$disk" \
             -device virtio-vga -device qemu-xhci -device usb-tablet -nic none \
+            -audiodev wav,id=music,path=/build/vm/audio.wav \
+            -device ich9-intel-hda -device hda-duplex,audiodev=music \
             -display none -vnc unix:/build/vm/vnc.sock \
             -qmp unix:/build/vm/qmp.sock,server=on,wait=off \
             -chardev socket,id=serial,path=/build/vm/serial.sock,server=on,wait=off,logfile=/build/vm/serial.log \

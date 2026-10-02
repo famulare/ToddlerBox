@@ -1,0 +1,89 @@
+{
+  "pageid": 17912687,
+  "ns": 6,
+  "title": "File:Row your boat.svg",
+  "index": 1,
+  "imagerepository": "local",
+  "imageinfo": [
+    {
+      "url": "https://upload.wikimedia.org/wikipedia/commons/b/be/Row_your_boat.svg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "descriptionurl": "https://commons.wikimedia.org/wiki/File:Row_your_boat.svg",
+      "descriptionshorturl": "https://commons.wikimedia.org/w/index.php?curid=17912687",
+      "extmetadata": {
+        "DateTime": {
+          "value": "2012-01-04 23:39:13",
+          "source": "mediawiki-metadata",
+          "hidden": ""
+        },
+        "ObjectName": {
+          "value": "Row your boat",
+          "source": "mediawiki-metadata"
+        },
+        "CommonsMetadataExtension": {
+          "value": 1.2,
+          "source": "extension",
+          "hidden": ""
+        },
+        "Categories": {
+          "value": "Row, Row, Row Your Boat|CC-Zero|Self-published work",
+          "source": "commons-categories",
+          "hidden": ""
+        },
+        "Assessments": {
+          "value": "",
+          "source": "commons-categories",
+          "hidden": ""
+        },
+        "ImageDescription": {
+          "value": "<a href=\"https://en.wikipedia.org/wiki/Row,_Row,_Row_Your_Boat\" class=\"extiw\" title=\"en:Row, Row, Row Your Boat\">en:Row, Row, Row Your Boat</a>.",
+          "source": "commons-desc-page"
+        },
+        "DateTimeOriginal": {
+          "value": "2012-01-05",
+          "source": "commons-desc-page"
+        },
+        "Credit": {
+          "value": "<span class=\"int-own-work\" lang=\"en\">Own work</span>; self-made in MuseScore.",
+          "source": "commons-desc-page"
+        },
+        "Artist": {
+          "value": "<a href=\"https://en.wikipedia.org/wiki/User:Mysid\" class=\"extiw\" title=\"w:User:Mysid\">Mysid</a>",
+          "source": "commons-desc-page"
+        },
+        "LicenseShortName": {
+          "value": "CC0",
+          "source": "commons-desc-page",
+          "hidden": ""
+        },
+        "UsageTerms": {
+          "value": "Creative Commons Zero, Public Domain Dedication",
+          "source": "commons-desc-page"
+        },
+        "AttributionRequired": {
+          "value": "false",
+          "source": "commons-desc-page",
+          "hidden": ""
+        },
+        "LicenseUrl": {
+          "value": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+          "source": "commons-desc-page"
+        },
+        "Copyrighted": {
+          "value": "True",
+          "source": "commons-desc-page",
+          "hidden": ""
+        },
+        "Restrictions": {
+          "value": "",
+          "source": "commons-desc-page",
+          "hidden": ""
+        },
+        "License": {
+          "value": "cc0",
+          "source": "commons-templates",
+          "hidden": ""
+        }
+      }
+    }
+  ]
+}

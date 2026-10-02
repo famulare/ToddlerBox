@@ -18,10 +18,11 @@ Hardware qualification remains separate from application and VM tests.
 
 ### 1.1 UX
 
-- Fullscreen home view with three large app icons:
+- Fullscreen home view with four large app icons:
   - Paint
   - Photos
   - Typing
+  - Music
 - Icon hit targets are computed from screen size (minimum 120px)
 - Function keys `F1`-`F12` are ignored
 - System image: deliberate parent chord reaches authenticated GNOME parent login
@@ -29,9 +30,9 @@ Hardware qualification remains separate from application and VM tests.
 
 ### 1.2 App handoff model
 
-- Built-in apps (`toddlerbox.paint`, `toddlerbox.photos`, `toddlerbox.typing`) run embedded in-process.
+- Built-in apps (`toddlerbox.paint`, `toddlerbox.photos`, `toddlerbox.typing`, `toddlerbox.music`) run embedded in-process.
 - Launcher keeps a single pygame window and switches scenes to reduce transition flicker.
-- Non-built-in commands in config are launched via subprocess fallback.
+- Non-built-in commands are refused in the supervised child session; desktop development retains subprocess fallback.
 - Subprocess fallback suppresses child stdout/stderr.
 
 ### 1.3 Return behavior
@@ -68,7 +69,9 @@ Hardware qualification remains separate from application and VM tests.
 - Archived snapshots named `YYYY-MM-DD_HHMMSS(.+counter).png`
 - Atomic PNG replacement with file and directory fsync
 - Existing `latest.png` is restored on app start; Home and termination attempt a save
-- New clears only after successful archive; failed saves preserve the previous committed file
+- New clears only after successful archive; failures before replacement preserve the previous file. Directory-fsync failure after replacement reports uncertain durability of the new visible file.
+- Periodic saves use one background snapshot and skip unchanged canvases. Input reset never postpones an outstanding save deadline.
+- Archive limits are nondestructive capacities: Paint defaults to 100 and clamps zero to one. Full capacity refuses replacement without clearing work; quarantined corrupt files are excluded.
 
 ### 2.4 Recall UX
 
@@ -98,6 +101,8 @@ Hardware qualification remains separate from application and VM tests.
 - Strip supports drag/wheel scrolling
 - Tap-release on thumbnail selects image
 - Horizontal drag in main image area changes image index
+- EXIF orientation is applied consistently. One background worker prepares size-limited derivatives; a bounded thumbnail LRU avoids accumulating decoded images.
+- Library refreshes on entry; source images over 40 million pixels are skipped with parent diagnostics.
 
 ## 4. Typing App
 
@@ -143,6 +148,19 @@ Hardware qualification remains separate from application and VM tests.
   - Recent archived sessions (newest first)
 - Each item shows text preview (first 150 normalized chars)
 - Tap outside closes recall; tap-release loads selected session
+- Layout is cached until text/style/width changes. Archive capacity defaults to 200 records/256 MiB, with no automatic deletion.
+- Unsupported future save versions remain intact; this version uses a separate `current-v1.json` while that newer document exists.
+
+## 4a. Music App
+
+- Six bundled short piano arrangements with scores, synchronized cues and source/license notices under `assets/music/`.
+- Fixed C3–C5 keyboard; falling bars encode pitch and held duration. Melody is blue, accompaniment gold. Piano touches do not play notes.
+- Song choices, Play/Pause, Autoplay and Home are the only child controls.
+- Entry starts the first song; selection starts/restarts that song. Autoplay defaults on and wraps with a quiet gap. Turning it off finishes the current song once.
+- Pause freezes sound and visual time. One playback-position adapter drives the visualization, with configurable output-latency compensation.
+- Home/TERM/exceptions stop and unload audio. No audio plays on the launcher or automatically resumes after a crash.
+- Audio failure remains quiet, responsive and logged for the parent. Autoplay attempts each damaged track at most once until manual retry.
+- Shared pointer ownership ignores duplicate SDL mouse events from touch and secondary fingers. Focus/scene changes discard stale input.
 
 ## 5. Data layout
 
@@ -169,6 +187,8 @@ data_root/
 - `paint.autosave_seconds`
 - `paint.palette`
 - `photos.show_arrows` (optional)
+- `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
+- `music.volume`, `music.autoplay`, `music.latency_ms`
 
 ## 7. Error handling
 
@@ -185,4 +205,6 @@ data_root/
 - Boot-menu parent recovery and independent console access.
 - Shared system disk for VM testing and USB installation.
 - Versioned app environments; previous release retained during app updates.
+- Cleanup acknowledgement and a bounded five-second grace precede forced termination; launcher identity is pinned with pidfds.
+- Release changes are serialized and directory-synced, with declared data-schema compatibility. Rollback retains an identifiable previous target and requires parent mode.
 - See `system/README.md` for exact behavior, artifact identity, and qualification limits.

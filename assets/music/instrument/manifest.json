@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "name": "VSCO 2 CE Upright Piano, soft layer, bounded mono subset",
+  "license": "CC0-1.0",
+  "repository": "https://github.com/sgossner/VSCO-2-CE",
+  "revision": "6dd651d55dde97fd4028699be9d4481f26917891",
+  "sfz_sha256": "9c88ebcf6ea66d5694c377e4119fd38c1875c3c211bb2e61c2e41f96a8e4364a",
+  "release_ms": 600,
+  "regions": [
+    {
+      "filename": "piano-49.wav",
+      "lokey": 47,
+      "hikey": 50,
+      "pitch_keycenter": 49,
+      "source_filename": "Player_dyn1_rr1_014.wav",
+      "source_url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/6dd651d55dde97fd4028699be9d4481f26917891/Keys/Upright%20Piano/Player_dyn1_rr1_014.wav",
+      "source_sha256": "f3d00b63bb178680fdd4d9ed7ea43d1df1cf29e00b567ccb022c2bd411a20607",
+      "trim_source_frames": 0,
+      "sha256": "27bf61bc36a7ea29ff0ccc9a5f88cd923513bf0629b651ed74fae563450a7699"
+    },
+    {
+      "filename": "piano-53.wav",
+      "lokey": 51,
+      "hikey": 54,
+      "pitch_keycenter": 53,
+      "source_filename": "Player_dyn1_rr1_016.wav",
+      "source_url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/6dd651d55dde97fd4028699be9d4481f26917891/Keys/Upright%20Piano/Player_dyn1_rr1_016.wav",
+      "source_sha256": "f1a3a542cf70a13aa865ce130d50d72cd735449e605d1c5a45dc06b5a60b27fd",
+      "trim_source_frames": 0,
+      "sha256": "a686089de8588e9dbe095a24f3d6dd15a47c44be7114a6cff657d4a04238c775"
+    },
+    {
+      "filename": "piano-57.wav",
+      "lokey": 55,
+      "hikey": 58,
+      "pitch_keycenter": 57,
+      "source_filename": "Player_dyn1_rr1_018.wav",
+      "source_url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/6dd651d55dde97fd4028699be9d4481f26917891/Keys/Upright%20Piano/Player_dyn1_rr1_018.wav",
+      "source_sha256": "01387cb5318c5abf11410ae8e2f4ef6aa83ec03254b4bccfe865aba262a2e412",
+      "trim_source_frames": 0,
+      "sha256": "d0f3a64de123e956530cd4a473e4441bd0e5d1ca6c040913f1a2c5b824d50d87"
+    },
+    {
+      "filename": "piano-61.wav",
+      "lokey": 59,
+      "hikey": 62,
+      "pitch_keycenter": 61,
+      "source_filename": "Player_dyn1_rr1_020.wav",
+      "source_url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/6dd651d55dde97fd4028699be9d4481f26917891/Keys/Upright%20Piano/Player_dyn1_rr1_020.wav",
+      "source_sha256": "08242e8d1c865c8cdc794cc7921d3d9663bedb5a12bfefe0de13aaa86fd23133",
+      "trim_source_frames": 45,
+      "sha256": "2ce433c28966078c9fee29cd67f5a2dab445956ced1a355ef3df1ac7b14280ae"
+    },
+    {
+      "filename": "piano-65.wav",
+      "lokey": 63,
+      "hikey": 66,
+      "pitch_keycenter": 65,
+      "source_filename": "Player_dyn1_rr1_022.wav",
+      "source_url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/6dd651d55dde97fd4028699be9d4481f26917891/Keys/Upright%20Piano/Player_dyn1_rr1_022.wav",
+      "source_sha256": "660e57ad8fd868ed9c56fe36e4862a6aff1cb65b7838a568d4c4f2f0865ad1ab",
+      "trim_source_frames": 30,
+      "sha256": "eaf147fb9835577d6f61d46fe558c03fe506f0dccb9d57b084bfc954c35bd5fc"
+    },
+    {
+      "filename": "piano-69.wav",
+      "lokey": 67,
+      "hikey": 70,
+      "pitch_keycenter": 69,
+      "source_filename": "Player_dyn1_rr1_024.wav",
+      "source_url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/6dd651d55dde97fd4028699be9d4481f26917891/Keys/Upright%20Piano/Player_dyn1_rr1_024.wav",
+      "source_sha256": "916c3ec2d61fb421e74fb4866ef75d3ef17e9d88e9dc858da24159846489d33f",
+      "trim_source_frames": 0,
+      "sha256": "aee23d9780561cc9afe4f8fe54f50ebaac5add5c62d4babc7ef50e94157cebbe"
+    },
+    {
+      "filename": "piano-73.wav",
+      "lokey": 71,
+      "hikey": 74,
+      "pitch_keycenter": 73,
+      "source_filename": "Player_dyn1_rr1_026.wav",
+      "source_url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/6dd651d55dde97fd4028699be9d4481f26917891/Keys/Upright%20Piano/Player_dyn1_rr1_026.wav",
+      "source_sha256": "254be5d34270e5eb78bbda3f7425c3e82b9596845db2c065b13179f23c23196b",
+      "trim_source_frames": 0,
+      "sha256": "cc4e1261bd22745f0473b8aa31b73eaedb5566c3e1d424741564a73d9cc9e0da"
+    }
+  ]
+}

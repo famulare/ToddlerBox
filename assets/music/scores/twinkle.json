@@ -1,0 +1,408 @@
+{
+  "schema_version": 1,
+  "id": "twinkle",
+  "title": "Twinkle, Twinkle, Little Star",
+  "tempo_bpm": 100,
+  "ticks_per_beat": 480,
+  "meter": [
+    4,
+    4
+  ],
+  "intro_ms": 1500,
+  "tail_ms": 1500,
+  "arrangement": "Complete traditional theme, using Mutopia2236 theme as reference; omit Mozart ornaments, hold phrase endings, new sparse piano accompaniment.",
+  "notes": [
+    {
+      "pitch": 48,
+      "start_tick": 0,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 60,
+      "start_tick": 0,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 60,
+      "start_tick": 480,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 960,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 1440,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 53,
+      "start_tick": 1920,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 69,
+      "start_tick": 1920,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 69,
+      "start_tick": 2400,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 2880,
+      "duration_tick": 864,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 48,
+      "start_tick": 3840,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 65,
+      "start_tick": 3840,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 65,
+      "start_tick": 4320,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 64,
+      "start_tick": 4800,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 64,
+      "start_tick": 5280,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 55,
+      "start_tick": 5760,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 62,
+      "start_tick": 5760,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 62,
+      "start_tick": 6240,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 55,
+      "start_tick": 6720,
+      "duration_tick": 816,
+      "voice": "accompaniment",
+      "velocity": 29
+    },
+    {
+      "pitch": 60,
+      "start_tick": 6720,
+      "duration_tick": 864,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 48,
+      "start_tick": 7680,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 67,
+      "start_tick": 7680,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 8160,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 65,
+      "start_tick": 8640,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 65,
+      "start_tick": 9120,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 53,
+      "start_tick": 9600,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 64,
+      "start_tick": 9600,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 64,
+      "start_tick": 10080,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 62,
+      "start_tick": 10560,
+      "duration_tick": 864,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 48,
+      "start_tick": 11520,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 67,
+      "start_tick": 11520,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 12000,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 65,
+      "start_tick": 12480,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 65,
+      "start_tick": 12960,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 55,
+      "start_tick": 13440,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 64,
+      "start_tick": 13440,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 64,
+      "start_tick": 13920,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 62,
+      "start_tick": 14400,
+      "duration_tick": 864,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 48,
+      "start_tick": 15360,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 60,
+      "start_tick": 15360,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 60,
+      "start_tick": 15840,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 16320,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 16800,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 53,
+      "start_tick": 17280,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 69,
+      "start_tick": 17280,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 69,
+      "start_tick": 17760,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 67,
+      "start_tick": 18240,
+      "duration_tick": 864,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 48,
+      "start_tick": 19200,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 65,
+      "start_tick": 19200,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 65,
+      "start_tick": 19680,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 64,
+      "start_tick": 20160,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 64,
+      "start_tick": 20640,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 55,
+      "start_tick": 21120,
+      "duration_tick": 1632,
+      "voice": "accompaniment",
+      "velocity": 34
+    },
+    {
+      "pitch": 62,
+      "start_tick": 21120,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 62,
+      "start_tick": 21600,
+      "duration_tick": 432,
+      "voice": "melody",
+      "velocity": 58
+    },
+    {
+      "pitch": 55,
+      "start_tick": 22080,
+      "duration_tick": 816,
+      "voice": "accompaniment",
+      "velocity": 29
+    },
+    {
+      "pitch": 60,
+      "start_tick": 22080,
+      "duration_tick": 960,
+      "voice": "melody",
+      "velocity": 54
+    }
+  ]
+}

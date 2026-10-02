@@ -50,3 +50,42 @@ def test_module_name_for_command_matches_builtin_module():
 def test_module_name_for_command_ignores_non_module_command():
     module_name = _module_name_for_command(["/usr/bin/echo", "hello"])
     assert module_name is None
+
+
+def test_supervised_launcher_refuses_uninstrumented_subprocess(monkeypatch):
+    from unittest.mock import Mock
+    from toddlerbox.launcher import LauncherApp, _launch_app
+    monkeypatch.setenv("TODDLERBOX_HEALTH_SOCKET","/run/test-health")
+    spawn = Mock()
+    monkeypatch.setattr("toddlerbox.launcher.subprocess.Popen",spawn)
+    result = _launch_app(LauncherApp("External","",["external"]),None,None,None,Mock())
+    assert result == (False,None)
+    spawn.assert_not_called()
+
+
+def test_launcher_exception_cleans_resources_before_shutdown_ack(tmp_path,monkeypatch):
+    from unittest.mock import Mock, call
+    import pygame
+    import pytest
+    import toddlerbox.launcher as launcher
+    monkeypatch.setenv("SDL_VIDEODRIVER","dummy")
+    monkeypatch.setenv("SDL_AUDIODRIVER","dummy")
+    pygame.init()
+    screen = pygame.display.set_mode((1024,600))
+    config = {"data_root":str(tmp_path),"launcher":{"apps":[]}}
+    monkeypatch.setattr(launcher,"load_config",lambda:config)
+    monkeypatch.setattr(launcher,"create_fullscreen_window",lambda:(screen,screen.get_rect()))
+    calls = Mock()
+    photos = Mock()
+    calls.attach_mock(photos.close,"close")
+    quit_mock = Mock(wraps=pygame.quit)
+    calls.attach_mock(quit_mock,"quit")
+    ack = Mock()
+    calls.attach_mock(ack,"ack")
+    monkeypatch.setattr(launcher,"PhotosApp",lambda **kwargs:photos)
+    monkeypatch.setattr(launcher,"_draw_launcher_frame",Mock(side_effect=RuntimeError("render failed")))
+    monkeypatch.setattr(pygame,"quit",quit_mock)
+    monkeypatch.setattr(launcher.health,"shutdown_complete",ack)
+    with pytest.raises(RuntimeError):
+        launcher.main()
+    assert calls.mock_calls == [call.close(),call.quit(),call.ack()]

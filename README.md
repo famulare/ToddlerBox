@@ -1,11 +1,12 @@
 # ToddlerBox
 
 **ToddlerBox** is a minimalist, offline-first Linux "kid mode" designed for very young children.
-By default it boots into a fullscreen launcher with three large buttons:
+By default it boots into a fullscreen launcher with four large buttons:
 
 - **Paint**
 - **Photos**
 - **Typing**
+- **Music**
 
 There is no desktop environment visible, no file browser, no login/logout flow, and no network dependency during normal use. The system is intentionally constrained, predictable, and robust against accidental input, while remaining easy for a parent to administer and extend.
 
@@ -32,7 +33,7 @@ It is a small, comprehensible appliance built on top of Ubuntu.
   - Independent keyboard chord opens the parent GNOME login
 - **Grow-with-the-child**
   - Built-in apps run in-process for smooth transitions
-  - Non-built-in apps can still be launched via subprocess fallback
+  - Supervised child sessions use registered embedded activities; development retains subprocess fallback
   - Full desktop can be re-enabled later without reinstalling
 
 ---
@@ -53,7 +54,7 @@ The old global keyd setup is retired. See [system/README.md](system/README.md).
 │  (Fullscreen Launcher)     │
 │                            │
 │  [ Paint ] [ Photos ]      │
-│          [ Typing ]        │
+│  [ Typing ] [ Music ]      │
 │                            │
 └─────────────┬──────────────┘
               │ switches scenes in-process
@@ -62,6 +63,7 @@ The old global keyd setup is retired. See [system/README.md](system/README.md).
 │  - Paint                   │
 │  - Photos                  │
 │  - Typing                  │
+│  - Music                   │
 │                            │
 │  Fullscreen, no chrome     │
 │  Exit = return to launcher │
@@ -103,15 +105,22 @@ Large-format typing surface with per-character styling controls and recall.
 
 ![ToddlerBox Typing App](assets/screenshots/typing.png)
 
+### Music
+
+Six short piano arrangements with song choices, autoplay, pause and a passive
+falling-note keyboard. Audio and note cues are generated from the same score.
+
+![ToddlerBox Music App](assets/screenshots/music.png)
+
 ---
 
 ## Components
 
 ### Launcher
 
-- Fullscreen home screen with three icons
-- Runs built-in apps in-process (`paint`, `photos`, `typing`)
-- Subprocess fallback for non-built-in commands in config
+- Fullscreen home screen with four icons
+- Runs built-in apps in-process (`paint`, `photos`, `typing`, `music`)
+- Subprocess fallback only in unsupervised desktop development
 - No clickable "exit" control on-screen
 - Ignores function keys (`F1`-`F12`)
 - **Parent escape chord:** `Ctrl + Alt + Home`
@@ -157,6 +166,21 @@ Large-format typing surface with per-character styling controls and recall.
 - Current rich text saved periodically and on Home; restored on re-entry
 - Sessions archived silently as individual JSON files; legacy `sessions.jsonl` remains readable
 
+### Music App
+
+- Mary Had a Little Lamb, Twinkle, Ode to Joy, Frère Jacques, Row Your Boat and Minuet in G
+- Short piano arrangements, 21–33 seconds each, with quiet accompaniment
+- Fixed two-octave keyboard: blue melody, gold accompaniment, held keys matching note cues
+- Select a song, pause/resume, or let autoplay continue through the collection
+- Home and parent recovery stop playback; unavailable audio remains quiet and responsive
+- Offline audio, scores, notices and reproducible generation recipe in [assets/music](assets/music/README.md)
+
+Paint and Typing archive limits are capacities, not automatic deletion policies.
+At capacity, New/Recall replacement keeps current work and logs the reason for a
+parent. Export or remove archives in parent mode to make space. Default capacities
+are 100 Paint archives and 200 Typing archives/256 MiB; archiving also leaves a
+16 MiB free-space reserve for current saves.
+
 ---
 
 ## Data Layout
@@ -194,6 +218,12 @@ Runtime configuration is read from `config.yaml` (repo root for dev) or `/etc/to
 - `launcher.apps` (icon paths + commands)
 - `paint.autosave_seconds`
 - `paint.palette`
+- `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
+- `music.volume` (0–1, default 0.25), `music.autoplay`, `music.latency_ms`
+
+App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
+a three-app installation, add the Music launcher entry from this repository's
+`config.yaml` in parent mode. Fresh system images already include all four apps.
 
 ---
 
@@ -265,6 +295,7 @@ uv run python -m toddlerbox.launcher
 uv run python -m toddlerbox.paint
 uv run python -m toddlerbox.photos
 uv run python -m toddlerbox.typing
+uv run python -m toddlerbox.music
 ```
 
 ---
