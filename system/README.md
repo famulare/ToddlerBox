@@ -63,7 +63,7 @@ logs are available at `build/vm/serial.sock` and `build/vm/serial.log`.
 An emulated Intel HDA device records guest output to `build/vm/audio.wav` using
 QEMU's WAV backend, without host speakers. Stop the VM to finalize the WAV header
 before ordinary playback/inspection; a new VM start overwrites that capture.
-Verify output during Music and silence after Home or parent recovery. Physical
+Verify output during Music and Reading, and silence after Home or parent recovery. Physical
 speaker volume and latency still need HP testing.
 
 The first boot asks for the `parent` password on tty1. There are no default
@@ -114,7 +114,7 @@ journalctl -b -u toddlerbox-controller -u gdm3
 sudo journalctl -b _UID="$(id -u toddlerbox)"
 ```
 
-The launcher, Paint, Photos, Typing and Music report health only after processing and
+The launcher, Paint, Photos, Typing, Music and Reading report health only after processing and
 rendering a frame. The controller allows 90 seconds for startup and 20 seconds
 without a frame once running. It restarts the graphical session at most three
 times per child-mode entry. Successful frames do not reset that budget. Exhaustion
@@ -197,6 +197,7 @@ Record results and actual artifact IDs, not just intended behavior:
 - Kill and stop the controller itself; verify systemd recovery reaches parent
   login, stops child audio, and persists across reboot.
 - Exercise Music playback, pause, selection, autoplay and cleanup with guest audio capture.
+- Exercise Reading speech/reveal, random Next, all parent-selected decks, and interruption cleanup with guest audio capture.
 - Test a corrupt photo, corrupt save, failed save, and a disposable full filesystem.
 - Install from the ISO to an empty VM disk, reboot the installed disk, and repeat
   child/parent smoke checks. Cancellation must leave the target untouched.

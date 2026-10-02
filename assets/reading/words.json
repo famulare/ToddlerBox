@@ -1,0 +1,276 @@
+[
+  {
+    "word": "cat",
+    "set": "short_a_cvc",
+    "units": [
+      "c",
+      "a",
+      "t"
+    ]
+  },
+  {
+    "word": "hat",
+    "set": "short_a_cvc",
+    "units": [
+      "h",
+      "a",
+      "t"
+    ]
+  },
+  {
+    "word": "mat",
+    "set": "short_a_cvc",
+    "units": [
+      "m",
+      "a",
+      "t"
+    ]
+  },
+  {
+    "word": "map",
+    "set": "short_a_cvc",
+    "units": [
+      "m",
+      "a",
+      "p"
+    ]
+  },
+  {
+    "word": "cap",
+    "set": "short_a_cvc",
+    "units": [
+      "c",
+      "a",
+      "p"
+    ]
+  },
+  {
+    "word": "pan",
+    "set": "short_a_cvc",
+    "units": [
+      "p",
+      "a",
+      "n"
+    ]
+  },
+  {
+    "word": "bed",
+    "set": "short_e_cvc",
+    "units": [
+      "b",
+      "e",
+      "d"
+    ]
+  },
+  {
+    "word": "hen",
+    "set": "short_e_cvc",
+    "units": [
+      "h",
+      "e",
+      "n"
+    ]
+  },
+  {
+    "word": "net",
+    "set": "short_e_cvc",
+    "units": [
+      "n",
+      "e",
+      "t"
+    ]
+  },
+  {
+    "word": "pen",
+    "set": "short_e_cvc",
+    "units": [
+      "p",
+      "e",
+      "n"
+    ]
+  },
+  {
+    "word": "pig",
+    "set": "short_i_cvc",
+    "units": [
+      "p",
+      "i",
+      "g"
+    ]
+  },
+  {
+    "word": "bib",
+    "set": "short_i_cvc",
+    "units": [
+      "b",
+      "i",
+      "b"
+    ]
+  },
+  {
+    "word": "wig",
+    "set": "short_i_cvc",
+    "units": [
+      "w",
+      "i",
+      "g"
+    ]
+  },
+  {
+    "word": "lip",
+    "set": "short_i_cvc",
+    "units": [
+      "l",
+      "i",
+      "p"
+    ]
+  },
+  {
+    "word": "dog",
+    "set": "short_o_cvc",
+    "units": [
+      "d",
+      "o",
+      "g"
+    ]
+  },
+  {
+    "word": "log",
+    "set": "short_o_cvc",
+    "units": [
+      "l",
+      "o",
+      "g"
+    ]
+  },
+  {
+    "word": "pot",
+    "set": "short_o_cvc",
+    "units": [
+      "p",
+      "o",
+      "t"
+    ]
+  },
+  {
+    "word": "top",
+    "set": "short_o_cvc",
+    "units": [
+      "t",
+      "o",
+      "p"
+    ]
+  },
+  {
+    "word": "mug",
+    "set": "short_u_cvc",
+    "units": [
+      "m",
+      "u",
+      "g"
+    ]
+  },
+  {
+    "word": "sun",
+    "set": "short_u_cvc",
+    "units": [
+      "s",
+      "u",
+      "n"
+    ]
+  },
+  {
+    "word": "bus",
+    "set": "short_u_cvc",
+    "units": [
+      "b",
+      "u",
+      "s"
+    ]
+  },
+  {
+    "word": "bug",
+    "set": "short_u_cvc",
+    "units": [
+      "b",
+      "u",
+      "g"
+    ]
+  },
+  {
+    "word": "ship",
+    "set": "digraphs",
+    "units": [
+      "sh",
+      "i",
+      "p"
+    ]
+  },
+  {
+    "word": "fish",
+    "set": "digraphs",
+    "units": [
+      "f",
+      "i",
+      "sh"
+    ]
+  },
+  {
+    "word": "duck",
+    "set": "digraphs",
+    "units": [
+      "d",
+      "u",
+      "ck"
+    ]
+  },
+  {
+    "word": "sock",
+    "set": "digraphs",
+    "units": [
+      "s",
+      "o",
+      "ck"
+    ]
+  },
+  {
+    "word": "hand",
+    "set": "adjacent_consonants",
+    "units": [
+      "h",
+      "a",
+      "n",
+      "d"
+    ]
+  },
+  {
+    "word": "tent",
+    "set": "adjacent_consonants",
+    "units": [
+      "t",
+      "e",
+      "n",
+      "t"
+    ]
+  },
+  {
+    "word": "frog",
+    "set": "adjacent_consonants",
+    "units": [
+      "f",
+      "r",
+      "o",
+      "g"
+    ]
+  },
+  {
+    "word": "drum",
+    "set": "adjacent_consonants",
+    "units": [
+      "d",
+      "r",
+      "u",
+      "m"
+    ]
+  }
+]

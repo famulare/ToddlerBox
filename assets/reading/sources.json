@@ -1,0 +1,1179 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {
+      "id": "word-cat",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/cat.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "cec36cde68c435f2b495af61c87c87c749c7fcdf0c3825e5fa88e53dad314d54",
+      "path": "sources/word-cat.ogg"
+    },
+    {
+      "id": "word-hat",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/hat.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "37fbeee87cc91fa19c82c32165559ddf9dc524f09bcba6a023b957b43243124a",
+      "path": "sources/word-hat.ogg"
+    },
+    {
+      "id": "word-mat",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/mat.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "ca9743a4a3496d773eb43d9e6f5931cb9f7fa483f1da11427205f1d3c86eb116",
+      "path": "sources/word-mat.ogg"
+    },
+    {
+      "id": "word-map",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/map.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "abbc56ebf84dcff6e49a2689535b6623d0e38f7b69fc0bba5c2f1fcf8eea6804",
+      "path": "sources/word-map.ogg"
+    },
+    {
+      "id": "word-cap",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/cap.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "88ae48431fb7c0240fe0130b36a2331be32211adaf9052746a245c048d0e14e3",
+      "path": "sources/word-cap.ogg"
+    },
+    {
+      "id": "word-pan",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/pan.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "a02d196ad1496d46385d71a54567f74f97bd98ff56d1d39e8ec4881738ccf8e0",
+      "path": "sources/word-pan.ogg"
+    },
+    {
+      "id": "word-bed",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bed.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "f7786f5522a95b262d9a6eed47c0c8bf13eea083318d98f6965cc4464865dfb7",
+      "path": "sources/word-bed.ogg"
+    },
+    {
+      "id": "word-hen",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/hen.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "427e7d449ba54b763b62f0750366f03a82cf58162f68c38dc40ef5bee4dc50ad",
+      "path": "sources/word-hen.ogg"
+    },
+    {
+      "id": "word-net",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/net.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "dfffed9eba864b23e9d3c55767706600f5dceb656dfa0a28047bd5db6d72e841",
+      "path": "sources/word-net.ogg"
+    },
+    {
+      "id": "word-pen",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/pen.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "10374cef582abf367c6ddf8545922677cb67483203b5d07c2125471978cbfd4a",
+      "path": "sources/word-pen.ogg"
+    },
+    {
+      "id": "word-pig",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/pig.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "3b21db6badb0826d1a3592063464e295c6f28213e1043e1a9c35bf3632a6e9ed",
+      "path": "sources/word-pig.ogg"
+    },
+    {
+      "id": "word-bib",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bib.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "166070fbb7f2367ed678b1200a9cf8847e16d8a7f7c04e67b2d58ac6291ed636",
+      "path": "sources/word-bib.ogg"
+    },
+    {
+      "id": "word-wig",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/wig.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "b383ef64a53adc72d0fdb0c95584af94822069224c2680851010f7cf127773ca",
+      "path": "sources/word-wig.ogg"
+    },
+    {
+      "id": "word-lip",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/lip.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "2958cf3ce54e6ff65ae63fa39aac839a059ed06d90c97a4bd6770c2cf2797b8f",
+      "path": "sources/word-lip.ogg"
+    },
+    {
+      "id": "word-dog",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/dog.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "6b0ac1172fef1b35b0428ffe11f17ef46f006c49ef453ae723db7300f99e3fa8",
+      "path": "sources/word-dog.ogg"
+    },
+    {
+      "id": "word-log",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/log.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "943280b6c0e760fadbc404acc22f5899be65ecc97763f0a8b37df58e3b459acd",
+      "path": "sources/word-log.ogg"
+    },
+    {
+      "id": "word-pot",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/pot.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "92e113cf7279d11d756ef1788e81b5b8ce4ab666a7ed230415c1a2d54df99cde",
+      "path": "sources/word-pot.ogg"
+    },
+    {
+      "id": "word-top",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/top.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "49f79ba4a9a74b1c0c9d301ff0e5697ad628191df5da638ba3e00f360409b85d",
+      "path": "sources/word-top.ogg"
+    },
+    {
+      "id": "word-mug",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/mug.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "48d1497de76b70bbf68e1b284c0e79d50fb84c1c1b42ae2631299422bc666592",
+      "path": "sources/word-mug.ogg"
+    },
+    {
+      "id": "word-sun",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/sun.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "ac8e8deb891e169d5b25f1710270c28b4fce7df053ace292f721f41f19633d96",
+      "path": "sources/word-sun.ogg"
+    },
+    {
+      "id": "word-bus",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bus.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "sha256": "e20f1a79831debf06a101308e0d9e0fd837603c8100a6e25c53612920f7265b3",
+      "path": "sources/word-bus.ogg"
+    },
+    {
+      "id": "word-bug",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bug.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "a0f211886a8d8ec6ca1e2fceb9b461a5c553b18d43e515f47646b4da3baaa681",
+      "path": "sources/word-bug.ogg"
+    },
+    {
+      "id": "word-ship",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/ship.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "cc055eded4220ae8f59c410e3e772fe2240be656b864a1582b016399e0c406df",
+      "path": "sources/word-ship.ogg"
+    },
+    {
+      "id": "word-fish",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/fish.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "e5393f8b78cec9cc1dfc810ccfe5805041a16940d8861723d612d867905ac1bd",
+      "path": "sources/word-fish.ogg"
+    },
+    {
+      "id": "word-duck",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/duck.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "c28e1562574b1cb41e2062a88fe072a4529555830bcffb717d18510e2dd45e2f",
+      "path": "sources/word-duck.ogg"
+    },
+    {
+      "id": "word-sock",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/sock.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "48b088d113558ad0d92b66a2fce2ff4543cbc949082893050d5922cd60cca401",
+      "path": "sources/word-sock.ogg"
+    },
+    {
+      "id": "word-hand",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/hand.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "31b2cca57e952a743a802c525d647988a23020ac2e6653a37320dbb7872ef4a0",
+      "path": "sources/word-hand.ogg"
+    },
+    {
+      "id": "word-tent",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/tent.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "sha256": "e32d0509af137eb0d484d202829b19c52c12342bdb37fed94ddef1d9c48b5dfc",
+      "path": "sources/word-tent.ogg"
+    },
+    {
+      "id": "word-frog",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/frog.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "95ea7c50fcfd1486fc3c133281ef9299535a03e0de7c9233b5e374a21b6a932c",
+      "path": "sources/word-frog.ogg"
+    },
+    {
+      "id": "word-drum",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/drum.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": "http://www.art4apps.org/ Creative Common License BY-SA",
+      "sha256": "2f25fcbe237e84822f1b0788a10ffccd313829c76c40d17ed93af47b4499e252",
+      "path": "sources/word-drum.ogg"
+    },
+    {
+      "id": "sound-a",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/a.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "5ba2a50bd9ef5c06e5f4ee418a52a3e14dc3f201cf58a939bff8e97192376326",
+      "path": "sources/sound-a.m4a"
+    },
+    {
+      "id": "sound-b",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/b.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "029bd6e63ea0aa9aebc05972d4d46a83357cf2e063005fefeeabc18c56d79a48",
+      "path": "sources/sound-b.m4a"
+    },
+    {
+      "id": "sound-c",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/c.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "1ab408a75985a50b0991191a08508ade3d88331bbb26ac6272e234f3678db6e9",
+      "path": "sources/sound-c.m4a"
+    },
+    {
+      "id": "sound-d",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/d.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "5ceef9e3ec28791c28e6bf5f7aa20fddfad7c316154f5625cbb05cc3f107e8a6",
+      "path": "sources/sound-d.m4a"
+    },
+    {
+      "id": "sound-e",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/e.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "a7c1235328a1254a74346b9b9d1720c51b7e7a7a07a818037fb6e6690441bad3",
+      "path": "sources/sound-e.m4a"
+    },
+    {
+      "id": "sound-f",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/f.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "33659a534bcf7a3cbed8270a1bc3b93795cd4f49488f61f24a00257df80b186b",
+      "path": "sources/sound-f.m4a"
+    },
+    {
+      "id": "sound-g",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/g.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "22b5648fc56f950b5126b536a82285bf651b74af9e20927b22c504ac31a27863",
+      "path": "sources/sound-g.m4a"
+    },
+    {
+      "id": "sound-h",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/h.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "ee1a767807ec2255f3c9f1cb11102bcc9eef65b746b8e5eba2f46f39ec0c2cdf",
+      "path": "sources/sound-h.m4a"
+    },
+    {
+      "id": "sound-i",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/i.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "fd02de038dbb219fcabe2bd60184562671926c6cd3e1e671d702d5c99582aede",
+      "path": "sources/sound-i.m4a"
+    },
+    {
+      "id": "sound-j",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/j.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "b438fe63dec6f2a21893851c7b27c2fec67f7a1e1c40615b7065ef353327a748",
+      "path": "sources/sound-j.m4a"
+    },
+    {
+      "id": "sound-l",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/l.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "ff543f1564751ea189033900c0fbdec1874aaf95f7b4f12140499e0b9a6b1934",
+      "path": "sources/sound-l.m4a"
+    },
+    {
+      "id": "sound-m",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/m.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "5c9162a47b2a424a209bef5e5156f50fcbffc6dbb1e7ce34e5fc92bf92e8ce39",
+      "path": "sources/sound-m.m4a"
+    },
+    {
+      "id": "sound-n",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/n.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "8d4bf46c1409fb084da034265560a0dc4aea51c401ed05b44ed39c99f28ff110",
+      "path": "sources/sound-n.m4a"
+    },
+    {
+      "id": "sound-o",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/o.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "7feab9246a3cf82cd11ca87515e8d895387ee0b9e768e76cc43157c77f11044c",
+      "path": "sources/sound-o.m4a"
+    },
+    {
+      "id": "sound-p",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/p.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "83ad47c0f4cf544575850a3e117d6d7337be94e20431e63fed505b97cf6eb347",
+      "path": "sources/sound-p.m4a"
+    },
+    {
+      "id": "sound-qu",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/qu.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "98a91925c678ac68c2624f3fc51f79d539fd5ca0927d3282cb3f6e09f3081947",
+      "path": "sources/sound-qu.m4a"
+    },
+    {
+      "id": "sound-r",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/r.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "4f04554d5d4a9b61646ec4d94f6f6508708b977a8f578fc6406f23b956098506",
+      "path": "sources/sound-r.m4a"
+    },
+    {
+      "id": "sound-s",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/s.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "9cf75bbb7844dea796c953da59fb4be35b7d6b4ad67e6fbbb71ebd7a7d1da9ed",
+      "path": "sources/sound-s.m4a"
+    },
+    {
+      "id": "sound-sh",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/sh.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "b4f95325daa1d76434c2d7f580458c3de6a34fece14c5e320f36f38bc4b39817",
+      "path": "sources/sound-sh.m4a"
+    },
+    {
+      "id": "sound-t",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/t.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "1764fed487d8bcb93b43f3491636c3309aa7f357aaf42c8a5e2f7dd75aba06ea",
+      "path": "sources/sound-t.m4a"
+    },
+    {
+      "id": "sound-u",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/u.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "b29c0b43b64c9f385170d3246b5e834e89128f56dc6238dfdf08836a8149e23d",
+      "path": "sources/sound-u.m4a"
+    },
+    {
+      "id": "sound-v",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/v.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "0852135f2dfe8dfdaf6e13a991630dc823af326a8b73c1c982c257c8b98e63bd",
+      "path": "sources/sound-v.m4a"
+    },
+    {
+      "id": "sound-w",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/w.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "d03e2e9e0091524e33af822d54a61135f13686c07810a5e7c0ff5a185e07b859",
+      "path": "sources/sound-w.m4a"
+    },
+    {
+      "id": "sound-x",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/x.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "d920aae7ddc6000c63391244227e9f88a264837eb57f4fb3e0c741b9616f7a14",
+      "path": "sources/sound-x.m4a"
+    },
+    {
+      "id": "sound-y",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/y.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "27727c6abbaa65e47d2099d2c40deeb3aea830db5e3476c3cc8bad4b1b23d231",
+      "path": "sources/sound-y.m4a"
+    },
+    {
+      "id": "sound-z",
+      "source_url": "https://raw.githubusercontent.com/hellodeborahuk/buzzphonics/f51eeb71cba61334328a37e6eda9733a89ffcb82/public/sounds/z.m4a",
+      "revision": "f51eeb71cba61334328a37e6eda9733a89ffcb82",
+      "license": "MIT",
+      "credit": "Debbie Dann, Buzzphonics, 2022",
+      "sha256": "1ab9ea6676b38d3d2bea58f76c7da41d2f68f573c00b4bbc7bc7cf6bbb5e5a2f",
+      "path": "sources/sound-z.m4a"
+    },
+    {
+      "id": "name-a",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0061.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "41b716c09aa0fe7a666bb6ce524b1ae1e6d77862bab4d17195e526a1f73b2375",
+      "path": "sources/name-a.ogg"
+    },
+    {
+      "id": "name-b",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0062.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "35022ebed626efa3a2f9bc424d0058480af79a4c7c21e4121ce56a7dddd3420f",
+      "path": "sources/name-b.ogg"
+    },
+    {
+      "id": "name-c",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0063.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "7e9cd7ee7bb7de4ea48f82a198fa48221d53802496c2a8f3de1ea4d3e07e1269",
+      "path": "sources/name-c.ogg"
+    },
+    {
+      "id": "name-d",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0064.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "87d7c0314b60f051c041593e8e1cb7d7ca98ab942e0f0353b83c1223d746bf7e",
+      "path": "sources/name-d.ogg"
+    },
+    {
+      "id": "name-e",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0065.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "bb902b7aece752e55d65c09994f2bc7eeb56e7e5dc4f224b4bdb7dcf4fda919f",
+      "path": "sources/name-e.ogg"
+    },
+    {
+      "id": "name-f",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0066.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "8eca49123a5654a342e64f0ee54408847f0da4c33f0e49b1b8e135d0a8db759f",
+      "path": "sources/name-f.ogg"
+    },
+    {
+      "id": "name-g",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0067.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "96ce79afef828496b332f17d032c5106aec079f7c0754edf24d16016942b4748",
+      "path": "sources/name-g.ogg"
+    },
+    {
+      "id": "name-h",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0068.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "868f604d494799da0d8bed554ab3433b23960208d94e72ae2270373fdf0091c3",
+      "path": "sources/name-h.ogg"
+    },
+    {
+      "id": "name-i",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0069.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "c74338398d758851064b789517ca419aa1b8e3795f44b3a3dfd82c4df1d5296e",
+      "path": "sources/name-i.ogg"
+    },
+    {
+      "id": "name-j",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U006A.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "81508780d116949c7ac884b6fbc2088af27e3349ed7a6cddc5d2358c0b3dd2c7",
+      "path": "sources/name-j.ogg"
+    },
+    {
+      "id": "name-k",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U006B.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "e554bc17052cc8cd673c207467f57042ac1d0a97cfa60f911f49eb9160031674",
+      "path": "sources/name-k.ogg"
+    },
+    {
+      "id": "name-l",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U006C.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "c06849a00ddd81f79df49ccb8150c70dd906dfc7fa13653664c0c5fd40cb4a79",
+      "path": "sources/name-l.ogg"
+    },
+    {
+      "id": "name-m",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U006D.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "63c5acc64f592abfa86e908b3b70b7df5b357f8d9e8d9dbe4afc02d429ff6353",
+      "path": "sources/name-m.ogg"
+    },
+    {
+      "id": "name-n",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U006E.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "52244681f3c8879c7a013f7eceadd26775663b56d2740b2500185cd83bffc8de",
+      "path": "sources/name-n.ogg"
+    },
+    {
+      "id": "name-o",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U006F.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "d90ad73be0622362afa9af0aecaf7f27342d67c2f7654665d16d906e726eccd7",
+      "path": "sources/name-o.ogg"
+    },
+    {
+      "id": "name-p",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0070.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "d99336e9399fb5653b619c83e18fa40905ee2c67fe31a67351e28bfc599b1cab",
+      "path": "sources/name-p.ogg"
+    },
+    {
+      "id": "name-q",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0071.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "c61933874fd889a7ccba8934eeff4ad8ace53e18eb2e499e29840b77abff41e2",
+      "path": "sources/name-q.ogg"
+    },
+    {
+      "id": "name-r",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0072.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "d9aa7913fb3c7ba2a55a0e4ad677e8e7fad7651546f7800002abe646480740c6",
+      "path": "sources/name-r.ogg"
+    },
+    {
+      "id": "name-s",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0073.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "0244144f6274270ee7e10cecbf6e3907dc032fc6b2b447be842506674708f2c3",
+      "path": "sources/name-s.ogg"
+    },
+    {
+      "id": "name-t",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0074.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "42e513c14363e1cf5a1de58c6a17d6731cc413c09e70c0b4b32d24edcb9eab9a",
+      "path": "sources/name-t.ogg"
+    },
+    {
+      "id": "name-u",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0075.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "f9069c35f494bda7a3dbf2a8d6c2e76d4f146a700bc30fd676ac6bb4ba55d024",
+      "path": "sources/name-u.ogg"
+    },
+    {
+      "id": "name-v",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0076.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "9f2c83a1061620415e93bf6fcd078b5c59b15fdd59b8418710d2afa332bfc2a4",
+      "path": "sources/name-v.ogg"
+    },
+    {
+      "id": "name-w",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0077.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "8d08e09ac5edd27fad15a7dc077a99f2abb69f63cff4576cd81c2de689335f50",
+      "path": "sources/name-w.ogg"
+    },
+    {
+      "id": "name-x",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0078.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "05b18eee2039a1e0db0206296fe878076ede0e5024c067752c0d026e5436553e",
+      "path": "sources/name-x.ogg"
+    },
+    {
+      "id": "name-y",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U0079.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "c0bf5fedceafb617e49190e0e90f7acc36b8d9154288c4f1fc1f4907d6b45898",
+      "path": "sources/name-y.ogg"
+    },
+    {
+      "id": "name-z",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/alphabet/U007A.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": "Joshua Shreve, GCompris, 2019",
+      "sha256": "1c26b30eecfe723c3c698eeb694ceeb63db49c267a705fd26e47674f6ea5ddc1",
+      "path": "sources/name-z.ogg"
+    },
+    {
+      "id": "image-cat",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F408.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F408.svg",
+      "sha256": "d028cef4726d15bc5c84ff1751db9d90c35d990151972a5f044afd53691beff6",
+      "path": "sources/image-cat.svg"
+    },
+    {
+      "id": "image-dog",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F415.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F415.svg",
+      "sha256": "a01131556b1f472f2be150b5e61bb77e4ffed96bbdbc9b60ac4a36b62ffac2a3",
+      "path": "sources/image-dog.svg"
+    },
+    {
+      "id": "image-pig",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F416.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F416.svg",
+      "sha256": "7a45c52cac97fc3bfb9c4317ee102da490ac5a8d860a41821378d346ee4ca5ca",
+      "path": "sources/image-pig.svg"
+    },
+    {
+      "id": "image-hen",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F414.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F414.svg",
+      "sha256": "b82358e421aeea61cc1887cde78591fe1472d1b9b5c7474cf658f645af764aaf",
+      "path": "sources/image-hen.svg"
+    },
+    {
+      "id": "image-bug",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F41B.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F41B.svg",
+      "sha256": "a79fa1119c3acc39328d6c3641bd0e4d8865962982db65022e53f0bbcaf4896b",
+      "path": "sources/image-bug.svg"
+    },
+    {
+      "id": "image-fish",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F41F.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F41F.svg",
+      "sha256": "7a7ce0d35b38b61549bf1ab5342df3a443d9974d138fa95b5abdc3ce9b6e8cdf",
+      "path": "sources/image-fish.svg"
+    },
+    {
+      "id": "image-duck",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F986.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F986.svg",
+      "sha256": "2868892a8885544800ffefc1a9282c68e1a706066ec955493d30bc72d76281e3",
+      "path": "sources/image-duck.svg"
+    },
+    {
+      "id": "image-frog",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F438.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F438.svg",
+      "sha256": "9cca6f554d546844956436783f43cdd959ace53db44d9335101c8e5cf13d03df",
+      "path": "sources/image-frog.svg"
+    },
+    {
+      "id": "image-sun",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/2600.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "2600.svg",
+      "sha256": "cf039475b1c737bd355572478013138e602814dae141928f7d50d819080ac4ab",
+      "path": "sources/image-sun.svg"
+    },
+    {
+      "id": "image-hat",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F3A9.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F3A9.svg",
+      "sha256": "a02b3ac7511f87b39bfb1c9e89b23dcc7d4ec220dc486879bd11633cdb9912d4",
+      "path": "sources/image-hat.svg"
+    },
+    {
+      "id": "image-cap",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F9E2.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F9E2.svg",
+      "sha256": "7566d62615ae3944b9354a9ef3fcd5f3bfd2da11418dc214c53c4e41feb49919",
+      "path": "sources/image-cap.svg"
+    },
+    {
+      "id": "image-map",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F5FA.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F5FA.svg",
+      "sha256": "478e6d091b16a4869265164677e8f9d6e38af0e94ec53416e85c21f7e63adb9e",
+      "path": "sources/image-map.svg"
+    },
+    {
+      "id": "image-bed",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F6CF.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F6CF.svg",
+      "sha256": "6481c97dbd993b85d8ee1dc47ceab345b4bce7017dbd9d4545d6adaad1fec583",
+      "path": "sources/image-bed.svg"
+    },
+    {
+      "id": "image-bus",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F68C.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F68C.svg",
+      "sha256": "7cb121f1c5b89588f9506e455778e54b527ed244fc321dd6bcee416f8df39be3",
+      "path": "sources/image-bus.svg"
+    },
+    {
+      "id": "image-ship",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F6A2.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F6A2.svg",
+      "sha256": "d79c59ec9ec4ad870cb082d86fea121c30a3855e3e9e18f047d926de4549585a",
+      "path": "sources/image-ship.svg"
+    },
+    {
+      "id": "image-sock",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F9E6.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F9E6.svg",
+      "sha256": "79696d9efc7a7345cb50aca49a2ac8d3ddb3b0dc76cebc41fed5890b6ff88c53",
+      "path": "sources/image-sock.svg"
+    },
+    {
+      "id": "image-hand",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/270B.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "270B.svg",
+      "sha256": "2582aa357f5f7e59674ee0594a1630d8750cc86e491e919533359af36e45e1fd",
+      "path": "sources/image-hand.svg"
+    },
+    {
+      "id": "image-tent",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/26FA.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "26FA.svg",
+      "sha256": "892bbaa52ee3120d35a070786a807db21ab354199bdcbba986d59680723c5d23",
+      "path": "sources/image-tent.svg"
+    },
+    {
+      "id": "image-drum",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F941.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F941.svg",
+      "sha256": "8ed2c0355fa2910e9acd931ce6a7c8ae7731302292005466ceb25ec363501c7f",
+      "path": "sources/image-drum.svg"
+    },
+    {
+      "id": "image-apple",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F34E.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F34E.svg",
+      "sha256": "b4db458333fa917a803c8d36865ae57ae5ea54d2aa0e1f906518d3f0c9bf2bcb",
+      "path": "sources/image-apple.svg"
+    },
+    {
+      "id": "image-egg",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F95A.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F95A.svg",
+      "sha256": "a1a2840383bdf9cf3732903e66733ef7f9e5cd6da8212d15d92bfbfca5d1d5af",
+      "path": "sources/image-egg.svg"
+    },
+    {
+      "id": "image-goat",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F410.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F410.svg",
+      "sha256": "527f244cb58a59d005b57a024709e9b2ae8ab4460d6c085eaab0334337fbe789",
+      "path": "sources/image-goat.svg"
+    },
+    {
+      "id": "image-key",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F511.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F511.svg",
+      "sha256": "950ab0db97d2b474167dfbfb3af35a66fe7c34de071ed435168d35db3cff16ac",
+      "path": "sources/image-key.svg"
+    },
+    {
+      "id": "image-octopus",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F419.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F419.svg",
+      "sha256": "e193d8d3890788d14d99b9c77dc409b091e99258d7d45bf1ad00359671858c93",
+      "path": "sources/image-octopus.svg"
+    },
+    {
+      "id": "image-rat",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F400.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F400.svg",
+      "sha256": "44184be852d839af0756f18a74e799ce4dcd51a555873559955cb4dc2755c8cf",
+      "path": "sources/image-rat.svg"
+    },
+    {
+      "id": "image-umbrella",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/2602.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "2602.svg",
+      "sha256": "bf5b227c1702f9b87d329c470dd86f3c7e244f6e90134289eb358d679453ca8b",
+      "path": "sources/image-umbrella.svg"
+    },
+    {
+      "id": "image-violin",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F3BB.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F3BB.svg",
+      "sha256": "c102ead9f8f8788087257d50b4d3fc73ec228ec45f37c8b243cd7a911bea0e38",
+      "path": "sources/image-violin.svg"
+    },
+    {
+      "id": "image-web",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F578.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F578.svg",
+      "sha256": "1b23b3392633ddde2b82fc6fc7b983598303bf95fd993454782518bcba45ecfb",
+      "path": "sources/image-web.svg"
+    },
+    {
+      "id": "image-box",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F4E6.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F4E6.svg",
+      "sha256": "39a2b6ed185c127b0f100397bd95ceaf6a0c12233c0533a0c43916be384fcf52",
+      "path": "sources/image-box.svg"
+    },
+    {
+      "id": "image-yarn",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F9F6.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F9F6.svg",
+      "sha256": "efa3c50a1628c21c4454163e90b4be80ab903edfe1b408fc45bbfea3ed272e2b",
+      "path": "sources/image-yarn.svg"
+    },
+    {
+      "id": "image-zebra",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F993.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "original_filename": "1F993.svg",
+      "sha256": "1babbd1aedf369114357086296a93f045c4a2252d59e856deb628796c8325105",
+      "path": "sources/image-zebra.svg"
+    },
+    {
+      "id": "image-mat",
+      "path": "sources/image-mat.svg",
+      "sha256": "c26cd61efcb5eaaee759e3e39bfe792af2748b576166358dc963d826098cc1b6",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-pan",
+      "path": "sources/image-pan.svg",
+      "sha256": "147d0da48916d0e25ae81c34c60acd3b97a13577900bad61d556f6e4c860f7ca",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-net",
+      "path": "sources/image-net.svg",
+      "sha256": "e787bacb9a805be1f224d62f46ec851fb21c708646d5c6fb73bc5077d5c81bbe",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-pen",
+      "path": "sources/image-pen.svg",
+      "sha256": "edf3465cc4213996f0aee7fa993eae611a40abaccd504121c0359b8ecf4224a4",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-bib",
+      "path": "sources/image-bib.svg",
+      "sha256": "3072db5bf76aa37f2ea1a2be6b04a8c7cf9b7bfa3b8b0b698bccbce5bb50457a",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-wig",
+      "path": "sources/image-wig.svg",
+      "sha256": "3557347f9311c865a910e7389e50bb50044187326e061ab2ae170d4a09779602",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-lip",
+      "path": "sources/image-lip.svg",
+      "sha256": "2c3ab6656258cb35aa136980fdeb4f5a81ac3e700170895b18bc3c93ff0dbfdb",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-log",
+      "path": "sources/image-log.svg",
+      "sha256": "586bbe6e461f53de0cc7a84c769fed9326cfe72dade80a59048a96a132f9faba",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-pot",
+      "path": "sources/image-pot.svg",
+      "sha256": "b68af98a50011ae8d67d3ac4d5c2458381454f7bdb9ab22f74e9ecdaf4c17a30",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-top",
+      "path": "sources/image-top.svg",
+      "sha256": "c0838ae8ffb2aad8dd6f29a925d94b0b37ad2f2e30f4f0a2731bad269119f9be",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-mug",
+      "path": "sources/image-mug.svg",
+      "sha256": "aeb8fd22c90769b501f45cff25e131729f2737671803a9886e5abb03a6eb5c40",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-ink",
+      "path": "sources/image-ink.svg",
+      "sha256": "1b2df61920fed1b99bf9d8d5c72061e3d9c19ffed8d13f2a23882ffe3eba4492",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-jam",
+      "path": "sources/image-jam.svg",
+      "sha256": "b9d99a8c70647cc5a582542f42a4991d2eeb8831d8fff2026099c1882a7fe2e4",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-quilt",
+      "path": "sources/image-quilt.svg",
+      "sha256": "4bc8d942e49d544239a30aa4531e1b05533d4582cec93bd585c15fa68386b724",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    }
+  ]
+}

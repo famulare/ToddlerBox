@@ -1,0 +1,4237 @@
+{
+  "schema_version": 1,
+  "sample_rate": 44100,
+  "cards": [
+    {
+      "id": "word-cat",
+      "kind": "words",
+      "text": "cat",
+      "units": [
+        "c",
+        "a",
+        "t"
+      ],
+      "sets": [
+        "short_a_cvc"
+      ],
+      "image": "images/cat.png",
+      "sequence": {
+        "path": "audio/sequence-cat.wav",
+        "frames": 233763,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 61823,
+            "unit": 0
+          },
+          {
+            "start": 73760,
+            "end": 98009,
+            "unit": 1
+          },
+          {
+            "start": 113443,
+            "end": 169245,
+            "unit": 2
+          },
+          {
+            "start": 191233,
+            "end": 233716,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-cat.wav",
+        "frames": 46080,
+        "cues": [
+          {
+            "start": 3550,
+            "end": 46033,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-hat",
+      "kind": "words",
+      "text": "hat",
+      "units": [
+        "h",
+        "a",
+        "t"
+      ],
+      "sets": [
+        "short_a_cvc"
+      ],
+      "image": "images/hat.png",
+      "sequence": {
+        "path": "audio/sequence-hat.wav",
+        "frames": 233443,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64942,
+            "unit": 0
+          },
+          {
+            "start": 76896,
+            "end": 101145,
+            "unit": 1
+          },
+          {
+            "start": 116579,
+            "end": 172381,
+            "unit": 2
+          },
+          {
+            "start": 194281,
+            "end": 229592,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-hat.wav",
+        "frames": 42624,
+        "cues": [
+          {
+            "start": 3462,
+            "end": 38773,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-mat",
+      "kind": "words",
+      "text": "mat",
+      "units": [
+        "m",
+        "a",
+        "t"
+      ],
+      "sets": [
+        "short_a_cvc"
+      ],
+      "image": "images/mat.png",
+      "sequence": {
+        "path": "audio/sequence-mat.wav",
+        "frames": 249876,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 84347,
+            "unit": 0
+          },
+          {
+            "start": 95633,
+            "end": 119882,
+            "unit": 1
+          },
+          {
+            "start": 135316,
+            "end": 191118,
+            "unit": 2
+          },
+          {
+            "start": 213022,
+            "end": 247459,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-mat.wav",
+        "frames": 40320,
+        "cues": [
+          {
+            "start": 3466,
+            "end": 37903,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-map",
+      "kind": "words",
+      "text": "map",
+      "units": [
+        "m",
+        "a",
+        "p"
+      ],
+      "sets": [
+        "short_a_cvc"
+      ],
+      "image": "images/map.png",
+      "sequence": {
+        "path": "audio/sequence-map.wav",
+        "frames": 255847,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 84347,
+            "unit": 0
+          },
+          {
+            "start": 95633,
+            "end": 119882,
+            "unit": 1
+          },
+          {
+            "start": 135317,
+            "end": 195415,
+            "unit": 2
+          },
+          {
+            "start": 216027,
+            "end": 253187,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-map.wav",
+        "frames": 42624,
+        "cues": [
+          {
+            "start": 2804,
+            "end": 39964,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-cap",
+      "kind": "words",
+      "text": "cap",
+      "units": [
+        "c",
+        "a",
+        "p"
+      ],
+      "sets": [
+        "short_a_cvc"
+      ],
+      "image": "images/cap.png",
+      "sequence": {
+        "path": "audio/sequence-cap.wav",
+        "frames": 232822,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 61823,
+            "unit": 0
+          },
+          {
+            "start": 73760,
+            "end": 98009,
+            "unit": 1
+          },
+          {
+            "start": 113444,
+            "end": 173542,
+            "unit": 2
+          },
+          {
+            "start": 194061,
+            "end": 231307,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-cap.wav",
+        "frames": 41472,
+        "cues": [
+          {
+            "start": 2711,
+            "end": 39957,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-pan",
+      "kind": "words",
+      "text": "pan",
+      "units": [
+        "p",
+        "a",
+        "n"
+      ],
+      "sets": [
+        "short_a_cvc"
+      ],
+      "image": "images/pan.png",
+      "sequence": {
+        "path": "audio/sequence-pan.wav",
+        "frames": 235054,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64508,
+            "unit": 0
+          },
+          {
+            "start": 75701,
+            "end": 99950,
+            "unit": 1
+          },
+          {
+            "start": 115385,
+            "end": 179806,
+            "unit": 2
+          },
+          {
+            "start": 201034,
+            "end": 232742,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-pan.wav",
+        "frames": 36864,
+        "cues": [
+          {
+            "start": 2844,
+            "end": 34552,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-bed",
+      "kind": "words",
+      "text": "bed",
+      "units": [
+        "b",
+        "e",
+        "d"
+      ],
+      "sets": [
+        "short_e_cvc"
+      ],
+      "image": "images/bed.png",
+      "sequence": {
+        "path": "audio/sequence-bed.wav",
+        "frames": 243187,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41666,
+            "unit": 0
+          },
+          {
+            "start": 57101,
+            "end": 109370,
+            "unit": 1
+          },
+          {
+            "start": 122836,
+            "end": 188831,
+            "unit": 2
+          },
+          {
+            "start": 210187,
+            "end": 238777,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-bed.wav",
+        "frames": 35603,
+        "cues": [
+          {
+            "start": 2603,
+            "end": 31193,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-hen",
+      "kind": "words",
+      "text": "hen",
+      "units": [
+        "h",
+        "e",
+        "n"
+      ],
+      "sets": [
+        "short_e_cvc"
+      ],
+      "image": "images/hen.png",
+      "sequence": {
+        "path": "audio/sequence-hen.wav",
+        "frames": 265756,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64942,
+            "unit": 0
+          },
+          {
+            "start": 76896,
+            "end": 129165,
+            "unit": 1
+          },
+          {
+            "start": 142631,
+            "end": 207052,
+            "unit": 2
+          },
+          {
+            "start": 227988,
+            "end": 264736,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-hen.wav",
+        "frames": 40320,
+        "cues": [
+          {
+            "start": 2552,
+            "end": 39300,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-net",
+      "kind": "words",
+      "text": "net",
+      "units": [
+        "n",
+        "e",
+        "t"
+      ],
+      "sets": [
+        "short_e_cvc"
+      ],
+      "image": "images/net.png",
+      "sequence": {
+        "path": "audio/sequence-net.wav",
+        "frames": 255134,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 68831,
+            "unit": 0
+          },
+          {
+            "start": 80600,
+            "end": 132869,
+            "unit": 1
+          },
+          {
+            "start": 146334,
+            "end": 202136,
+            "unit": 2
+          },
+          {
+            "start": 221825,
+            "end": 253444,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-net.wav",
+        "frames": 34560,
+        "cues": [
+          {
+            "start": 1251,
+            "end": 32870,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-pen",
+      "kind": "words",
+      "text": "pen",
+      "units": [
+        "p",
+        "e",
+        "n"
+      ],
+      "sets": [
+        "short_e_cvc"
+      ],
+      "image": "images/pen.png",
+      "sequence": {
+        "path": "audio/sequence-pen.wav",
+        "frames": 265713,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64508,
+            "unit": 0
+          },
+          {
+            "start": 75701,
+            "end": 127970,
+            "unit": 1
+          },
+          {
+            "start": 141436,
+            "end": 205857,
+            "unit": 2
+          },
+          {
+            "start": 226826,
+            "end": 263508,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-pen.wav",
+        "frames": 41472,
+        "cues": [
+          {
+            "start": 2585,
+            "end": 39267,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-pig",
+      "kind": "words",
+      "text": "pig",
+      "units": [
+        "p",
+        "i",
+        "g"
+      ],
+      "sets": [
+        "short_i_cvc"
+      ],
+      "image": "images/pig.png",
+      "sequence": {
+        "path": "audio/sequence-pig.wav",
+        "frames": 254042,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64508,
+            "unit": 0
+          },
+          {
+            "start": 75701,
+            "end": 121806,
+            "unit": 1
+          },
+          {
+            "start": 137241,
+            "end": 203463,
+            "unit": 2
+          },
+          {
+            "start": 226375,
+            "end": 251858,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-pig.wav",
+        "frames": 32077,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 29893,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-bib",
+      "kind": "words",
+      "text": "bib",
+      "units": [
+        "b",
+        "i",
+        "b"
+      ],
+      "sets": [
+        "short_i_cvc"
+      ],
+      "image": "images/bib.png",
+      "sequence": {
+        "path": "audio/sequence-bib.wav",
+        "frames": 213258,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41666,
+            "unit": 0
+          },
+          {
+            "start": 57101,
+            "end": 103206,
+            "unit": 1
+          },
+          {
+            "start": 118641,
+            "end": 155897,
+            "unit": 2
+          },
+          {
+            "start": 180311,
+            "end": 208848,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-bib.wav",
+        "frames": 35311,
+        "cues": [
+          {
+            "start": 2364,
+            "end": 30901,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-wig",
+      "kind": "words",
+      "text": "wig",
+      "units": [
+        "w",
+        "i",
+        "g"
+      ],
+      "sets": [
+        "short_i_cvc"
+      ],
+      "image": "images/wig.png",
+      "sequence": {
+        "path": "audio/sequence-wig.wav",
+        "frames": 246775,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 57775,
+            "unit": 0
+          },
+          {
+            "start": 69407,
+            "end": 115512,
+            "unit": 1
+          },
+          {
+            "start": 130947,
+            "end": 197169,
+            "unit": 2
+          },
+          {
+            "start": 218015,
+            "end": 244926,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-wig.wav",
+        "frames": 31104,
+        "cues": [
+          {
+            "start": 2344,
+            "end": 29255,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-lip",
+      "kind": "words",
+      "text": "lip",
+      "units": [
+        "l",
+        "i",
+        "p"
+      ],
+      "sets": [
+        "short_i_cvc"
+      ],
+      "image": "images/lip.png",
+      "sequence": {
+        "path": "audio/sequence-lip.wav",
+        "frames": 258052,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64107,
+            "unit": 0
+          },
+          {
+            "start": 75982,
+            "end": 122087,
+            "unit": 1
+          },
+          {
+            "start": 137522,
+            "end": 197620,
+            "unit": 2
+          },
+          {
+            "start": 218717,
+            "end": 256783,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-lip.wav",
+        "frames": 42624,
+        "cues": [
+          {
+            "start": 3289,
+            "end": 41355,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-dog",
+      "kind": "words",
+      "text": "dog",
+      "units": [
+        "d",
+        "o",
+        "g"
+      ],
+      "sets": [
+        "short_o_cvc"
+      ],
+      "image": "images/dog.png",
+      "sequence": {
+        "path": "audio/sequence-dog.wav",
+        "frames": 273848,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 70405,
+            "unit": 0
+          },
+          {
+            "start": 82543,
+            "end": 134681,
+            "unit": 1
+          },
+          {
+            "start": 146500,
+            "end": 212722,
+            "unit": 2
+          },
+          {
+            "start": 233545,
+            "end": 272229,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-dog.wav",
+        "frames": 42624,
+        "cues": [
+          {
+            "start": 2321,
+            "end": 41005,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-log",
+      "kind": "words",
+      "text": "log",
+      "units": [
+        "l",
+        "o",
+        "g"
+      ],
+      "sets": [
+        "short_o_cvc"
+      ],
+      "image": "images/log.png",
+      "sequence": {
+        "path": "audio/sequence-log.wav",
+        "frames": 261813,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64107,
+            "unit": 0
+          },
+          {
+            "start": 75982,
+            "end": 128120,
+            "unit": 1
+          },
+          {
+            "start": 139939,
+            "end": 206161,
+            "unit": 2
+          },
+          {
+            "start": 229073,
+            "end": 258174,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-log.wav",
+        "frames": 37150,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 33511,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-pot",
+      "kind": "words",
+      "text": "pot",
+      "units": [
+        "p",
+        "o",
+        "t"
+      ],
+      "sets": [
+        "short_o_cvc"
+      ],
+      "image": "images/pot.png",
+      "sequence": {
+        "path": "audio/sequence-pot.wav",
+        "frames": 249246,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64508,
+            "unit": 0
+          },
+          {
+            "start": 75701,
+            "end": 127839,
+            "unit": 1
+          },
+          {
+            "start": 139657,
+            "end": 195459,
+            "unit": 2
+          },
+          {
+            "start": 218307,
+            "end": 247384,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-pot.wav",
+        "frames": 35349,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 33487,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-top",
+      "kind": "words",
+      "text": "top",
+      "units": [
+        "t",
+        "o",
+        "p"
+      ],
+      "sets": [
+        "short_o_cvc"
+      ],
+      "image": "images/top.png",
+      "sequence": {
+        "path": "audio/sequence-top.wav",
+        "frames": 247138,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 60211,
+            "unit": 0
+          },
+          {
+            "start": 72034,
+            "end": 124172,
+            "unit": 1
+          },
+          {
+            "start": 135991,
+            "end": 196089,
+            "unit": 2
+          },
+          {
+            "start": 218307,
+            "end": 245682,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-top.wav",
+        "frames": 33241,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 31785,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-mug",
+      "kind": "words",
+      "text": "mug",
+      "units": [
+        "m",
+        "u",
+        "g"
+      ],
+      "sets": [
+        "short_u_cvc"
+      ],
+      "image": "images/mug.png",
+      "sequence": {
+        "path": "audio/sequence-mug.wav",
+        "frames": 266163,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 84347,
+            "unit": 0
+          },
+          {
+            "start": 95632,
+            "end": 137452,
+            "unit": 1
+          },
+          {
+            "start": 149311,
+            "end": 215533,
+            "unit": 2
+          },
+          {
+            "start": 238445,
+            "end": 263458,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-mug.wav",
+        "frames": 32128,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 29423,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-sun",
+      "kind": "words",
+      "text": "sun",
+      "units": [
+        "s",
+        "u",
+        "n"
+      ],
+      "sets": [
+        "short_u_cvc"
+      ],
+      "image": "images/sun.png",
+      "sequence": {
+        "path": "audio/sequence-sun.wav",
+        "frames": 223760,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41890,
+            "unit": 0
+          },
+          {
+            "start": 57324,
+            "end": 99144,
+            "unit": 1
+          },
+          {
+            "start": 111003,
+            "end": 175424,
+            "unit": 2
+          },
+          {
+            "start": 195877,
+            "end": 220907,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-sun.wav",
+        "frames": 29952,
+        "cues": [
+          {
+            "start": 2069,
+            "end": 27099,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-bus",
+      "kind": "words",
+      "text": "bus",
+      "units": [
+        "b",
+        "u",
+        "s"
+      ],
+      "sets": [
+        "short_u_cvc"
+      ],
+      "image": "images/bus.png",
+      "sequence": {
+        "path": "audio/sequence-bus.wav",
+        "frames": 199463,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41666,
+            "unit": 0
+          },
+          {
+            "start": 57100,
+            "end": 98920,
+            "unit": 1
+          },
+          {
+            "start": 110779,
+            "end": 148259,
+            "unit": 2
+          },
+          {
+            "start": 174719,
+            "end": 195053,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-bus.wav",
+        "frames": 29154,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 24744,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-bug",
+      "kind": "words",
+      "text": "bug",
+      "units": [
+        "b",
+        "u",
+        "g"
+      ],
+      "sets": [
+        "short_u_cvc"
+      ],
+      "image": "images/bug.png",
+      "sequence": {
+        "path": "audio/sequence-bug.wav",
+        "frames": 243887,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41666,
+            "unit": 0
+          },
+          {
+            "start": 57100,
+            "end": 98920,
+            "unit": 1
+          },
+          {
+            "start": 110779,
+            "end": 177001,
+            "unit": 2
+          },
+          {
+            "start": 198347,
+            "end": 241093,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-bug.wav",
+        "frames": 48384,
+        "cues": [
+          {
+            "start": 2844,
+            "end": 45590,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-ship",
+      "kind": "words",
+      "text": "ship",
+      "units": [
+        "sh",
+        "i",
+        "p"
+      ],
+      "sets": [
+        "digraphs"
+      ],
+      "image": "images/ship.png",
+      "sequence": {
+        "path": "audio/sequence-ship.wav",
+        "frames": 237679,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 47601,
+            "unit": 0
+          },
+          {
+            "start": 59065,
+            "end": 105170,
+            "unit": 1
+          },
+          {
+            "start": 120605,
+            "end": 180703,
+            "unit": 2
+          },
+          {
+            "start": 199716,
+            "end": 236186,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-ship.wav",
+        "frames": 39168,
+        "cues": [
+          {
+            "start": 1205,
+            "end": 37675,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-fish",
+      "kind": "words",
+      "text": "fish",
+      "units": [
+        "f",
+        "i",
+        "sh"
+      ],
+      "sets": [
+        "digraphs"
+      ],
+      "image": "images/fish.png",
+      "sequence": {
+        "path": "audio/sequence-fish.wav",
+        "frames": 222608,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 50218,
+            "unit": 0
+          },
+          {
+            "start": 61782,
+            "end": 107887,
+            "unit": 1
+          },
+          {
+            "start": 123322,
+            "end": 166513,
+            "unit": 2
+          },
+          {
+            "start": 188548,
+            "end": 221055,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-fish.wav",
+        "frames": 38016,
+        "cues": [
+          {
+            "start": 3956,
+            "end": 36463,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-duck",
+      "kind": "words",
+      "text": "duck",
+      "units": [
+        "d",
+        "u",
+        "ck"
+      ],
+      "sets": [
+        "digraphs"
+      ],
+      "image": "images/duck.png",
+      "sequence": {
+        "path": "audio/sequence-duck.wav",
+        "frames": 252506,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 70405,
+            "unit": 0
+          },
+          {
+            "start": 82542,
+            "end": 124362,
+            "unit": 1
+          },
+          {
+            "start": 136221,
+            "end": 193634,
+            "unit": 2
+          },
+          {
+            "start": 214919,
+            "end": 250094,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-duck.wav",
+        "frames": 40320,
+        "cues": [
+          {
+            "start": 2733,
+            "end": 37908,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-sock",
+      "kind": "words",
+      "text": "sock",
+      "units": [
+        "s",
+        "o",
+        "ck"
+      ],
+      "sets": [
+        "digraphs"
+      ],
+      "image": "images/sock.png",
+      "sequence": {
+        "path": "audio/sequence-sock.wav",
+        "frames": 231106,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41890,
+            "unit": 0
+          },
+          {
+            "start": 57325,
+            "end": 109463,
+            "unit": 1
+          },
+          {
+            "start": 121282,
+            "end": 178695,
+            "unit": 2
+          },
+          {
+            "start": 201657,
+            "end": 229068,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-sock.wav",
+        "frames": 33859,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 31821,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-hand",
+      "kind": "words",
+      "text": "hand",
+      "units": [
+        "h",
+        "a",
+        "n",
+        "d"
+      ],
+      "sets": [
+        "adjacent_consonants"
+      ],
+      "image": "images/hand.png",
+      "sequence": {
+        "path": "audio/sequence-hand.wav",
+        "frames": 316686,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64942,
+            "unit": 0
+          },
+          {
+            "start": 76896,
+            "end": 101145,
+            "unit": 1
+          },
+          {
+            "start": 116580,
+            "end": 181001,
+            "unit": 2
+          },
+          {
+            "start": 192770,
+            "end": 258765,
+            "unit": 3
+          },
+          {
+            "start": 280264,
+            "end": 313438,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-hand.wav",
+        "frames": 39168,
+        "cues": [
+          {
+            "start": 2746,
+            "end": 35920,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-tent",
+      "kind": "words",
+      "text": "tent",
+      "units": [
+        "t",
+        "e",
+        "n",
+        "t"
+      ],
+      "sets": [
+        "adjacent_consonants"
+      ],
+      "image": "images/tent.png",
+      "sequence": {
+        "path": "audio/sequence-tent.wav",
+        "frames": 325336,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 60211,
+            "unit": 0
+          },
+          {
+            "start": 72034,
+            "end": 124303,
+            "unit": 1
+          },
+          {
+            "start": 137769,
+            "end": 202190,
+            "unit": 2
+          },
+          {
+            "start": 213958,
+            "end": 269760,
+            "unit": 3
+          },
+          {
+            "start": 292608,
+            "end": 320927,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-tent.wav",
+        "frames": 37138,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 32729,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-frog",
+      "kind": "words",
+      "text": "frog",
+      "units": [
+        "f",
+        "r",
+        "o",
+        "g"
+      ],
+      "sets": [
+        "adjacent_consonants"
+      ],
+      "image": "images/frog.png",
+      "sequence": {
+        "path": "audio/sequence-frog.wav",
+        "frames": 298404,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 50218,
+            "unit": 0
+          },
+          {
+            "start": 61781,
+            "end": 100463,
+            "unit": 1
+          },
+          {
+            "start": 111707,
+            "end": 163845,
+            "unit": 2
+          },
+          {
+            "start": 175664,
+            "end": 241886,
+            "unit": 3
+          },
+          {
+            "start": 263545,
+            "end": 298214,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-frog.wav",
+        "frames": 38016,
+        "cues": [
+          {
+            "start": 3157,
+            "end": 37826,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "word-drum",
+      "kind": "words",
+      "text": "drum",
+      "units": [
+        "d",
+        "r",
+        "u",
+        "m"
+      ],
+      "sets": [
+        "adjacent_consonants"
+      ],
+      "image": "images/drum.png",
+      "sequence": {
+        "path": "audio/sequence-drum.wav",
+        "frames": 327760,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 70405,
+            "unit": 0
+          },
+          {
+            "start": 82542,
+            "end": 121224,
+            "unit": 1
+          },
+          {
+            "start": 132467,
+            "end": 174287,
+            "unit": 2
+          },
+          {
+            "start": 186146,
+            "end": 266083,
+            "unit": 3
+          },
+          {
+            "start": 285655,
+            "end": 324467,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/word-drum.wav",
+        "frames": 43776,
+        "cues": [
+          {
+            "start": 1671,
+            "end": 40483,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-a-sounds",
+      "kind": "letters",
+      "text": "a",
+      "units": [
+        "a"
+      ],
+      "letter_audio": "sounds",
+      "example": "apple",
+      "image": "images/apple.png",
+      "sequence": {
+        "path": "audio/sound-a.wav",
+        "frames": 33069,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 28659,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-a.wav",
+        "frames": 33069,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 28659,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-a-names",
+      "kind": "letters",
+      "text": "a",
+      "units": [
+        "a"
+      ],
+      "letter_audio": "names",
+      "example": "apple",
+      "image": "images/apple.png",
+      "sequence": {
+        "path": "audio/name-a.wav",
+        "frames": 22016,
+        "cues": [
+          {
+            "start": 1269,
+            "end": 18152,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-a.wav",
+        "frames": 22016,
+        "cues": [
+          {
+            "start": 1269,
+            "end": 18152,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-b-sounds",
+      "kind": "letters",
+      "text": "b",
+      "units": [
+        "b"
+      ],
+      "letter_audio": "sounds",
+      "example": "bed",
+      "image": "images/bed.png",
+      "sequence": {
+        "path": "audio/sound-b.wav",
+        "frames": 46076,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41666,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-b.wav",
+        "frames": 46076,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41666,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-b-names",
+      "kind": "letters",
+      "text": "b",
+      "units": [
+        "b"
+      ],
+      "letter_audio": "names",
+      "example": "bed",
+      "image": "images/bed.png",
+      "sequence": {
+        "path": "audio/name-b.wav",
+        "frames": 20736,
+        "cues": [
+          {
+            "start": 950,
+            "end": 18951,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-b.wav",
+        "frames": 20736,
+        "cues": [
+          {
+            "start": 950,
+            "end": 18951,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-c-sounds",
+      "kind": "letters",
+      "text": "c",
+      "units": [
+        "c"
+      ],
+      "letter_audio": "sounds",
+      "example": "cat",
+      "image": "images/cat.png",
+      "sequence": {
+        "path": "audio/sound-c.wav",
+        "frames": 62735,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 61823,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-c.wav",
+        "frames": 62735,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 61823,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-c-names",
+      "kind": "letters",
+      "text": "c",
+      "units": [
+        "c"
+      ],
+      "letter_audio": "names",
+      "example": "cat",
+      "image": "images/cat.png",
+      "sequence": {
+        "path": "audio/name-c.wav",
+        "frames": 26112,
+        "cues": [
+          {
+            "start": 314,
+            "end": 22634,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-c.wav",
+        "frames": 26112,
+        "cues": [
+          {
+            "start": 314,
+            "end": 22634,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-d-sounds",
+      "kind": "letters",
+      "text": "d",
+      "units": [
+        "d"
+      ],
+      "letter_audio": "sounds",
+      "example": "dog",
+      "image": "images/dog.png",
+      "sequence": {
+        "path": "audio/sound-d.wav",
+        "frames": 71518,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 70405,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-d.wav",
+        "frames": 71518,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 70405,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-d-names",
+      "kind": "letters",
+      "text": "d",
+      "units": [
+        "d"
+      ],
+      "letter_audio": "names",
+      "example": "dog",
+      "image": "images/dog.png",
+      "sequence": {
+        "path": "audio/name-d.wav",
+        "frames": 19456,
+        "cues": [
+          {
+            "start": 1204,
+            "end": 19159,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-d.wav",
+        "frames": 19456,
+        "cues": [
+          {
+            "start": 1204,
+            "end": 19159,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-e-sounds",
+      "kind": "letters",
+      "text": "e",
+      "units": [
+        "e"
+      ],
+      "letter_audio": "sounds",
+      "example": "egg",
+      "image": "images/egg.png",
+      "sequence": {
+        "path": "audio/sound-e.wav",
+        "frames": 59120,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 56679,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-e.wav",
+        "frames": 59120,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 56679,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-e-names",
+      "kind": "letters",
+      "text": "e",
+      "units": [
+        "e"
+      ],
+      "letter_audio": "names",
+      "example": "egg",
+      "image": "images/egg.png",
+      "sequence": {
+        "path": "audio/name-e.wav",
+        "frames": 20608,
+        "cues": [
+          {
+            "start": 379,
+            "end": 19064,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-e.wav",
+        "frames": 20608,
+        "cues": [
+          {
+            "start": 379,
+            "end": 19064,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-f-sounds",
+      "kind": "letters",
+      "text": "f",
+      "units": [
+        "f"
+      ],
+      "letter_audio": "sounds",
+      "example": "fish",
+      "image": "images/fish.png",
+      "sequence": {
+        "path": "audio/sound-f.wav",
+        "frames": 50757,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 50218,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-f.wav",
+        "frames": 50757,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 50218,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-f-names",
+      "kind": "letters",
+      "text": "f",
+      "units": [
+        "f"
+      ],
+      "letter_audio": "names",
+      "example": "fish",
+      "image": "images/fish.png",
+      "sequence": {
+        "path": "audio/name-f.wav",
+        "frames": 24064,
+        "cues": [
+          {
+            "start": 964,
+            "end": 22576,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-f.wav",
+        "frames": 24064,
+        "cues": [
+          {
+            "start": 964,
+            "end": 22576,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-g-sounds",
+      "kind": "letters",
+      "text": "g",
+      "units": [
+        "g"
+      ],
+      "letter_audio": "sounds",
+      "example": "goat",
+      "image": "images/goat.png",
+      "sequence": {
+        "path": "audio/sound-g.wav",
+        "frames": 71494,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 70632,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-g.wav",
+        "frames": 71494,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 70632,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-g-names",
+      "kind": "letters",
+      "text": "g",
+      "units": [
+        "g"
+      ],
+      "letter_audio": "names",
+      "example": "goat",
+      "image": "images/goat.png",
+      "sequence": {
+        "path": "audio/name-g.wav",
+        "frames": 24192,
+        "cues": [
+          {
+            "start": 394,
+            "end": 22556,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-g.wav",
+        "frames": 24192,
+        "cues": [
+          {
+            "start": 394,
+            "end": 22556,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-h-sounds",
+      "kind": "letters",
+      "text": "h",
+      "units": [
+        "h"
+      ],
+      "letter_audio": "sounds",
+      "example": "hat",
+      "image": "images/hat.png",
+      "sequence": {
+        "path": "audio/sound-h.wav",
+        "frames": 65871,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64942,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-h.wav",
+        "frames": 65871,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64942,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-h-names",
+      "kind": "letters",
+      "text": "h",
+      "units": [
+        "h"
+      ],
+      "letter_audio": "names",
+      "example": "hat",
+      "image": "images/hat.png",
+      "sequence": {
+        "path": "audio/name-h.wav",
+        "frames": 22528,
+        "cues": [
+          {
+            "start": 494,
+            "end": 21420,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-h.wav",
+        "frames": 22528,
+        "cues": [
+          {
+            "start": 494,
+            "end": 21420,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-i-sounds",
+      "kind": "letters",
+      "text": "i",
+      "units": [
+        "i"
+      ],
+      "letter_audio": "sounds",
+      "example": "ink",
+      "image": "images/ink.png",
+      "sequence": {
+        "path": "audio/sound-i.wav",
+        "frames": 54925,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 50515,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-i.wav",
+        "frames": 54925,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 50515,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-i-names",
+      "kind": "letters",
+      "text": "i",
+      "units": [
+        "i"
+      ],
+      "letter_audio": "names",
+      "example": "ink",
+      "image": "images/ink.png",
+      "sequence": {
+        "path": "audio/name-i.wav",
+        "frames": 22016,
+        "cues": [
+          {
+            "start": 275,
+            "end": 19656,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-i.wav",
+        "frames": 22016,
+        "cues": [
+          {
+            "start": 275,
+            "end": 19656,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-j-sounds",
+      "kind": "letters",
+      "text": "j",
+      "units": [
+        "j"
+      ],
+      "letter_audio": "sounds",
+      "example": "jam",
+      "image": "images/jam.png",
+      "sequence": {
+        "path": "audio/sound-j.wav",
+        "frames": 40502,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 40221,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-j.wav",
+        "frames": 40502,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 40221,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-j-names",
+      "kind": "letters",
+      "text": "j",
+      "units": [
+        "j"
+      ],
+      "letter_audio": "names",
+      "example": "jam",
+      "image": "images/jam.png",
+      "sequence": {
+        "path": "audio/name-j.wav",
+        "frames": 25472,
+        "cues": [
+          {
+            "start": 828,
+            "end": 22976,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-j.wav",
+        "frames": 25472,
+        "cues": [
+          {
+            "start": 828,
+            "end": 22976,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-k-sounds",
+      "kind": "letters",
+      "text": "k",
+      "units": [
+        "k"
+      ],
+      "letter_audio": "sounds",
+      "example": "key",
+      "image": "images/key.png",
+      "sequence": {
+        "path": "audio/sound-c.wav",
+        "frames": 62735,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 61823,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-c.wav",
+        "frames": 62735,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 61823,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-k-names",
+      "kind": "letters",
+      "text": "k",
+      "units": [
+        "k"
+      ],
+      "letter_audio": "names",
+      "example": "key",
+      "image": "images/key.png",
+      "sequence": {
+        "path": "audio/name-k.wav",
+        "frames": 24576,
+        "cues": [
+          {
+            "start": 680,
+            "end": 21497,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-k.wav",
+        "frames": 24576,
+        "cues": [
+          {
+            "start": 680,
+            "end": 21497,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-l-sounds",
+      "kind": "letters",
+      "text": "l",
+      "units": [
+        "l"
+      ],
+      "letter_audio": "sounds",
+      "example": "log",
+      "image": "images/log.png",
+      "sequence": {
+        "path": "audio/sound-l.wav",
+        "frames": 64957,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64107,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-l.wav",
+        "frames": 64957,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64107,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-l-names",
+      "kind": "letters",
+      "text": "l",
+      "units": [
+        "l"
+      ],
+      "letter_audio": "names",
+      "example": "log",
+      "image": "images/log.png",
+      "sequence": {
+        "path": "audio/name-l.wav",
+        "frames": 23040,
+        "cues": [
+          {
+            "start": 329,
+            "end": 20675,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-l.wav",
+        "frames": 23040,
+        "cues": [
+          {
+            "start": 329,
+            "end": 20675,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-m-sounds",
+      "kind": "letters",
+      "text": "m",
+      "units": [
+        "m"
+      ],
+      "letter_audio": "sounds",
+      "example": "map",
+      "image": "images/map.png",
+      "sequence": {
+        "path": "audio/sound-m.wav",
+        "frames": 84608,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 84347,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-m.wav",
+        "frames": 84608,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 84347,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-m-names",
+      "kind": "letters",
+      "text": "m",
+      "units": [
+        "m"
+      ],
+      "letter_audio": "names",
+      "example": "map",
+      "image": "images/map.png",
+      "sequence": {
+        "path": "audio/name-m.wav",
+        "frames": 21376,
+        "cues": [
+          {
+            "start": 238,
+            "end": 19607,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-m.wav",
+        "frames": 21376,
+        "cues": [
+          {
+            "start": 238,
+            "end": 19607,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-n-sounds",
+      "kind": "letters",
+      "text": "n",
+      "units": [
+        "n"
+      ],
+      "letter_audio": "sounds",
+      "example": "net",
+      "image": "images/net.png",
+      "sequence": {
+        "path": "audio/sound-n.wav",
+        "frames": 69575,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 68831,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-n.wav",
+        "frames": 69575,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 68831,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-n-names",
+      "kind": "letters",
+      "text": "n",
+      "units": [
+        "n"
+      ],
+      "letter_audio": "names",
+      "example": "net",
+      "image": "images/net.png",
+      "sequence": {
+        "path": "audio/name-n.wav",
+        "frames": 22784,
+        "cues": [
+          {
+            "start": 124,
+            "end": 20989,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-n.wav",
+        "frames": 22784,
+        "cues": [
+          {
+            "start": 124,
+            "end": 20989,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-o-sounds",
+      "kind": "letters",
+      "text": "o",
+      "units": [
+        "o"
+      ],
+      "letter_audio": "sounds",
+      "example": "octopus",
+      "image": "images/octopus.png",
+      "sequence": {
+        "path": "audio/sound-o.wav",
+        "frames": 57342,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 56548,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-o.wav",
+        "frames": 57342,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 56548,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-o-names",
+      "kind": "letters",
+      "text": "o",
+      "units": [
+        "o"
+      ],
+      "letter_audio": "names",
+      "example": "octopus",
+      "image": "images/octopus.png",
+      "sequence": {
+        "path": "audio/name-o.wav",
+        "frames": 23680,
+        "cues": [
+          {
+            "start": 461,
+            "end": 22582,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-o.wav",
+        "frames": 23680,
+        "cues": [
+          {
+            "start": 461,
+            "end": 22582,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-p-sounds",
+      "kind": "letters",
+      "text": "p",
+      "units": [
+        "p"
+      ],
+      "letter_audio": "sounds",
+      "example": "pig",
+      "image": "images/pig.png",
+      "sequence": {
+        "path": "audio/sound-p.wav",
+        "frames": 64676,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64508,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-p.wav",
+        "frames": 64676,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 64508,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-p-names",
+      "kind": "letters",
+      "text": "p",
+      "units": [
+        "p"
+      ],
+      "letter_audio": "names",
+      "example": "pig",
+      "image": "images/pig.png",
+      "sequence": {
+        "path": "audio/name-p.wav",
+        "frames": 25208,
+        "cues": [
+          {
+            "start": 1349,
+            "end": 20798,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-p.wav",
+        "frames": 25208,
+        "cues": [
+          {
+            "start": 1349,
+            "end": 20798,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-q-sounds",
+      "kind": "letters",
+      "text": "qu",
+      "units": [
+        "qu"
+      ],
+      "letter_audio": "sounds",
+      "example": "quilt",
+      "image": "images/quilt.png",
+      "sequence": {
+        "path": "audio/sound-qu.wav",
+        "frames": 46864,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 46360,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-qu.wav",
+        "frames": 46864,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 46360,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-q-names",
+      "kind": "letters",
+      "text": "q",
+      "units": [
+        "q"
+      ],
+      "letter_audio": "names",
+      "example": "quilt",
+      "image": "images/quilt.png",
+      "sequence": {
+        "path": "audio/name-q.wav",
+        "frames": 23552,
+        "cues": [
+          {
+            "start": 322,
+            "end": 21310,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-q.wav",
+        "frames": 23552,
+        "cues": [
+          {
+            "start": 322,
+            "end": 21310,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-r-sounds",
+      "kind": "letters",
+      "text": "r",
+      "units": [
+        "r"
+      ],
+      "letter_audio": "sounds",
+      "example": "rat",
+      "image": "images/rat.png",
+      "sequence": {
+        "path": "audio/sound-r.wav",
+        "frames": 43310,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 43091,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-r.wav",
+        "frames": 43310,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 43091,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-r-names",
+      "kind": "letters",
+      "text": "r",
+      "units": [
+        "r"
+      ],
+      "letter_audio": "names",
+      "example": "rat",
+      "image": "images/rat.png",
+      "sequence": {
+        "path": "audio/name-r.wav",
+        "frames": 23296,
+        "cues": [
+          {
+            "start": 560,
+            "end": 20554,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-r.wav",
+        "frames": 23296,
+        "cues": [
+          {
+            "start": 560,
+            "end": 20554,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-s-sounds",
+      "kind": "letters",
+      "text": "s",
+      "units": [
+        "s"
+      ],
+      "letter_audio": "sounds",
+      "example": "sun",
+      "image": "images/sun.png",
+      "sequence": {
+        "path": "audio/sound-s.wav",
+        "frames": 46300,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41890,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-s.wav",
+        "frames": 46300,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41890,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-s-names",
+      "kind": "letters",
+      "text": "s",
+      "units": [
+        "s"
+      ],
+      "letter_audio": "names",
+      "example": "sun",
+      "image": "images/sun.png",
+      "sequence": {
+        "path": "audio/name-s.wav",
+        "frames": 25344,
+        "cues": [
+          {
+            "start": 651,
+            "end": 22951,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-s.wav",
+        "frames": 25344,
+        "cues": [
+          {
+            "start": 651,
+            "end": 22951,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-t-sounds",
+      "kind": "letters",
+      "text": "t",
+      "units": [
+        "t"
+      ],
+      "letter_audio": "sounds",
+      "example": "top",
+      "image": "images/top.png",
+      "sequence": {
+        "path": "audio/sound-t.wav",
+        "frames": 61009,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 60211,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-t.wav",
+        "frames": 61009,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 60211,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-t-names",
+      "kind": "letters",
+      "text": "t",
+      "units": [
+        "t"
+      ],
+      "letter_audio": "names",
+      "example": "top",
+      "image": "images/top.png",
+      "sequence": {
+        "path": "audio/name-t.wav",
+        "frames": 22912,
+        "cues": [
+          {
+            "start": 833,
+            "end": 21490,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-t.wav",
+        "frames": 22912,
+        "cues": [
+          {
+            "start": 833,
+            "end": 21490,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-u-sounds",
+      "kind": "letters",
+      "text": "u",
+      "units": [
+        "u"
+      ],
+      "letter_audio": "sounds",
+      "example": "umbrella",
+      "image": "images/umbrella.png",
+      "sequence": {
+        "path": "audio/sound-u.wav",
+        "frames": 47063,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 46229,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-u.wav",
+        "frames": 47063,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 46229,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-u-names",
+      "kind": "letters",
+      "text": "u",
+      "units": [
+        "u"
+      ],
+      "letter_audio": "names",
+      "example": "umbrella",
+      "image": "images/umbrella.png",
+      "sequence": {
+        "path": "audio/name-u.wav",
+        "frames": 22528,
+        "cues": [
+          {
+            "start": 430,
+            "end": 20128,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-u.wav",
+        "frames": 22528,
+        "cues": [
+          {
+            "start": 430,
+            "end": 20128,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-v-sounds",
+      "kind": "letters",
+      "text": "v",
+      "units": [
+        "v"
+      ],
+      "letter_audio": "sounds",
+      "example": "violin",
+      "image": "images/violin.png",
+      "sequence": {
+        "path": "audio/sound-v.wav",
+        "frames": 41444,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 40735,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-v.wav",
+        "frames": 41444,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 40735,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-v-names",
+      "kind": "letters",
+      "text": "v",
+      "units": [
+        "v"
+      ],
+      "letter_audio": "names",
+      "example": "violin",
+      "image": "images/violin.png",
+      "sequence": {
+        "path": "audio/name-v.wav",
+        "frames": 26624,
+        "cues": [
+          {
+            "start": 1125,
+            "end": 25721,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-v.wav",
+        "frames": 26624,
+        "cues": [
+          {
+            "start": 1125,
+            "end": 25721,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-w-sounds",
+      "kind": "letters",
+      "text": "w",
+      "units": [
+        "w"
+      ],
+      "letter_audio": "sounds",
+      "example": "web",
+      "image": "images/web.png",
+      "sequence": {
+        "path": "audio/sound-w.wav",
+        "frames": 58382,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 57775,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-w.wav",
+        "frames": 58382,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 57775,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-w-names",
+      "kind": "letters",
+      "text": "w",
+      "units": [
+        "w"
+      ],
+      "letter_audio": "names",
+      "example": "web",
+      "image": "images/web.png",
+      "sequence": {
+        "path": "audio/name-w.wav",
+        "frames": 31744,
+        "cues": [
+          {
+            "start": 820,
+            "end": 28141,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-w.wav",
+        "frames": 31744,
+        "cues": [
+          {
+            "start": 820,
+            "end": 28141,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-x-sounds",
+      "kind": "letters",
+      "text": "x",
+      "units": [
+        "x"
+      ],
+      "letter_audio": "sounds",
+      "example": "box",
+      "image": "images/box.png",
+      "sequence": {
+        "path": "audio/sound-x.wav",
+        "frames": 52695,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 52610,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-x.wav",
+        "frames": 52695,
+        "cues": [
+          {
+            "start": 4409,
+            "end": 52610,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-x-names",
+      "kind": "letters",
+      "text": "x",
+      "units": [
+        "x"
+      ],
+      "letter_audio": "names",
+      "example": "box",
+      "image": "images/box.png",
+      "sequence": {
+        "path": "audio/name-x.wav",
+        "frames": 20736,
+        "cues": [
+          {
+            "start": 484,
+            "end": 17103,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-x.wav",
+        "frames": 20736,
+        "cues": [
+          {
+            "start": 484,
+            "end": 17103,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-y-sounds",
+      "kind": "letters",
+      "text": "y",
+      "units": [
+        "y"
+      ],
+      "letter_audio": "sounds",
+      "example": "yarn",
+      "image": "images/yarn.png",
+      "sequence": {
+        "path": "audio/sound-y.wav",
+        "frames": 43323,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 42969,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-y.wav",
+        "frames": 43323,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 42969,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-y-names",
+      "kind": "letters",
+      "text": "y",
+      "units": [
+        "y"
+      ],
+      "letter_audio": "names",
+      "example": "yarn",
+      "image": "images/yarn.png",
+      "sequence": {
+        "path": "audio/name-y.wav",
+        "frames": 27047,
+        "cues": [
+          {
+            "start": 919,
+            "end": 22637,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-y.wav",
+        "frames": 27047,
+        "cues": [
+          {
+            "start": 919,
+            "end": 22637,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-z-sounds",
+      "kind": "letters",
+      "text": "z",
+      "units": [
+        "z"
+      ],
+      "letter_audio": "sounds",
+      "example": "zebra",
+      "image": "images/zebra.png",
+      "sequence": {
+        "path": "audio/sound-z.wav",
+        "frames": 42275,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41907,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/sound-z.wav",
+        "frames": 42275,
+        "cues": [
+          {
+            "start": 4410,
+            "end": 41907,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "letter-z-names",
+      "kind": "letters",
+      "text": "z",
+      "units": [
+        "z"
+      ],
+      "letter_audio": "names",
+      "example": "zebra",
+      "image": "images/zebra.png",
+      "sequence": {
+        "path": "audio/name-z.wav",
+        "frames": 26368,
+        "cues": [
+          {
+            "start": 1242,
+            "end": 24803,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/name-z.wav",
+        "frames": 26368,
+        "cues": [
+          {
+            "start": 1242,
+            "end": 24803,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-0",
+      "kind": "numbers",
+      "text": "0",
+      "units": [
+        "0"
+      ],
+      "number": 0,
+      "sequence": {
+        "path": "audio/number-0.wav",
+        "frames": 26112,
+        "cues": [
+          {
+            "start": 66,
+            "end": 21764,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-0.wav",
+        "frames": 26112,
+        "cues": [
+          {
+            "start": 66,
+            "end": 21764,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-1",
+      "kind": "numbers",
+      "text": "1",
+      "units": [
+        "1"
+      ],
+      "number": 1,
+      "sequence": {
+        "path": "audio/number-1.wav",
+        "frames": 22706,
+        "cues": [
+          {
+            "start": 875,
+            "end": 18296,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-1.wav",
+        "frames": 22706,
+        "cues": [
+          {
+            "start": 875,
+            "end": 18296,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-2",
+      "kind": "numbers",
+      "text": "2",
+      "units": [
+        "2"
+      ],
+      "number": 2,
+      "sequence": {
+        "path": "audio/number-2.wav",
+        "frames": 23024,
+        "cues": [
+          {
+            "start": 6,
+            "end": 18614,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-2.wav",
+        "frames": 23024,
+        "cues": [
+          {
+            "start": 6,
+            "end": 18614,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-3",
+      "kind": "numbers",
+      "text": "3",
+      "units": [
+        "3"
+      ],
+      "number": 3,
+      "sequence": {
+        "path": "audio/number-3.wav",
+        "frames": 24064,
+        "cues": [
+          {
+            "start": 47,
+            "end": 20145,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-3.wav",
+        "frames": 24064,
+        "cues": [
+          {
+            "start": 47,
+            "end": 20145,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-4",
+      "kind": "numbers",
+      "text": "4",
+      "units": [
+        "4"
+      ],
+      "number": 4,
+      "sequence": {
+        "path": "audio/number-4.wav",
+        "frames": 23040,
+        "cues": [
+          {
+            "start": 70,
+            "end": 20028,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-4.wav",
+        "frames": 23040,
+        "cues": [
+          {
+            "start": 70,
+            "end": 20028,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-5",
+      "kind": "numbers",
+      "text": "5",
+      "units": [
+        "5"
+      ],
+      "number": 5,
+      "sequence": {
+        "path": "audio/number-5.wav",
+        "frames": 26112,
+        "cues": [
+          {
+            "start": 271,
+            "end": 22803,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-5.wav",
+        "frames": 26112,
+        "cues": [
+          {
+            "start": 271,
+            "end": 22803,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-6",
+      "kind": "numbers",
+      "text": "6",
+      "units": [
+        "6"
+      ],
+      "number": 6,
+      "sequence": {
+        "path": "audio/number-6.wav",
+        "frames": 31232,
+        "cues": [
+          {
+            "start": 228,
+            "end": 27694,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-6.wav",
+        "frames": 31232,
+        "cues": [
+          {
+            "start": 228,
+            "end": 27694,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-7",
+      "kind": "numbers",
+      "text": "7",
+      "units": [
+        "7"
+      ],
+      "number": 7,
+      "sequence": {
+        "path": "audio/number-7.wav",
+        "frames": 27651,
+        "cues": [
+          {
+            "start": 499,
+            "end": 23241,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-7.wav",
+        "frames": 27651,
+        "cues": [
+          {
+            "start": 499,
+            "end": 23241,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-8",
+      "kind": "numbers",
+      "text": "8",
+      "units": [
+        "8"
+      ],
+      "number": 8,
+      "sequence": {
+        "path": "audio/number-8.wav",
+        "frames": 19968,
+        "cues": [
+          {
+            "start": 0,
+            "end": 17265,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-8.wav",
+        "frames": 19968,
+        "cues": [
+          {
+            "start": 0,
+            "end": 17265,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-9",
+      "kind": "numbers",
+      "text": "9",
+      "units": [
+        "9"
+      ],
+      "number": 9,
+      "sequence": {
+        "path": "audio/number-9.wav",
+        "frames": 24555,
+        "cues": [
+          {
+            "start": 693,
+            "end": 20146,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-9.wav",
+        "frames": 24555,
+        "cues": [
+          {
+            "start": 693,
+            "end": 20146,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-10",
+      "kind": "numbers",
+      "text": "10",
+      "units": [
+        "10"
+      ],
+      "number": 10,
+      "sequence": {
+        "path": "audio/number-10.wav",
+        "frames": 19088,
+        "cues": [
+          {
+            "start": 481,
+            "end": 14678,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-10.wav",
+        "frames": 19088,
+        "cues": [
+          {
+            "start": 481,
+            "end": 14678,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-11",
+      "kind": "numbers",
+      "text": "11",
+      "units": [
+        "11"
+      ],
+      "number": 11,
+      "sequence": {
+        "path": "audio/number-11.wav",
+        "frames": 24553,
+        "cues": [
+          {
+            "start": 472,
+            "end": 20143,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-11.wav",
+        "frames": 24553,
+        "cues": [
+          {
+            "start": 472,
+            "end": 20143,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-12",
+      "kind": "numbers",
+      "text": "12",
+      "units": [
+        "12"
+      ],
+      "number": 12,
+      "sequence": {
+        "path": "audio/number-12.wav",
+        "frames": 25088,
+        "cues": [
+          {
+            "start": 427,
+            "end": 21492,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-12.wav",
+        "frames": 25088,
+        "cues": [
+          {
+            "start": 427,
+            "end": 21492,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-13",
+      "kind": "numbers",
+      "text": "13",
+      "units": [
+        "13"
+      ],
+      "number": 13,
+      "sequence": {
+        "path": "audio/number-13.wav",
+        "frames": 33792,
+        "cues": [
+          {
+            "start": 0,
+            "end": 30385,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-13.wav",
+        "frames": 33792,
+        "cues": [
+          {
+            "start": 0,
+            "end": 30385,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-14",
+      "kind": "numbers",
+      "text": "14",
+      "units": [
+        "14"
+      ],
+      "number": 14,
+      "sequence": {
+        "path": "audio/number-14.wav",
+        "frames": 38603,
+        "cues": [
+          {
+            "start": 5,
+            "end": 34193,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-14.wav",
+        "frames": 38603,
+        "cues": [
+          {
+            "start": 5,
+            "end": 34193,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-15",
+      "kind": "numbers",
+      "text": "15",
+      "units": [
+        "15"
+      ],
+      "number": 15,
+      "sequence": {
+        "path": "audio/number-15.wav",
+        "frames": 32602,
+        "cues": [
+          {
+            "start": 228,
+            "end": 28192,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-15.wav",
+        "frames": 32602,
+        "cues": [
+          {
+            "start": 228,
+            "end": 28192,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-16",
+      "kind": "numbers",
+      "text": "16",
+      "units": [
+        "16"
+      ],
+      "number": 16,
+      "sequence": {
+        "path": "audio/number-16.wav",
+        "frames": 40448,
+        "cues": [
+          {
+            "start": 231,
+            "end": 36093,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-16.wav",
+        "frames": 40448,
+        "cues": [
+          {
+            "start": 231,
+            "end": 36093,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-17",
+      "kind": "numbers",
+      "text": "17",
+      "units": [
+        "17"
+      ],
+      "number": 17,
+      "sequence": {
+        "path": "audio/number-17.wav",
+        "frames": 43810,
+        "cues": [
+          {
+            "start": 496,
+            "end": 39400,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-17.wav",
+        "frames": 43810,
+        "cues": [
+          {
+            "start": 496,
+            "end": 39400,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-18",
+      "kind": "numbers",
+      "text": "18",
+      "units": [
+        "18"
+      ],
+      "number": 18,
+      "sequence": {
+        "path": "audio/number-18.wav",
+        "frames": 33062,
+        "cues": [
+          {
+            "start": 86,
+            "end": 28652,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-18.wav",
+        "frames": 33062,
+        "cues": [
+          {
+            "start": 86,
+            "end": 28652,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-19",
+      "kind": "numbers",
+      "text": "19",
+      "units": [
+        "19"
+      ],
+      "number": 19,
+      "sequence": {
+        "path": "audio/number-19.wav",
+        "frames": 28928,
+        "cues": [
+          {
+            "start": 646,
+            "end": 24518,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-19.wav",
+        "frames": 28928,
+        "cues": [
+          {
+            "start": 646,
+            "end": 24518,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-20",
+      "kind": "numbers",
+      "text": "20",
+      "units": [
+        "20"
+      ],
+      "number": 20,
+      "sequence": {
+        "path": "audio/number-20.wav",
+        "frames": 27310,
+        "cues": [
+          {
+            "start": 68,
+            "end": 22900,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-20.wav",
+        "frames": 27310,
+        "cues": [
+          {
+            "start": 68,
+            "end": 22900,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-21",
+      "kind": "numbers",
+      "text": "21",
+      "units": [
+        "21"
+      ],
+      "number": 21,
+      "sequence": {
+        "path": "audio/number-21.wav",
+        "frames": 38501,
+        "cues": [
+          {
+            "start": 102,
+            "end": 34091,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-21.wav",
+        "frames": 38501,
+        "cues": [
+          {
+            "start": 102,
+            "end": 34091,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-22",
+      "kind": "numbers",
+      "text": "22",
+      "units": [
+        "22"
+      ],
+      "number": 22,
+      "sequence": {
+        "path": "audio/number-22.wav",
+        "frames": 39404,
+        "cues": [
+          {
+            "start": 67,
+            "end": 34994,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-22.wav",
+        "frames": 39404,
+        "cues": [
+          {
+            "start": 67,
+            "end": 34994,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-23",
+      "kind": "numbers",
+      "text": "23",
+      "units": [
+        "23"
+      ],
+      "number": 23,
+      "sequence": {
+        "path": "audio/number-23.wav",
+        "frames": 42712,
+        "cues": [
+          {
+            "start": 267,
+            "end": 38302,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-23.wav",
+        "frames": 42712,
+        "cues": [
+          {
+            "start": 267,
+            "end": 38302,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-24",
+      "kind": "numbers",
+      "text": "24",
+      "units": [
+        "24"
+      ],
+      "number": 24,
+      "sequence": {
+        "path": "audio/number-24.wav",
+        "frames": 40960,
+        "cues": [
+          {
+            "start": 77,
+            "end": 37723,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-24.wav",
+        "frames": 40960,
+        "cues": [
+          {
+            "start": 77,
+            "end": 37723,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-25",
+      "kind": "numbers",
+      "text": "25",
+      "units": [
+        "25"
+      ],
+      "number": 25,
+      "sequence": {
+        "path": "audio/number-25.wav",
+        "frames": 43520,
+        "cues": [
+          {
+            "start": 139,
+            "end": 39731,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-25.wav",
+        "frames": 43520,
+        "cues": [
+          {
+            "start": 139,
+            "end": 39731,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-26",
+      "kind": "numbers",
+      "text": "26",
+      "units": [
+        "26"
+      ],
+      "number": 26,
+      "sequence": {
+        "path": "audio/number-26.wav",
+        "frames": 48640,
+        "cues": [
+          {
+            "start": 4,
+            "end": 44974,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-26.wav",
+        "frames": 48640,
+        "cues": [
+          {
+            "start": 4,
+            "end": 44974,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-27",
+      "kind": "numbers",
+      "text": "27",
+      "units": [
+        "27"
+      ],
+      "number": 27,
+      "sequence": {
+        "path": "audio/number-27.wav",
+        "frames": 42486,
+        "cues": [
+          {
+            "start": 99,
+            "end": 38076,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-27.wav",
+        "frames": 42486,
+        "cues": [
+          {
+            "start": 99,
+            "end": 38076,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-28",
+      "kind": "numbers",
+      "text": "28",
+      "units": [
+        "28"
+      ],
+      "number": 28,
+      "sequence": {
+        "path": "audio/number-28.wav",
+        "frames": 46592,
+        "cues": [
+          {
+            "start": 66,
+            "end": 42699,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-28.wav",
+        "frames": 46592,
+        "cues": [
+          {
+            "start": 66,
+            "end": 42699,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-29",
+      "kind": "numbers",
+      "text": "29",
+      "units": [
+        "29"
+      ],
+      "number": 29,
+      "sequence": {
+        "path": "audio/number-29.wav",
+        "frames": 42155,
+        "cues": [
+          {
+            "start": 71,
+            "end": 37745,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-29.wav",
+        "frames": 42155,
+        "cues": [
+          {
+            "start": 71,
+            "end": 37745,
+            "unit": -1
+          }
+        ]
+      }
+    },
+    {
+      "id": "number-30",
+      "kind": "numbers",
+      "text": "30",
+      "units": [
+        "30"
+      ],
+      "number": 30,
+      "sequence": {
+        "path": "audio/number-30.wav",
+        "frames": 23514,
+        "cues": [
+          {
+            "start": 1071,
+            "end": 19104,
+            "unit": -1
+          }
+        ]
+      },
+      "replay": {
+        "path": "audio/number-30.wav",
+        "frames": 23514,
+        "cues": [
+          {
+            "start": 1071,
+            "end": 19104,
+            "unit": -1
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -284,6 +284,34 @@ unused intermediate Docker images and build cache. Qualified VM disks were
 preserved. Physical HP, listening, extended-operation and other previously
 listed qualification limits remain unchanged.
 
+## Reading application qualification
+
+Reading adds 30 illustrated words, alphabet sound/name decks, and numbers 0–30.
+The shared launcher now fits five icons in centered rows where required.
+
+- **200 tests passed** in 4.22 seconds: 178 existing tests plus 22 Reading checks.
+- All **158 source assets and 189 prepared outputs** passed SHA-256 verification.
+  A separate rebuild reproduced every prepared file and catalog byte-for-byte.
+  Independently regenerating all 31 number WAVs with the locked Piper preparation
+  environment reproduced their hashes exactly.
+- Screens were inspected at 800×600, 1024×600, 1280×800 and 1366×768, including
+  the word-first, sound-highlight and picture states, letters, numbers and the
+  five-icon launcher. Automated layout coverage also includes 1024×768.
+- A bounded dummy-SDL run made **1,000 random selections** after 100 warm-up
+  selections with no immediate repeats. RSS increased from 32,984 to 34,428 KiB;
+  the maximum selection-plus-render time was 9.245ms. This is a short local
+  allocation/responsiveness check, not a multi-hour hardware soak.
+- Source/derived media licenses and the differing recorded voices are documented
+  in [assets/reading/README.md](assets/reading/README.md). Original media and
+  editable drawings are included. Human listening/pronunciation review remains
+  outstanding; decoding and waveform bounds do not establish pedagogical quality.
+
+The Reading system build and fresh-VM/USB-installer qualification are in progress.
+Do not interpret the earlier release's VM results as validation of this new release.
+Local evidence is under `build/reading-preview/`, `build/reading-rebuild/`,
+`build/reading-number-check/`, `build/reading-selection-check.json`, and
+`build/reading-system-build.log`.
+
 ## Preparing a USB after qualification
 
 Check `build/SHA256SUMS`. In Ubuntu Disks, select the intended USB device and use
