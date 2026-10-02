@@ -18,7 +18,9 @@ Use `uv` with the local `.venv`; the repo scripts now pick a per-user writable c
 - `uv run python -m toddlerbox.photos` — run photos.
 - `uv run python -m toddlerbox.typing` — run typing.
 - `uv run pytest` — run unit tests.
-- `./scripts/run-stable.sh` — run launcher with automatic restart/backoff for kiosk-style stability checks.
+- `./scripts/run-stable.sh` — bounded process-exit retries for development.
+- `./system/build.sh` — build the Ubuntu VM disk and USB installer from the shared system recipe.
+- `./system/vm.sh start` — boot a disposable overlay with QEMU; see `system/README.md` for recovery and qualification.
 
 ## Coding Style & Naming Conventions
 - Python: 4-space indentation; keep modules small and focused.
@@ -36,7 +38,8 @@ Use `uv` with the local `.venv`; the repo scripts now pick a per-user writable c
 
 ## Security & Configuration Tips
 - Do not commit secrets or local env files (`.venv/`, `.env`).
-- Dev config uses `config.yaml` at repo root; production config should live at `/opt/toddlerbox/config.yaml`.
+- Dev config uses `config.yaml` at repo root; the system image sets `KIDBOX_CONFIG=/etc/toddlerbox/config.yaml`.
+- Production dependencies are installed with uv at build time; runtime executes the versioned environment directly and remains offline.
 - Data writes default to `data_root` from config; dev defaults to `./data`.
 - Runtime logs are written under `data_root/logs/` (`toddlerbox.log` with `.1` rollover).
 

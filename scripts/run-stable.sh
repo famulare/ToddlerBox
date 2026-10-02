@@ -1,34 +1,17 @@
 #!/usr/bin/env bash
+# Development-only process-exit check. The bootable system has its own watchdog.
 set -euo pipefail
-
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
-
-source "${ROOT_DIR}/scripts/lib/uv-env.sh"
-
-if [ ! -d ".venv" ]; then
-  uv venv .venv
-fi
-
-RESTARTS=0
-BACKOFF=1
-MAX_BACKOFF=5
-
-while true; do
-  TS="$(date -Iseconds)"
-  echo "${TS} starting toddlerbox launcher"
-  if uv run --frozen python -m toddlerbox.launcher; then
-    TS="$(date -Iseconds)"
-    echo "${TS} launcher exited cleanly"
-    exit 0
-  fi
-
-  RESTARTS=$((RESTARTS + 1))
-  TS="$(date -Iseconds)"
-  echo "${TS} launcher crashed (restart #${RESTARTS}); retry in ${BACKOFF}s"
-  sleep "${BACKOFF}"
-  BACKOFF=$((BACKOFF + 1))
-  if [ "${BACKOFF}" -gt "${MAX_BACKOFF}" ]; then
-    BACKOFF="${MAX_BACKOFF}"
-  fi
+[[ -x .venv/bin/python ]] || { echo 'Run uv sync --extra dev first.' >&2; exit 1; }
+for attempt in 1 2 3 4; do
+    if .venv/bin/python -m toddlerbox.launcher; then
+        exit 0
+    fi
+    if [[ $attempt -lt 4 ]]; then
+        echo "Launcher failed; development retry $attempt/3" >&2
+        sleep "$attempt"
+    fi
 done
+echo 'Restart budget exhausted. Inspect data/logs/toddlerbox.log.' >&2
+exit 1

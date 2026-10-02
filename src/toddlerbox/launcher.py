@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shlex
+import os
 import shutil
 import subprocess
 import sys
@@ -15,6 +16,7 @@ from toddlerbox.paths import get_data_root
 from toddlerbox.paint.app import run_embedded as run_paint_embedded
 from toddlerbox.photos.app import PhotosApp, run_embedded as run_photos_embedded
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
+from toddlerbox.runtime import health
 from toddlerbox.typing.app import run_embedded as run_typing_embedded
 from toddlerbox.ui.common import (
     Button,
@@ -214,7 +216,7 @@ def main() -> None:
 
     running = True
     _draw_launcher_frame(screen, background, apps, buttons)
-    while running:
+    while running and not health.stopping():
         now = time.monotonic()
         if now - last_frame_time > 2.0:
             logger.info("Launcher resume detected via frame-time gap")
@@ -237,7 +239,7 @@ def main() -> None:
                 last_input = time.monotonic()
             if event.type == pygame.QUIT:
                 running = False
-            elif is_escape_chord(event):
+            elif is_escape_chord(event) and not os.environ.get("TODDLERBOX_HEALTH_SOCKET"):
                 pygame.quit()
                 sys.exit(0)
             elif ignore_system_shortcut(event):
@@ -275,6 +277,7 @@ def main() -> None:
                     logger.exception("Photos prewarm thumbnail load failed")
                     break
         clock.tick(60)
+        health.frame_complete()
 
     pygame.quit()
 

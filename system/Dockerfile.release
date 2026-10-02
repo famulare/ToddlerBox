@@ -1,0 +1,18 @@
+ARG UV_IMAGE
+FROM ${UV_IMAGE} AS uv
+FROM toddlerbox-os-base
+ARG RELEASE_ID
+RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
+    --mount=type=bind,source=.,target=/source \
+    --mount=from=uv,source=/uv,target=/run/uv \
+    cp /run/uv /usr/local/bin/uv && \
+    mkdir -p /opt/toddlerbox/releases/${RELEASE_ID} && \
+    cp -a /source/src /source/assets /source/pyproject.toml /source/uv.lock /source/README.md /source/LICENSE /source/config.yaml /opt/toddlerbox/releases/${RELEASE_ID}/ && \
+    cp -a /source/system /usr/local/share/toddlerbox-build && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca update && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca install -y --no-install-recommends $(cat /source/system/desktop-extras.txt) && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* && \
+    cd /opt/toddlerbox/releases/${RELEASE_ID} && \
+    SSL_CERT_FILE=/run/secrets/proxy_ca UV_PYTHON_DOWNLOADS=never uv sync --frozen --no-dev --python /usr/bin/python3 && \
+    bash /usr/local/share/toddlerbox-build/configure-rootfs.sh "$RELEASE_ID" && \
+    rm -rf /root/.cache/uv /usr/local/share/toddlerbox-build

@@ -13,6 +13,8 @@ import pygame
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
+from toddlerbox.runtime import health
+from toddlerbox.runtime.persistence import atomic_write, sync_directory
 from toddlerbox.ui.common import (
     Button,
     FINGER_EVENTS,
@@ -116,18 +118,7 @@ class RecallItem:
 
 
 def _save_surface_atomic(surface: pygame.Surface, path: Path) -> None:
-    # Keep a .png suffix so pygame writes a PNG-encoded file.
-    tmp_path = path.with_name(f".{path.stem}.tmp{path.suffix}")
-    try:
-        pygame.image.save(surface, str(tmp_path))
-        os.replace(tmp_path, path)
-    except Exception:
-        try:
-            if tmp_path.exists():
-                tmp_path.unlink()
-        except OSError:
-            pass
-        raise
+    atomic_write(path, lambda temporary: pygame.image.save(surface, str(temporary)))
 
 
 def _list_archives(paint_dir: Path) -> List[Path]:
@@ -355,7 +346,6 @@ class PaintApp:
         self.logger: RuntimeLogger = get_runtime_logger(self.data_root)
         dirs = ensure_directories(self.data_root)
         self.paint_dir = dirs["paint"]
-        _rollover_latest_snapshot(self.paint_dir)
 
         if screen is None:
             self.screen, self.screen_rect = create_fullscreen_window()
@@ -386,6 +376,16 @@ class PaintApp:
         self.base_surface = pygame.Surface(self.canvas_rect.size)
         self.base_surface.fill((255, 255, 255))
         self.canvas_surface = self.base_surface.copy()
+        latest = self.paint_dir / "latest.png"
+        if latest.exists():
+            restored = _load_canvas_image(latest, self.canvas_rect.size)
+            if restored is not None:
+                self.canvas_surface = restored
+            else:
+                # Keep damaged media for parent inspection before making a new save.
+                latest.rename(latest.with_name(f"corrupt-{time.time_ns()}.png"))
+                sync_directory(self.paint_dir)
+                self.logger.warning("Preserved unreadable paint save as corrupt media")
 
         self.palette = [tuple(color) for color in self.config.get("paint", {}).get("palette", [])]
         self.current_color: Color = self.palette[0] if self.palette else (0, 0, 0)
@@ -695,7 +695,7 @@ class PaintApp:
 
     def _handle_pointer_down(self, pos: Point) -> bool:
         if self.action_buttons["home"].hit(pos):
-            return True
+            return self._autosave_latest()
 
         if self.canvas_rect.collidepoint(pos):
             local_pos = (pos[0] - self.canvas_rect.left, pos[1] - self.canvas_rect.top)
@@ -734,8 +734,9 @@ class PaintApp:
             self._redo()
             return False
         if self.action_buttons["new"].hit(pos):
-            self._archive_current()
-            self._reset_canvas()
+            if self._archive_current():
+                self._reset_canvas()
+                self._autosave_latest()
             return False
         if self.action_buttons["recall"].hit(pos):
             self._open_recall()
@@ -890,6 +891,8 @@ class PaintApp:
         loaded = _load_canvas_image(item.source, self.canvas_rect.size)
         if loaded is None:
             return
+        if not self._archive_current():
+            return
         self.canvas_surface = loaded.copy()
         self.undo_stack = []
         self.redo_stack = []
@@ -1014,10 +1017,18 @@ class PaintApp:
         pygame.display.flip()
 
     def run(self, *, quit_on_exit: bool = True) -> None:
+        try:
+            self._run()
+        finally:
+            self._autosave_latest()
+            if quit_on_exit:
+                pygame.quit()
+
+    def _run(self) -> None:
         running = True
         self._render()
         last_frame_time = time.monotonic()
-        while running:
+        while running and not health.stopping():
             now = time.monotonic()
             if now - last_frame_time > 2.0:
                 self._handle_resume("frame-time gap")
@@ -1030,12 +1041,12 @@ class PaintApp:
                     self._handle_resume("ignored keyboard shortcut")
                     continue
                 if event.type == pygame.QUIT:
-                    running = False
+                    running = not self._autosave_latest()
                 if self.recall_open:
                     self._handle_recall_event(event)
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    running = False
+                    running = not self._autosave_latest()
                 elif is_primary_pointer_event(event, is_down=True):
                     pos = self._event_pos(event)
                     if pos is None:
@@ -1063,10 +1074,8 @@ class PaintApp:
                 self.last_autosave = now
 
             self._render()
+            health.frame_complete()
             self.clock.tick(60)
-
-        if quit_on_exit:
-            pygame.quit()
 
 
 def main() -> None:

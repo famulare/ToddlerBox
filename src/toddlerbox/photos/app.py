@@ -8,6 +8,7 @@ import time
 from typing import List, Optional, Tuple
 
 import pygame
+from toddlerbox.runtime import health
 try:
     from PIL import Image
 except Exception:
@@ -519,7 +520,7 @@ class PhotosApp:
         last_input_ms = pygame.time.get_ticks()
         last_scroll_ms = last_input_ms
         last_frame_time = time.monotonic()
-        while running:
+        while running and not health.stopping():
             now = time.monotonic()
             if now - last_frame_time > 2.0:
                 self._handle_resume("frame-time gap")
@@ -636,6 +637,7 @@ class PhotosApp:
                     if pygame.time.get_ticks() >= budget_end:
                         break
             self.clock.tick(60)
+            health.frame_complete()
 
         if quit_on_exit:
             pygame.quit()

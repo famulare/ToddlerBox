@@ -1,0 +1,28 @@
+#!/bin/sh
+set -e
+PREREQ=""
+prereqs() { echo "$PREREQ"; }
+case "$1" in prereqs) prereqs; exit 0 ;; esac
+. /usr/share/initramfs-tools/hook-functions
+copy_exec /usr/bin/zstd /usr/bin
+copy_exec /usr/bin/lsblk /usr/bin
+copy_exec /usr/bin/sha256sum /usr/bin
+# The later busybox hook replaces standard dd paths with its smaller applet.
+copy_exec /usr/bin/dd /usr/lib/toddlerbox-installer/dd
+copy_exec /usr/sbin/sgdisk /usr/sbin
+copy_exec /usr/sbin/e2fsck /usr/sbin
+copy_exec /usr/sbin/resize2fs /usr/sbin
+copy_exec /usr/bin/growpart /usr/bin
+copy_exec /usr/sbin/sfdisk /usr/sbin
+copy_exec /usr/bin/flock /usr/bin
+copy_exec /usr/bin/partx /usr/bin
+copy_exec /usr/sbin/blkid /usr/sbin
+copy_exec /usr/bin/udevadm /usr/bin
+manual_add_modules isofs
+manual_add_modules usb_storage
+manual_add_modules uas
+manual_add_modules xhci_pci
+manual_add_modules ahci
+manual_add_modules nvme
+manual_add_modules virtio_blk
+manual_add_modules virtio_scsi

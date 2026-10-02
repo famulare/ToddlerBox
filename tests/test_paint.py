@@ -199,8 +199,9 @@ def test_event_pos_keeps_finger_event_unscaled(monkeypatch):
     assert app._event_pos(event) == (960, 540)
 
 
-def test_handle_pointer_down_home_returns_true():
+def test_handle_pointer_down_home_returns_true(monkeypatch):
     app = _make_pointer_resolution_app()
+    monkeypatch.setattr(app, "_autosave_latest", lambda: True)
     assert app._handle_pointer_down((1840, 60)) is True
 
 
@@ -208,8 +209,9 @@ def test_handle_pointer_down_new_archives_and_resets(monkeypatch):
     app = _make_pointer_resolution_app()
     calls: list[str] = []
 
-    monkeypatch.setattr(app, "_archive_current", lambda: calls.append("archive"))
+    monkeypatch.setattr(app, "_archive_current", lambda: calls.append("archive") or True)
     monkeypatch.setattr(app, "_reset_canvas", lambda: calls.append("reset"))
+    monkeypatch.setattr(app, "_autosave_latest", lambda: True)
 
     assert app._handle_pointer_down((40, 920)) is False
     assert calls == ["archive", "reset"]

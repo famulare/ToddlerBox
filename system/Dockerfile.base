@@ -1,0 +1,13 @@
+ARG UBUNTU_IMAGE
+FROM ${UBUNTU_IMAGE}
+ARG UBUNTU_SNAPSHOT
+ENV DEBIAN_FRONTEND=noninteractive
+COPY system/packages.txt /tmp/packages.txt
+RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
+    printf '#!/bin/sh\nexit 101\n' >/usr/sbin/policy-rc.d && chmod +x /usr/sbin/policy-rc.d && \
+    printf 'Types: deb\nURIs: https://snapshot.ubuntu.com/ubuntu/%s/\nSuites: noble noble-updates noble-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' "$UBUNTU_SNAPSHOT" >/etc/apt/sources.list.d/ubuntu.sources && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca update && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca install -y --no-install-recommends $(cat /tmp/packages.txt) && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/packages.txt && \
+    sed -i 's/^# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen && \
+    printf 'LANG=en_US.UTF-8\n' >/etc/default/locale

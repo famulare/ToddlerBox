@@ -29,7 +29,7 @@ It is a small, comprehensible appliance built on top of Ubuntu.
 - **Offline by default**
   - No network dependency during normal use
 - **Parent-controlled escape**
-  - Hidden keyboard chord exits to parent shell on `tty1`
+  - Independent keyboard chord opens the parent GNOME login
 - **Grow-with-the-child**
   - Built-in apps run in-process for smooth transitions
   - Non-built-in apps can still be launched via subprocess fallback
@@ -37,12 +37,11 @@ It is a small, comprehensible appliance built on top of Ubuntu.
 
 ---
 
-## Keyboard hardening (toddler-proofing)
+## Child session input
 
-In a real kiosk setup, OS-level key handling still matters (e.g. `Super`/Windows, media keys, brightness, airplane mode).
-ToddlerBox ignores some keys in-app, but the most robust approach is to no-op escape-hatch keys at the Linux input level (works on Wayland too).
-
-- Example `keyd` config generator: `scripts/noop_keys_keyd.sh`
+The bootable system runs Cage directly under GDM, with no surrounding GNOME
+session. Child-session key inhibitors are released when entering parent mode.
+The old global keyd setup is retired. See [system/README.md](system/README.md).
 
 ---
 
@@ -116,7 +115,7 @@ Large-format typing surface with per-character styling controls and recall.
 - No clickable "exit" control on-screen
 - Ignores function keys (`F1`-`F12`)
 - **Parent escape chord:** `Ctrl + Alt + Home`
-  - Exits the launcher/Cage session and returns to `tty1`
+  - Hold for two seconds in the system image to open the parent GNOME login
 
 ### Paint App
 
@@ -155,7 +154,8 @@ Large-format typing surface with per-character styling controls and recall.
 - Styling changes apply to newly typed text from the cursor forward
 - Undo and New supported (`Undo` depth 20)
 - Recall overlay in the left panel shows saved session previews
-- Session logs archived silently as rich glyph JSON in `sessions.jsonl`
+- Current rich text saved periodically and on Home; restored on re-entry
+- Sessions archived silently as individual JSON files; legacy `sessions.jsonl` remains readable
 
 ---
 
@@ -175,7 +175,9 @@ All child-generated data lives under a single directory, configured by `data_roo
 │   ├── toddlerbox.log
 │   └── toddlerbox.log.1
 └── typing/
-    └── sessions.jsonl
+    ├── current.json
+    ├── archive/
+    └── sessions.jsonl  # legacy archives
 ```
 
 - No file dialogs
@@ -186,7 +188,7 @@ All child-generated data lives under a single directory, configured by `data_roo
 
 ## Configuration
 
-Runtime configuration is read from `config.yaml` (repo root for dev) or `/opt/toddlerbox/config.yaml` (deployment). Key settings:
+Runtime configuration is read from `config.yaml` (repo root for dev) or `/etc/toddlerbox/config.yaml` (system image, selected by `KIDBOX_CONFIG`). Key settings:
 
 - `data_root` (default dev config: `./data`)
 - `launcher.apps` (icon paths + commands)
@@ -213,6 +215,11 @@ assets/icons/
 
 ## Development Setup
 
+The primary target is the [bootable Ubuntu system](system/README.md), built
+with `./system/build.sh` and tested with `./system/vm.sh`. See the
+[validation record and remaining qualification](VALIDATION.md) before installing
+it on hardware. The commands below run individual apps during development.
+
 ### Requirements
 
 - Ubuntu 22.04 or 24.04
@@ -224,7 +231,7 @@ assets/icons/
 Development uses `uv` with a local `.venv`:
 
 ```bash
-uv sync
+uv sync --extra dev
 ```
 
 ## Convenience Script
@@ -262,87 +269,25 @@ uv run python -m toddlerbox.typing
 
 ---
 
-## Cage GDM Kiosk Setup (Deployment)
+## Bootable Ubuntu system
 
-ToddlerBox default deployment now boots into a GDM-controlled session where the `toddlerbox` user is automatically logged into a dedicated `toddlerbox` Wayland session that runs `scripts/kiosk-session.sh` inside Cage.
-
-### 1) Install system packages
-
-```bash
-sudo apt update
-sudo apt install -y cage seatd dconf-cli
-sudo systemctl enable --now seatd
-sudo usermod -aG seat,input,video,render toddlerbox
-```
-
-Or run the repo helper:
+The development and deployment target is now the shared Ubuntu 24.04 x86-64
+system recipe in [system/README.md](system/README.md). It produces a VM disk and
+USB installation media from the same assembled filesystem.
 
 ```bash
-./scripts/configure-kiosk-system.sh <user>
+./system/build.sh
+./system/vm.sh start
 ```
 
-This helper now installs the toddlerbox Wayland session, configures `/etc/gdm3/custom.conf` for automatic login, and enables GDM so the kiosk session starts immediately after boot.
+GDM starts a standalone Cage child session. Hold `Ctrl+Alt+Home` for two seconds
+to reach the separate parent account's GNOME login. An independent controller
+handles that chord and bounded crash/hang recovery. The boot menu also provides
+parent recovery. First boot asks you to create the parent password.
 
-Note: after group changes, log out/in or reboot before testing kiosk startup.
-
-### 2) Install/update ToddlerBox runtime
-
-From repo root:
-
-```bash
-./scripts/install-runtime.sh
-```
-
-This runs a lockfile-based install:
-
-```bash
-uv sync --frozen --no-dev
-```
-
-### 3) Create the toddlerbox Wayland session
-
-Create `/usr/share/wayland-sessions/toddlerbox.desktop` with the following contents:
-
-```ini
-[Desktop Entry]
-Name=toddlerbox
-Comment=toddlerbox
-Exec=/home/<user>/git/ToddlerBox/scripts/kiosk-session.sh
-Type=Application
-DesktopNames=Cage
-```
-
-This session entry is what GDM launches for the kiosk user so that Cage starts with the launcher on login.
-
-### 4) Configure GDM automatic login
-
-Edit `/etc/gdm3/custom.conf` (or `/etc/gdm/custom.conf` on some systems) and replace the `[daemon]` block with:
-
-```ini
-[daemon]
-AutomaticLoginEnable=true
-AutomaticLogin=toddlerbox
-DefaultSession=toddlerbox
-```
-
-After editing, `sudo systemctl enable --now gdm3` ensures the display manager is running at boot.
-
-### 5) Parent escape behavior
-
-`Ctrl + Alt + Home` exits the launcher, closes Cage, and returns parents to a shell on `tty1` (or follows the action configured in `system.parent_escape_action`).
-
-### Rollback to GNOME boot
-
-1. Remove `/usr/share/wayland-sessions/toddlerbox.desktop` (or rename it so GDM falls back to a standard session).
-2. Restore `/etc/gdm3/custom.conf` with `AutomaticLoginEnable=false` (use the `.bak` copy if it exists).
-3. Run:
-
-```bash
-sudo systemctl set-default graphical.target
-sudo systemctl enable gdm3
-```
-
-4. Reboot and log in through the GNOME greeter as usual.
+See the system guide for prerequisites, graphical VM inspection, installation,
+release rollback, and qualification limits. The former tty-autologin, GDM-masking,
+and global keyd setup scripts are retired.
 
 ---
 

@@ -6,6 +6,8 @@ from typing import Optional, Tuple
 
 import pygame
 
+from toddlerbox.runtime.health import install_shutdown_handlers
+
 
 Color = Tuple[int, int, int]
 Point = Tuple[int, int]
@@ -51,6 +53,7 @@ class Button:
 
 
 def create_fullscreen_window() -> Tuple[pygame.Surface, pygame.Rect]:
+    install_shutdown_handlers()
     pygame.init()
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     pygame.mouse.set_visible(True)
