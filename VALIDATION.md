@@ -1,8 +1,8 @@
 # Bootable system validation — 2026-10-02
 
-The [Music and repair qualification](#music-and-repair-qualification) below is the
-current result for release **`e65218acd46d664e`**. Earlier sections retain the
-initial system baseline and its artifact identities as historical evidence.
+The [shared interface qualification](#shared-interface-qualification) below is
+the current result for release **`6bf84a8245b3f9b6`**. Earlier sections retain
+the Music/repair qualification and initial system baseline as historical evidence.
 
 This is a development baseline for VM iteration. Hardware, extended operation,
 and the remaining failure cases below still require qualification before using
@@ -222,6 +222,67 @@ whole-guest ENOSPC, abrupt power-cut, interrupted release-switch, startup and
 installer-refusal gates remain open; simulated storage failure tests do not
 establish durability on the HP. The Music changes do not require a network at
 runtime, and no claim of physical hardware validation is made.
+
+## Shared interface qualification
+
+The shared theme is implemented in `17bda97` and `9d75b46`. All four activities
+use the same background, card, typography and selection colors, with a common
+58px Home control. The original app/tool/Home artwork is retained; Music adds
+a matching illustrated launcher icon. Document geometry, Paint pixels and
+persistence/recovery algorithms are unchanged.
+
+- **178 tests passed** after the final icon changes.
+- Screenshots were inspected at 1024×600 and 1366×768, including empty and
+  populated Photos, and the [combined preview](assets/screenshots/overview.png).
+- Release **`6bf84a8245b3f9b6`** uses the existing pinned Ubuntu base and image
+  tools with the current `Dockerfile.release` and `make-images.sh` recipe.
+  `build/style-final-build.log` records successful assembly, filesystem checks
+  and identical raw/QCOW2 contents. The source identity matches the checkout.
+- All four artifact hashes were independently verified. The new ISO contains
+  the same assembled system payload as the VM disk. The ISO's erase/write/expand
+  installation path was qualified in the preceding Music release; this visual
+  update does not change that path.
+
+The final disk booted in a fresh x86-64 UEFI/TCG overlay, completed parent
+password setup, and entered a healthy standalone Cage child session with zero
+retries. All four activities were opened through the illustrated launcher;
+their common Home control returned to the launcher. Paint's single-tap dot and
+Typing's `style` text restored after Home and re-entry. Music produced nonzero
+captured PCM during playback (peak 3751) and zero PCM after Home. A parent-mode
+transition then preserved `style` in the current Typing document and stopped
+the child cleanly. Evidence is under `build/vm/`: `style-guest-status.log`,
+`style-smoke.log`, `style-overview.png`, and the individual `style-*.png` captures.
+
+```text
+11f134be07e7117ad7c9b08aa24772b9f3fe76c1c3b82da73a9cb1d30cbbbe78  toddlerbox.img
+1881810c49f7fa7744884d75d120ba0bef294fcab71e2685e76b7316d0e8f8e8  toddlerbox.qcow2
+5b9a8675936a9d3df886a923bcd909eeddccbb9c681b7b99df680030204c38aa  toddlerbox-installer.iso
+e1f4d7853b7538a25b7a77a0639328edc211e79d05913d109c4dc51e1c7db725  toddlerbox-app-6bf84a8245b3f9b6.tar.gz
+```
+
+### Bounded extra storage check
+
+Astra independently used a disposable overlay over the qualified `e65218acd46d664e`
+installed disk; the base disk was mounted read-only and its modification time
+remained unchanged. Installed application save methods targeted a 32 MiB ext4
+loop filesystem inside that guest. Filler writes reached actual ENOSPC.
+Typing's attempted save returned failure, and subsequent independent read-only
+inspection found the valid previously committed text `prior`, preserving it
+against the attempted `priornew` replacement.
+
+This is one actual guest data-filesystem save-failure observation. Paint's tiny
+PNG still fit in the remaining space, so its expected-failure assertion did not
+pass and the rest of that test was not reached. Whole-root exhaustion, controlled
+power cuts, and Paint preservation under actual ENOSPC remain open. Host build
+storage exhaustion also occurred during follow-up; the agent stopped new fault
+writes and kept later inspection read-only. That host event is not a guest
+storage-test success. Evidence and limitations are retained in ignored
+`build/storage-qa/RESULTS.txt`, `serial.log` and `enospc.sh`.
+
+The installer build was completed after reclaiming disposable build staging,
+unused intermediate Docker images and build cache. Qualified VM disks were
+preserved. Physical HP, listening, extended-operation and other previously
+listed qualification limits remain unchanged.
 
 ## Preparing a USB after qualification
 

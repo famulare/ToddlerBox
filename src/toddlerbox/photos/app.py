@@ -27,6 +27,7 @@ MAX_PHOTO_PIXELS = 40_000_000
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
+from toddlerbox.ui import theme
 from toddlerbox.ui.common import (
     Button,
     PointerInput,
@@ -323,12 +324,15 @@ class PhotosApp:
         self.pointer_down = False
         self.pointer_input = PointerInput()
         self.show_arrows = bool(self.config.get("photos", {}).get("show_arrows", False))
-        self.font = pygame.font.SysFont("sans", 18)
+        self.font = theme.ui_font(18)
 
-        self.home_button = Button(rect=pygame.Rect(self.screen_rect.width - 90, 20, 70, 50), fill=(240, 240, 240))
-        self.left_arrow = Button(rect=pygame.Rect(self.main_rect.left + 20, self.screen_rect.centery - 30, 50, 60), fill=(245, 245, 245))
-        self.right_arrow = Button(rect=pygame.Rect(self.main_rect.right - 70, self.screen_rect.centery - 30, 50, 60), fill=(245, 245, 245))
+        self.home_button = Button(rect=theme.home_rect(self.screen_rect), fill=theme.PAPER)
+        self.left_arrow = Button(rect=pygame.Rect(self.main_rect.left + 20, self.screen_rect.centery - 30, 50, 60), fill=theme.PAPER)
+        self.right_arrow = Button(rect=pygame.Rect(self.main_rect.right - 70, self.screen_rect.centery - 30, 50, 60), fill=theme.PAPER)
 
+        self.left_arrow.image = theme.arrow("left", (40, 48))
+        self.right_arrow.image = theme.arrow("right", (40, 48))
+        self.empty_icon = theme.artwork("photos", (96, 96))
         self._refresh_library()
 
     def _handle_resume(self, reason: str) -> None:
@@ -510,15 +514,17 @@ class PhotosApp:
         self.scroll_y = max(0, min(self._max_scroll(), self.scroll_y + delta))
 
     def _render(self) -> None:
-        self.screen.fill((246, 246, 246))
-        pygame.draw.rect(self.screen, (230, 230, 230), self.strip_rect)
+        self.screen.fill(theme.BACKGROUND)
+        pygame.draw.rect(self.screen, theme.PANEL, self.strip_rect, border_radius=18)
 
         if self.current_image:
             image_rect = self.current_image.get_rect(center=self.main_rect.center)
             self.screen.blit(self.current_image, image_rect)
         elif not self.items and self._future is None:
-            text = self.font.render("No photos found", True, (50, 50, 50))
-            self.screen.blit(text, text.get_rect(center=self.main_rect.center))
+            center = self.main_rect.center
+            self.screen.blit(self.empty_icon, self.empty_icon.get_rect(center=(center[0], center[1] - 24)))
+            text = self.font.render("No photos yet", True, theme.MUTED)
+            self.screen.blit(text, text.get_rect(center=(center[0], center[1] + 48)))
 
         start, end = self._visible_index_bounds()
         for idx in range(start, end + 1):
@@ -530,12 +536,13 @@ class PhotosApp:
                 self.thumb_width,
                 self.thumb_size,
             )
+            theme.card(self.screen, rect, selected=idx == self.current_index)
             if item.thumb:
                 thumb_rect = item.thumb.get_rect(center=rect.center)
                 self.screen.blit(item.thumb, thumb_rect)
-            pygame.draw.rect(self.screen, (120, 120, 120), rect, width=2)
+            pygame.draw.rect(self.screen, theme.BORDER, rect, width=1)
             if idx == self.current_index:
-                pygame.draw.rect(self.screen, (200, 60, 60), rect, width=3)
+                theme.selection(self.screen, rect, radius=4)
 
         draw_home_button(self.screen, self.home_button.rect)
 

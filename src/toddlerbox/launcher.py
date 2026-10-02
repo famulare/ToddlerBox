@@ -13,7 +13,7 @@ import pygame
 
 from toddlerbox.config import load_config
 from toddlerbox.music.app import run_embedded as run_music_embedded
-from toddlerbox.music.visuals import draw_music_icon
+from toddlerbox.ui import theme
 from toddlerbox.paths import get_data_root
 from toddlerbox.paint.app import run_embedded as run_paint_embedded
 from toddlerbox.photos.app import PhotosApp, run_embedded as run_photos_embedded
@@ -94,7 +94,7 @@ def _module_name_for_command(command: List[str]) -> Optional[str]:
 
 
 def _build_buttons(apps: List[LauncherApp], screen_rect: pygame.Rect) -> List[Button]:
-    icon_size = max(120, int(min(screen_rect.width, screen_rect.height) * 0.18))
+    icon_size = max(120, min(184, int(min(screen_rect.width, screen_rect.height) * 0.23)))
     gap = int(icon_size * 0.3)
     total_width = icon_size * len(apps) + gap * (len(apps) - 1)
     start_x = screen_rect.centerx - total_width // 2
@@ -102,13 +102,18 @@ def _build_buttons(apps: List[LauncherApp], screen_rect: pygame.Rect) -> List[Bu
     buttons = []
     for idx, app in enumerate(apps):
         rect = pygame.Rect(start_x + idx * (icon_size + gap), y, icon_size, icon_size)
-        image = load_image(app.icon_path, (icon_size, icon_size))
+        module = _module_name_for_command(app.command)
+        image = load_image(app.icon_path)
+        if image is None and module == "toddlerbox.music":
+            image = theme.artwork("music", (icon_size, icon_size))
+        if image is not None:
+            image = theme.activity_tile(image, app.name, icon_size)
         buttons.append(
             Button(
                 rect=rect,
                 label=app.name,
                 image=image,
-                fill=(245, 245, 245),
+                fill=theme.PAPER,
                 border_width=0,
             )
         )
@@ -194,9 +199,7 @@ def _draw_launcher_frame(
 ) -> None:
     screen.fill(background)
     for app, button in zip(apps, buttons):
-        if button.image is None and _module_name_for_command(app.command) == "toddlerbox.music":
-            draw_music_icon(screen, button.rect)
-        elif button.image is None:
+        if button.image is None:
             draw_placeholder_icon(screen, button.rect, app.name, border_width=0)
         else:
             button.draw(screen)
@@ -209,7 +212,7 @@ def main() -> None:
     apps = _load_apps(config)
     screen, screen_rect = create_fullscreen_window()
     clock = pygame.time.Clock()
-    background = (248, 244, 236)
+    background = theme.BACKGROUND
 
     photos_app: Optional[PhotosApp] = None
     try:

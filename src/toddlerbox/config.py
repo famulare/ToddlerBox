@@ -27,7 +27,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
             },
             {
                 "name": "Music",
-                "icon_path": "",
+                "icon_path": "assets/icons/music/music.png",
                 "command": "python -m toddlerbox.music",
             },
         ]
