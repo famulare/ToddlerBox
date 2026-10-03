@@ -131,11 +131,13 @@ these cases; no family photographs are used on the builder.
 
 ## Consent website upkeep
 
-The public consent pages are hosted from the root of the persistent orphan branch
-`codex/drive-sync-site`, not application `main`. Do not merge that hosting branch
-into the app or delete it when cleaning up feature branches. Keep `privacy.html`
-there consistent with [the repository privacy page](drive-sync-privacy.md), and
-keep credentials, personal email addresses and family data out of both.
+The public consent source lives in `main/docs`: `index.html`, `privacy.html`,
+`style.css` and `.nojekyll`. After this feature is merged, the parent maintainer
+switches GitHub Pages to **main /docs** and verifies both existing public URLs.
+Keep the old `codex/drive-sync-site` hosting branch intact until that switch is
+verified; do not merge its orphan history into the application. Keep `privacy.html`
+consistent with [the repository privacy page](drive-sync-privacy.md). Credentials,
+personal email addresses and family data belong in neither source nor Pages.
 
 JPEG-compatible MPO originals (including Apple multi-picture/gain-map JPEGs)
 retain all their original bytes. Photos and import validation decode only the

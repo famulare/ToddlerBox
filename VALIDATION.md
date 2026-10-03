@@ -405,7 +405,11 @@ credentials/family data in source or image artifacts.
 Repeatable host commands (all fixtures are synthetic):
 
 ```sh
+mkdir -p build/drive-sync-qa/baseline-source
 git archive e726201b2d201bc31c2136860bc48e7ee7750017 | tar -x -C build/drive-sync-qa/baseline-source
+PYTHONPATH="$PWD/build/drive-sync-qa/baseline-source/src" \
+  SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q \
+  build/drive-sync-qa/baseline-source/tests
 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q
 uv run --frozen python scripts/check-sync-rendering.py \
   --baseline build/drive-sync-qa/baseline-source \
@@ -420,6 +424,8 @@ differ only inside the 48×48 receipt area, and **24 saved-output comparisons**
 match byte-for-byte. These include Paint PNG, Typing JSON, photo thumbnails and
 nonuniform oriented JPEG/MPO decoder hashes/dimensions. Music and Reading use
 the actual run-loop flip hooks. Contact sheets were visually inspected.
+
+![Synthetic receipt on all six screens](docs/images/drive-sync-receipt.png)
 
 Focused checks cover one-keyboard/repeated/rearmed holds and parent priority;
 credential/nonce/PID/generation checks and five-second save expiry; actual kernel
@@ -449,3 +455,29 @@ Build/VM evidence and final artifact identity are appended after qualification.
 Local Google tests, physical HP touchscreen/graphics/audio, USB media readback
 and extended operation remain separate acceptance gates. This section does not
 claim those gates from synthetic or VM results.
+
+### Local private acceptance evidence (reported by local orchestration)
+
+No private input was transferred to this builder. The local Mac reports:
+
+- All **102 original photos**, **112,575,331 bytes**, imported through the actual
+  worker after the MPO compatibility fix, with every original SHA-256 unchanged.
+- Actual e726201 versus bf48568 Photos outputs: all **99 previously supported
+  originals** have identical main/thumbnail RGBA hashes, sizes and orientation;
+  **three** 49,766,400-pixel JPEGs are newly supported. The 30 MPO JPEGs retain
+  their baseline output exactly after restoring the shared draft path.
+- The same public render harness passed 24 unchanged frames, 12 bounded overlay
+  differences and 24 saved-output comparisons on the Mac; the synthetic overview
+  was visually checked. Its focused Drive-worker suite passed **41 tests**.
+- Disposable real-Drive tests with the parent's own Production Desktop client
+  and exact drive.readonly + drive.file scopes passed using rclone **1.75.1** and
+  separately official Mac rclone **1.60.1**: a picture created by a separate
+  Desktop client was read/downloaded, Paint/current and archived Typing uploaded,
+  UTF-8 exports verified, old Paint/Typing bytes verified in History before
+  replacement, explicit restore preserved newer local work, save timeout marked
+  partial while preserving last success, and local deletion did not delete cloud
+  work. Original Photos and Initial backup deposits were individually verified.
+
+These are local reports, not builder cloud tests. The Mac 1.60.1 build differs
+from Ubuntu's security-patched package and Go toolchain; installed-VM checks of
+that exact package are recorded separately.

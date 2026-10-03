@@ -222,9 +222,10 @@ See [setup and parent maintenance](../docs/drive-sync.md),
 [privacy/scopes](../docs/drive-sync-privacy.md), and the
 [verified photos-only package format](../docs/drive-sync-package.md).
 The public consent URLs are https://famulare.github.io/ToddlerBox/ and
-https://famulare.github.io/ToddlerBox/privacy.html. Their persistent orphan branch
-`codex/drive-sync-site` is hosting source; never merge it into application main or
-remove it with feature-branch cleanup.
+https://famulare.github.io/ToddlerBox/privacy.html. Their source is versioned in `main/docs`.
+After merge, the parent maintainer switches Pages to main /docs and verifies
+both URLs; preserve the old `codex/drive-sync-site` hosting branch until then.
+Do not merge that branch's orphan history into application main.
 
 Hold Ctrl+Alt+S for two seconds in child mode. The independent controller sends
 an authenticated shooting-star receipt and starts one explicit systemd job.
