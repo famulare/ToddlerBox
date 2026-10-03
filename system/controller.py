@@ -10,6 +10,8 @@ import os
 from pathlib import Path
 import pwd
 import selectors
+import select
+import re
 import signal
 import socket
 import struct
@@ -90,6 +92,130 @@ class EscapeChord:
         if self.since is None:
             self.since = now
         return now - self.since >= 2
+
+
+
+class SyncChord:
+    """One receipt per continuous two-second hold, independently per keyboard."""
+    def __init__(self):
+        self.since = {}
+        self.fired = set()
+
+    def poll(self, keys, now, *, parent_priority=False):
+        active = {fd for fd, held in keys.items() if held & CTRL and held & ALT and 31 in held}
+        self.since = {fd: since for fd, since in self.since.items() if fd in active}
+        self.fired.intersection_update(active)
+        for fd in active:
+            self.since.setdefault(fd, now)
+        if parent_priority:
+            self.fired.update(active)
+            return False
+        ready = {fd for fd in active - self.fired if now - self.since[fd] >= 2}
+        self.fired.update(ready)
+        return bool(ready)
+
+
+class SyncBridge:
+    """Bounded asynchronous IPC; sync never waits in the controller event loop."""
+    def __init__(self, health, control, child_uid):
+        self.health, self.control, self.child_uid = health, control, child_uid
+        self.peer = None
+        self.generation = 0
+        self.pending = {}
+        self.starters = []
+
+    def clear_peer(self):
+        if self.peer:
+            os.close(self.peer[1])
+        self.peer = None
+
+    def frame(self, credentials, address, now):
+        if not credentials or credentials[1] != self.child_uid:
+            return
+        if not isinstance(address, bytes) or not address.startswith(b'\0toddlerbox-app-'):
+            return
+        pid = credentials[0]
+        if not self.peer or self.peer[0] != pid or self.peer[2] != address:
+            processes = launcher_processes(self.child_uid)
+            pidfd = processes.pop(pid, None)
+            for other in processes.values():
+                os.close(other)
+            if pidfd is None:
+                return
+            self.clear_peer()
+            self.generation += 1
+            self.peer = (pid, pidfd, address, now)
+        else:
+            self.peer = (*self.peer[:3], now)
+
+    def healthy(self, now):
+        if self.peer and now - self.peer[3] <= 5:
+            try:
+                return not select.select([self.peer[1]], [], [], 0)[0]
+            except (OSError, ValueError):
+                pass
+        return False
+
+    def receipt(self, now):
+        if self.healthy(now):
+            try:
+                self.health.sendto(b'sync-received', self.peer[2])
+            except OSError:
+                pass
+
+    def start(self, now):
+        self.receipt(now)  # Also when the job is active, offline or unconfigured.
+        self.starters = [p for p in self.starters if p.poll() is None]
+        if self.starters:
+            return
+        try:
+            self.starters.append(subprocess.Popen(
+                ['systemctl', 'start', '--no-block', 'toddlerbox-sync.service'],
+                stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL))
+        except OSError:
+            pass  # Parent status/diagnostics are separate from the child receipt.
+
+    def reply(self, address, nonce, result):
+        try:
+            self.control.sendto(b'save-result:' + nonce + b':' + result, address)
+        except OSError:
+            pass
+
+    def request(self, message, address, now):
+        nonce = message.removeprefix(b'save-current:')
+        if (not re.fullmatch(b'[0-9a-f]{32}', nonce) or
+                not isinstance(address, bytes) or not address.startswith(b'\0toddlerbox-sync-')):
+            return
+        if len(self.pending) >= 4 or not self.healthy(now):
+            self.reply(address, nonce, b'unavailable')
+            return
+        if nonce in self.pending:
+            return
+        self.pending[nonce] = (address, self.peer[0], now + 5, self.generation)
+        try:
+            self.health.sendto(b'save-current:' + nonce, self.peer[2])
+        except OSError:
+            self.pending.pop(nonce)
+            self.reply(address, nonce, b'unavailable')
+
+    def result(self, message, credentials):
+        match = re.fullmatch(b'save-result:([0-9a-f]{32}):(ok|failed)', message)
+        if not match or not credentials or credentials[1] != self.child_uid:
+            return
+        nonce, result = match.groups()
+        pending = self.pending.get(nonce)
+        if (pending and credentials[0] == pending[1] and self.peer
+                and self.peer[0] == credentials[0] and self.generation == pending[3]
+                and time.monotonic() < pending[2] and self.healthy(time.monotonic())):
+            self.pending.pop(nonce)
+            self.reply(pending[0], nonce, result)
+
+    def tick(self, now):
+        for nonce, (address, pid, deadline, generation) in list(self.pending.items()):
+            if now >= deadline:
+                self.pending.pop(nonce)
+                self.reply(address, nonce, b'timeout')
+        self.starters = [p for p in self.starters if p.poll() is None]
 
 
 def configure_gdm(mode: str) -> None:
@@ -275,6 +401,8 @@ def main() -> None:
     selector.register(health, selectors.EVENT_READ, "health")
     selector.register(control, selectors.EVENT_READ, "control")
     chord = EscapeChord()
+    sync_chord = SyncChord()
+    sync_bridge = SyncBridge(health, control, child_uid)
     devices: dict[str, int] = {}
     watchdog = Watchdog(time.monotonic())
     next_scan = 0.0
@@ -293,6 +421,7 @@ def main() -> None:
     def transition(target: str, reason: str) -> None:
         nonlocal mode, watchdog
         print(f"ToddlerBox mode={target} reason={reason}", flush=True)
+        sync_bridge.clear_peer()
         if target == "parent":
             # Remain recoverable across reboot, even if runtime remains broken.
             try:
@@ -335,17 +464,29 @@ def main() -> None:
                     # A preceding control event can drain health during shutdown,
                     # leaving a stale readability notification in this batch.
                     continue
-                uid = sender_uid(ancillary)
+                if _flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC):
+                    continue
+                credentials = sender_credentials(ancillary)
+                uid = credentials[1] if credentials else None
                 if key.data == "health" and uid == child_uid and mode == "child":
                     if message == b"frame":
                         watchdog.frame(time.monotonic())
+                    elif message == b"app-frame":
+                        sync_bridge.frame(credentials, _address, time.monotonic())
+                    elif message.startswith(b"save-result:"):
+                        sync_bridge.result(message, credentials)
                 elif key.data == "control" and uid == 0:
+                    if message.startswith(b"save-current:"):
+                        sync_bridge.request(message, _address, time.monotonic())
+                        continue
                     reply = b"OK"
                     if message in {b"parent", b"child"}:
                         try:
                             transition(message.decode(), "parent command")
                         except BlockingIOError as error:
                             reply = f"ERROR: {error}".encode()
+                    elif message == b"sync":
+                        sync_bridge.start(time.monotonic())
                     elif message == b"rollback":
                         try:
                             if mode != "parent":
@@ -377,10 +518,15 @@ def main() -> None:
                     os.close(key.fd)
                     devices.pop(key.data, None)
                     chord.keys.pop(key.fd, None)
+        sync_bridge.tick(time.monotonic())
         if mode == "child":
             if chord.held(time.monotonic()):
                 transition("parent", "Ctrl+Alt+Home held for two seconds")
                 continue
+            parent_priority = any(keys & CTRL and keys & ALT and HOME in keys
+                                  for keys in chord.keys.values())
+            if sync_chord.poll(chord.keys, time.monotonic(), parent_priority=parent_priority):
+                sync_bridge.start(time.monotonic())
             action = watchdog.check(time.monotonic())
             if action == "parent":
                 transition("parent", "watchdog restart budget exhausted")

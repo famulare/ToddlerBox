@@ -383,3 +383,12 @@ Contributions are welcome if they respect the core design principles.
 
 Application code: MIT. Bundled media have separate source and license notices
 under [assets/music](assets/music/README.md) and [assets/reading](assets/reading/README.md).
+
+## Optional private Drive copies
+
+A parent can request an offline-first, copy-only Drive transfer by holding
+**Ctrl+Alt+S for two seconds**. The shooting star confirms receipt only; parent
+status reports the result. There are no automatic sync jobs. See
+[setup and operation](docs/drive-sync.md), the
+[private package format](docs/drive-sync-package.md), and the
+[privacy and Google permission explanation](docs/drive-sync-privacy.md).

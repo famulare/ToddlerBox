@@ -15,7 +15,7 @@ from PIL import Image
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
-from toddlerbox.runtime import health
+from toddlerbox.runtime import health, control
 from toddlerbox.runtime.persistence import atomic_write, has_archive_reserve, sync_directory
 from toddlerbox.ui import theme
 from toddlerbox.ui.common import (
@@ -1093,6 +1093,7 @@ class PaintApp:
         if self.recall_open:
             self._draw_recall_overlay()
 
+        control.before_flip(self.screen, self._autosave_latest)
         pygame.display.flip()
 
     def run(self, *, quit_on_exit: bool = True) -> None:

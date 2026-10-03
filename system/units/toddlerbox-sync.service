@@ -1,0 +1,35 @@
+[Unit]
+Description=ToddlerBox explicitly requested private Drive copies
+# Deliberately no Wants=network-online, timer, path unit or Install section.
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/libexec/toddlerbox-sync-worker
+ExecStopPost=/usr/local/sbin/toddlerbox-sync finalize
+TimeoutStartSec=15min
+TimeoutStopSec=5s
+KillMode=control-group
+Restart=no
+Nice=15
+IOSchedulingClass=idle
+CPUWeight=10
+IOWeight=10
+MemoryMax=512M
+TasksMax=32
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/etc/toddlerbox-sync /var/lib/toddlerbox-sync /var/lib/toddlerbox/photos/library
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=CAP_DAC_OVERRIDE CAP_DAC_READ_SEARCH
+LimitCORE=0

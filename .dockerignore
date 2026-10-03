@@ -5,3 +5,8 @@ data
 __pycache__
 .pytest_cache
 *.egg-info
+
+# Private sync transfers must never enter source or image contexts.
+private-sync/
+*.toddlerbox-setup.tar.gz
+rclone.conf

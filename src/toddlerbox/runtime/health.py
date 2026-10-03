@@ -31,6 +31,8 @@ def frame_complete() -> None:
         return
     _last_frame = now
     _send(b"frame")
+    from toddlerbox.runtime import control
+    control.frame_complete()
 
 
 def shutdown_complete() -> None:

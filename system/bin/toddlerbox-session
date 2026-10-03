@@ -8,6 +8,7 @@ export SDL_VIDEODRIVER=wayland XDG_SESSION_TYPE=wayland LIBSEAT_BACKEND=logind
 # unaccelerated virtio display and avoids depending on old laptop GL drivers.
 export WLR_RENDERER=pixman SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR=0
 export PYGAME_HIDE_SUPPORT_PROMPT=1 KIDBOX_CONFIG=/etc/toddlerbox/config.yaml
+export TODDLERBOX_APP_CONTROL=1
 export TODDLERBOX_HEALTH_SOCKET=/run/toddlerbox-health.sock
 # Cage owns the seat. Do not use -s (which enables virtual-terminal switching).
 # Inhibitors live only as long as the child session; parent GNOME has normal keys.

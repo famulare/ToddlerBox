@@ -7,6 +7,12 @@ source_dir=/usr/local/share/toddlerbox-build
 install -d /etc/toddlerbox /usr/local/lib/toddlerbox-system /usr/local/libexec
 install -d -m 0700 /var/lib/toddlerbox-system
 install -m 0644 "$source_dir/controller.py" /usr/local/lib/toddlerbox-system/controller.py
+install -d /usr/local/lib/toddlerbox-system/tbx_sync
+install -m 0644 "$source_dir"/tbx_sync/*.py /usr/local/lib/toddlerbox-system/tbx_sync/
+install -m 0644 /source/src/toddlerbox/runtime/image_safety.py /usr/local/lib/toddlerbox-system/tbx_sync/image_safety.py
+install -m 0755 "$source_dir/bin/toddlerbox-sync" /usr/local/sbin/
+install -m 0755 "$source_dir/bin/toddlerbox-sync-worker" /usr/local/libexec/
+install -d -m 0700 /etc/toddlerbox-sync /var/lib/toddlerbox-sync
 install -m 0755 "$source_dir/bin/toddlerbox-mode" "$source_dir/bin/toddlerbox-firstboot" "$source_dir/bin/toddlerbox-install-release" /usr/local/sbin/
 install -m 0755 "$source_dir/bin/toddlerbox-session" /usr/local/libexec/
 install -m 0644 "$source_dir"/units/* /etc/systemd/system/
@@ -25,6 +31,7 @@ useradd --create-home --shell /bin/bash toddlerbox
 passwd -l parent
 passwd -l toddlerbox
 install -d -o toddlerbox -g toddlerbox -m 0700 /var/lib/toddlerbox
+install -d -o toddlerbox -g toddlerbox -m 0755 /var/lib/toddlerbox/photos /var/lib/toddlerbox/photos/library /var/lib/toddlerbox/photos/thumbs
 install -d /var/lib/AccountsService/users /usr/share/wayland-sessions
 cat >/var/lib/AccountsService/users/toddlerbox <<'EOF'
 [User]
@@ -55,6 +62,23 @@ Type=Application
 Icon=applications-games
 Categories=System;
 EOF
+for command in setup run status reconnect; do
+    case "$command" in
+        setup) title='Set Up ToddlerBox Drive' ;;
+        run) title='Sync ToddlerBox Now' ;;
+        status) title='ToddlerBox Sync Status' ;;
+        reconnect) title='Reconnect ToddlerBox Drive' ;;
+    esac
+    cat >"/usr/share/applications/toddlerbox-sync-$command.desktop" <<EOF
+[Desktop Entry]
+Name=$title
+Exec=pkexec /usr/local/sbin/toddlerbox-sync $command
+Terminal=true
+Type=Application
+Icon=folder-remote
+Categories=System;
+EOF
+done
 cat >/etc/polkit-1/rules.d/49-toddlerbox-inhibit.rules <<'EOF'
 polkit.addRule(function(action, subject) {
     if (subject.user == "toddlerbox" &&

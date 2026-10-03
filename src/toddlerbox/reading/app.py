@@ -12,7 +12,7 @@ from toddlerbox.paths import get_data_root
 from toddlerbox.reading.catalog import load_catalog, options_from_config
 from toddlerbox.reading.playback import SpeechPlayer
 from toddlerbox.reading.selection import choose_next
-from toddlerbox.runtime import get_runtime_logger, health
+from toddlerbox.runtime import get_runtime_logger, health, control
 from toddlerbox.ui import theme
 from toddlerbox.ui.common import (PointerInput, create_fullscreen_window, draw_home_button,
                                   is_escape_chord, is_primary_pointer_event, pointer_event_pos)
@@ -231,6 +231,7 @@ class ReadingApp:
                 if not self._available():
                     break
                 self.render()
+                control.before_flip(self.screen)
                 pygame.display.flip()
                 health.frame_complete()
                 self.clock.tick(60)
