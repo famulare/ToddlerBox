@@ -77,3 +77,7 @@ Its exact bytes are Python `json.dumps(value, sort_keys=True, indent=2)` encoded
 as UTF-8 plus one final newline. The worker and Mac helper both use these bytes.
 Matching immutable cloud files are skipped and then downloaded for SHA-256
 verification; different existing bytes cause failure, never replacement.
+
+JPEG-compatible MPO originals (including Apple multi-picture/gain-map JPEGs)
+retain all their original bytes. Photos and import validation decode only the
+primary frame using the same bounded JPEG draft path. Animated PNG is refused.

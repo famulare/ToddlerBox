@@ -380,3 +380,72 @@ USB's contents. Boot it on the backed-up target computer in UEFI mode. The
 installer separately identifies the internal target disk and requires an exact
 erase phrase before replacing that disk. On first boot, set the parent password.
 Preserve `/var/lib/toddlerbox` before any reinstallation.
+
+## On-demand Drive sync — feature qualification
+
+Feature baseline is the actual Git commit
+`e726201b2d201bc31c2136860bc48e7ee7750017`; `origin/main` was fetched again and
+remained there. An unmodified `git archive` of that commit is retained under
+`build/drive-sync-qa/baseline-source`. Both versions were checked in the same
+Linux environment with uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8 / SDL 2.32.10,
+Pillow 12.3.0, PyYAML 6.0.3 and pytest 9.1.1 from the frozen project dependencies.
+The unmodified baseline passed **201 tests**; the current feature passed
+**253 tests** in 5.04 seconds. The actual AF_UNIX credential integration test
+requires Unix-socket permission in a sandbox; its initial denied `bind()` was a
+sandbox limitation, and it passed when that permission was provided. Linux
+credential/pidfd checks were retained; Darwin does not supply those APIs.
+
+Intended differences: explicit Ctrl+Alt+S sync and its transient receipt;
+root-owned copy/import/recovery tooling; acceptance of large JPEG/MPO primary
+frames through bounded decoder reduction. Invariants: unchanged inactive UI,
+unchanged saved content, independent parent escape/watchdogs, existing durable
+save paths, no cloud deletion propagation, no implicit job starts, and no private
+credentials/family data in source or image artifacts.
+
+Repeatable host commands (all fixtures are synthetic):
+
+```sh
+git archive e726201b2d201bc31c2136860bc48e7ee7750017 | tar -x -C build/drive-sync-qa/baseline-source
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q
+uv run --frozen python scripts/check-sync-rendering.py \
+  --baseline build/drive-sync-qa/baseline-source \
+  --output build/drive-sync-qa/rendering-check
+./system/build.sh
+```
+
+The rendering harness imports the actual archived and current source in separate
+processes with identical inputs and dependencies. At 1024×600 and 1366×768,
+**24 inactive/expired receipt frames match exactly**, all **12 active frames**
+differ only inside the 48×48 receipt area, and **24 saved-output comparisons**
+match byte-for-byte. These include Paint PNG, Typing JSON, photo thumbnails and
+nonuniform oriented JPEG/MPO decoder hashes/dimensions. Music and Reading use
+the actual run-loop flip hooks. Contact sheets were visually inspected.
+
+Focused checks cover one-keyboard/repeated/rearmed holds and parent priority;
+credential/nonce/PID/generation checks and five-second save expiry; actual kernel
+rejection of unprivileged app packets; stable upload inputs despite subsequent
+edits and rejection of an in-place snapshot race; partial save results; preserved
+history with checksum verification before replacement; interrupted download,
+offline, authentication and disk-reserve failures; concurrent-job exclusion;
+actual stalled-subprocess termination; killed/timed-out status reconciliation;
+verified/repeatable package import, private transfer consumption only after
+success, path traversal/symlink/hardlink/case collisions; explicit Recall restore;
+and the actual Mac package helper's synthetic round trip.
+
+Synthetic 49,766,400-pixel JPEG and two-frame MPO containers are assembled from
+small encoded blocks without allocating a full source pixel image. Thumbnail,
+main-image and importer paths reduce before decode and preserve original bytes.
+The largest importer decode observed is 4096×3038 (12,443,648 pixels); full-resolution
+and PNG paths still reject above 40M pixels, JPEG headers above 80M are refused,
+and animated PNG remains rejected. Ubuntu's actual root-worker Pillow 10.2.0
+also passed the JPEG/MPO/PNG checks. No global Pillow bomb limit was raised.
+
+The pinned snapshot supplies rclone `1.60.1+dfsg-3ubuntu0.24.04.6` (its binary
+reports `v1.60.1-DEV`) and system Pillow `10.2.0-1ubuntu1.3`. An actual packaged
+rclone local-file listing confirmed the lowercase `md5` field used by the adapter.
+The Mac's rclone 1.75.1 is a separate runtime; builder tests never contact Drive.
+
+Build/VM evidence and final artifact identity are appended after qualification.
+Local Google tests, physical HP touchscreen/graphics/audio, USB media readback
+and extended operation remain separate acceptance gates. This section does not
+claim those gates from synthetic or VM results.

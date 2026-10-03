@@ -6,6 +6,7 @@ The baseline must be a git archive/worktree of the actual old commit, with asset
 """
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -27,7 +28,7 @@ def render(source, output, state):
     from toddlerbox.ui import theme
     from toddlerbox.paint.app import PaintApp
     from toddlerbox.typing.app import TypingApp
-    from toddlerbox.photos.app import PhotosApp,_prepare_thumbnail
+    from toddlerbox.photos.app import PhotosApp,_prepare_thumbnail,_decode_photo
     from toddlerbox.music.app import MusicApp
     from toddlerbox.reading.app import ReadingApp
     from toddlerbox.runtime import health
@@ -56,6 +57,22 @@ def render(source, output, state):
             fixture=Image.new('RGB',(320,240),'#7ba4a5')
             ImageDraw.Draw(fixture).ellipse((90,45,230,185),fill='#efbc62')
             fixture.save(library/'synthetic.png')
+            # Exercise actual old/new JPEG draft and EXIF paths with nonuniform
+            # image pixels. MPO contains a primary JPEG plus a second gain-map-like
+            # image; only its primary is displayed, all bytes remain untouched.
+            picture=Image.new('RGB',(2048,1536),'#497b6a')
+            sketch=ImageDraw.Draw(picture)
+            for x in range(0,2048,11):sketch.line((x,0,2047-x,1535),fill=(x%256,70,160),width=3)
+            exif=Image.Exif();exif[274]=6
+            picture.save(Path(temporary)/'oriented.jpg',exif=exif)
+            picture.save(Path(temporary)/'primary.JPEG',format='MPO',save_all=True,
+                         append_images=[Image.new('RGB',(32,24),'white')],exif=exif)
+            decode={}
+            for name in ['oriented.jpg','primary.JPEG']:
+                for target in [(320,240),(1366,768)]:
+                    raw,dimensions=_decode_photo(Path(temporary)/name,target,upscale=True)
+                    decode[name+str(target)]={'dimensions':dimensions,'sha256':hashlib.sha256(raw).hexdigest()}
+            (out/'saved-decoder.json').write_text(json.dumps(decode,sort_keys=True))
             config=yaml.safe_load((source/'config.yaml').read_text())
             config['data_root']=str(data)
             cfg=Path(temporary)/'config.yaml';cfg.write_text(yaml.safe_dump(config))

@@ -136,3 +136,13 @@ The public consent pages are hosted from the root of the persistent orphan branc
 into the app or delete it when cleaning up feature branches. Keep `privacy.html`
 there consistent with [the repository privacy page](drive-sync-privacy.md), and
 keep credentials, personal email addresses and family data out of both.
+
+JPEG-compatible MPO originals (including Apple multi-picture/gain-map JPEGs)
+retain all their original bytes. Photos and import validation decode only the
+primary frame using the same bounded JPEG draft path. Animated PNG is refused.
+
+The currently pinned Ubuntu snapshot supplies `rclone 1.60.1+dfsg-3ubuntu0.24.04.6`
+(binary reports `v1.60.1-DEV`) and system Pillow `10.2.0-1ubuntu1.3`.
+The Mac helper has been used locally with rclone 1.75.1. Do not infer provider
+compatibility solely from that newer Mac version: validate the packaged worker
+runtime separately. Changing pinned packages requires rebuilding and qualification.
