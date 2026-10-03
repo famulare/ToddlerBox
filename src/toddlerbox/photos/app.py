@@ -7,10 +7,11 @@ from datetime import datetime
 import json
 from pathlib import Path
 import time
+import warnings
 from typing import List, Optional, Tuple
 
 import pygame
-from toddlerbox.runtime import health
+from toddlerbox.runtime import health, control
 try:
     from PIL import Image, ImageOps
 except Exception:
@@ -22,7 +23,7 @@ FINGERMOTION = getattr(pygame, "FINGERMOTION", None)
 DRAG_THRESHOLD = 10
 SWIPE_THRESHOLD = 80
 SCROLL_STEP = 40
-MAX_PHOTO_PIXELS = 40_000_000
+from toddlerbox.runtime.image_safety import MAX_PHOTO_PIXELS, prepare_decoder
 
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
@@ -96,22 +97,18 @@ def _thumb_name(path: Path) -> str:
 
 def _decode_photo(path: Path, size: Optional[Tuple[int, int]] = None, upscale: bool = False) -> tuple[bytes, Tuple[int, int]]:
     """Prepare immutable, oriented pixels without calling pygame in the worker."""
-    with Image.open(path) as image:
-        # PNG/BMP orientation and conversion can allocate full-resolution copies.
-        # Check the header before decoding, even when the requested result is tiny.
-        if image.width * image.height > MAX_PHOTO_PIXELS:
-            raise ValueError(f"Photo exceeds supported {MAX_PHOTO_PIXELS}-pixel limit: {path}")
-        if size is not None:
-            # JPEG decoders can downsample before allocating the full image.
-            image.draft("RGB", (max(size), max(size)))
-        image = ImageOps.exif_transpose(image)
-        if size is not None:
-            if upscale:
-                image = ImageOps.contain(image, size, Image.Resampling.LANCZOS)
-            else:
-                image.thumbnail(size, Image.Resampling.LANCZOS)
-        image = image.convert("RGBA")
-        return image.tobytes(), image.size
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", Image.DecompressionBombWarning)
+        with Image.open(path) as image:
+            prepare_decoder(image, size)
+            image = ImageOps.exif_transpose(image)
+            if size is not None:
+                if upscale:
+                    image = ImageOps.contain(image, size, Image.Resampling.LANCZOS)
+                else:
+                    image.thumbnail(size, Image.Resampling.LANCZOS)
+            image = image.convert("RGBA")
+            return image.tobytes(), image.size
 
 
 def _surface_from_pixels(pixels: tuple[bytes, Tuple[int, int]]) -> pygame.Surface:
@@ -550,6 +547,7 @@ class PhotosApp:
             self.left_arrow.draw(self.screen, self.font)
             self.right_arrow.draw(self.screen, self.font)
 
+        control.before_flip(self.screen)
         pygame.display.flip()
 
     def run(self, *, quit_on_exit: bool = True) -> None:

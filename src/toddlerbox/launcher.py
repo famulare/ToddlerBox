@@ -20,7 +20,7 @@ from toddlerbox.paths import get_data_root
 from toddlerbox.paint.app import run_embedded as run_paint_embedded
 from toddlerbox.photos.app import PhotosApp, run_embedded as run_photos_embedded
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
-from toddlerbox.runtime import health
+from toddlerbox.runtime import health, control
 from toddlerbox.typing.app import run_embedded as run_typing_embedded
 from toddlerbox.ui.common import (
     Button,
@@ -214,6 +214,7 @@ def _draw_launcher_frame(
             draw_placeholder_icon(screen, button.rect, app.name, border_width=0)
         else:
             button.draw(screen)
+    control.before_flip(screen)
     pygame.display.flip()
 
 

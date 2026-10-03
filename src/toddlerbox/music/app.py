@@ -10,7 +10,7 @@ from toddlerbox.music.library import load_library
 from toddlerbox.music.playback import MusicPlayer
 from toddlerbox.music.visuals import HARMONY, INK, MELODY, SONG_COLORS, draw_song_icon, piano_keys
 from toddlerbox.paths import get_data_root
-from toddlerbox.runtime import get_runtime_logger, health
+from toddlerbox.runtime import get_runtime_logger, health, control
 from toddlerbox.ui import theme
 from toddlerbox.ui.common import (PointerInput, create_fullscreen_window, draw_home_button,
                                   is_escape_chord, is_primary_pointer_event, pointer_event_pos)
@@ -224,6 +224,7 @@ class MusicApp:
                     break
                 self.player.update()
                 self.render()
+                control.before_flip(self.screen)
                 pygame.display.flip()
                 health.frame_complete()
                 self.clock.tick(60)

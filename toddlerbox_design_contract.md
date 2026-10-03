@@ -236,3 +236,35 @@ data_root/
 - Cleanup acknowledgement and a bounded five-second grace precede forced termination; launcher identity is pinned with pidfds.
 - Release changes are serialized and directory-synced, with declared data-schema compatibility. Rollback retains an identifiable previous target and requires parent mode.
 - See `system/README.md` for exact behavior, artifact identity, and qualification limits.
+
+## 9. Explicit private Drive copies
+
+- Parent holds ctrl-alt-s for two seconds on one keyboard; no Shift required.
+  One request per hold, rearmed by release. Ctrl+Alt+Home retains priority.
+- Authenticated receipt is a quiet 48px shooting star left of Home for 1.5 seconds,
+  fading over the last 0.3 seconds, on the launcher and all five activities.
+  It confirms recognition, including offline/unconfigured/already-running states;
+  it conveys no transfer outcome and never enters saved content or thumbnails.
+- Root worker runs only on explicit request, with one job/transfer, low CPU/I/O
+  priority, bounded retries, disk reserve and a 15-minute service timeout.
+  No automatic boot/network/timer/watcher/restart-triggered sync exists.
+- A credential- and process-checked save-current request uses the active app's
+  normal save path. Wait at most five seconds, then stage stable durable files;
+  missing/failed acknowledgement marks the result partial. Independent parent
+  recovery and watchdogs remain effective during saves and stalled transfers.
+- Credentials, persistent device UUID and sync state are root-owned and outside
+  releases. Private setup packages are hash-verified, photos-only, repeatable and
+  never overwrite newer child work. Parent restore adds Recall archives only.
+- Directional copies: Photos down; Creations/device-UUID up; replaced cloud
+  creations preserved under History/device-UUID/run-UUID. Initial originals have
+  a verified Initial backup/date deposit. No deletion propagation or history pruning.
+- Ordinary PNG/JPEG and authoritative Typing JSON plus UTF-8 text exports; no
+  logs, thumbnails or temporary files. Unsafe paths/links, ambiguous names and
+  unsupported nested photo imports are refused rather than silently flattened.
+- Own Desktop OAuth client, Production consent, drive.readonly + drive.file.
+  The read grant is account-wide; software pins operations to its rclone-created
+  ToddlerBox root. Parent setup/status/reconnect are outside child UI.
+- Targeted JPEG decoding may accept up to 80M header pixels only after decoder
+  downsampling reduces allocation below the existing 40M decoded-pixel budget.
+  Full-resolution and non-JPEG paths retain the 40M limit and bomb protections.
+- See docs/drive-sync.md and docs/drive-sync-package.md for the public protocol.
