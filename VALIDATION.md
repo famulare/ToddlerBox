@@ -577,3 +577,32 @@ history/checksum safeguards apply; simultaneous external editing remains a limit
 The application archive alone does not install the system/controller feature:
 use the qualified installer with backup verification and human confirmation of
 the exact physical target disk.
+
+### Local publication and rollout checkpoint
+
+PR #4 was merged into `main` as `c4deb889da1dc97a303d62b7cad3fbc9edccfd68`.
+The Mac checkout was fast-forwarded to that merge without staging unrelated
+Finder metadata deletions. GitHub Pages was switched to `main /docs`, built from
+the merge, and both public consent pages matched the merged HTML byte for byte.
+The ordinary installer asset is published on
+[the qualified Drive sync prerelease](https://github.com/famulare/ToddlerBox/releases/tag/candidate-drive-sync-374e31452f4672ea);
+its GitHub asset size and SHA-256 were checked against the independently reread
+local ISO. Image identity remains `374e31452f4672ea` from `bf48568`; later changes
+record delivery and qualification without changing the built runtime.
+
+The personal Mac separately verified all 102 originals in Photos and the
+permanent initial Drive backup, preserved a second local copy, and checked all
+105 regular files in the private setup archive. Private credentials, originals,
+manifests and local test records were moved outside the public checkout. A
+102-photo SHA-256 companion and private recovery instructions support checking
+the physical laptop import before deleting transfer copies.
+
+**USB flashing remains unperformed.** Official balenaEtcher 2.1.7 was downloaded,
+checksum-verified, signature-verified and accepted by Gatekeeper as notarized.
+Repeated computer-use bridge timeouts prevented obtaining current controls
+before selecting the ISO or target. The approximately 16.4 GB external blank
+TODDLERBOX USB remains unchanged. No administrator prompt or successful flash
+is claimed. The parent recovery guide records the exact local ISO, GUI flashing
+and validation steps, managed-Mac authorization options, private import steps
+and physical acceptance checklist. Physical laptop disk selection and erase
+confirmation remain the parent's action.

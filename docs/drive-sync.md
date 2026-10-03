@@ -132,10 +132,10 @@ these cases; no family photographs are used on the builder.
 ## Consent website upkeep
 
 The public consent source lives in `main/docs`: `index.html`, `privacy.html`,
-`style.css` and `.nojekyll`. After this feature is merged, the parent maintainer
-switches GitHub Pages to **main /docs** and verifies both existing public URLs.
-Keep the old `codex/drive-sync-site` hosting branch intact until that switch is
-verified; do not merge its orphan history into the application. Keep `privacy.html`
+`style.css` and `.nojekyll`. GitHub Pages uses **main /docs**; both existing public
+URLs were checked against the merged source. The old `codex/drive-sync-site`
+hosting branch remains intact; do not merge its orphan history into the
+application. Keep `privacy.html`
 consistent with [the repository privacy page](drive-sync-privacy.md). Credentials,
 personal email addresses and family data belong in neither source nor Pages.
 

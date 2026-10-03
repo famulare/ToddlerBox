@@ -223,8 +223,8 @@ See [setup and parent maintenance](../docs/drive-sync.md),
 [verified photos-only package format](../docs/drive-sync-package.md).
 The public consent URLs are https://famulare.github.io/ToddlerBox/ and
 https://famulare.github.io/ToddlerBox/privacy.html. Their source is versioned in `main/docs`.
-After merge, the parent maintainer switches Pages to main /docs and verifies
-both URLs; preserve the old `codex/drive-sync-site` hosting branch until then.
+Pages uses main /docs; the parent maintainer verified both URLs. The old
+`codex/drive-sync-site` hosting branch remains intact for recovery.
 Do not merge that branch's orphan history into application main.
 
 Hold ctrl-alt-s for two seconds in child mode. The independent controller sends
