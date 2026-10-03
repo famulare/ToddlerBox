@@ -684,3 +684,20 @@ This patch does not diagnose the unreproduced Paint drag incident. The compiled
 compositor is the previously checked snapshot build above; the new bundle packages
 it without a compositor rebuild. Whole-OS rollback still uses the preserved USB
 image; bundle rollback restores controls/app links and retains audio packages.
+
+The executable update bundle was built from commit
+`253350775ad7125f47c9815bf39641bf4e2ce5df`, source content ID
+`5e754c3b13e41fd8`: **100,905 bytes**, SHA-256
+`6907bb8d89dada2b9e6cf8d6a23d7d16f9a4678b751bdb65a3902a492849cb3c`.
+Two actual builds produced identical bytes; the bootstrap `--help` ran, and the
+real installer staged/verified all six fixed system payloads. There is no app
+payload because this patch leaves application code unchanged.
+
+Ordinary release uploads and an explicit Content-Length upload both failed with
+HTTP 400 Bad Content-Length (even the tiny checksum file). Under the renewed
+update delivery authorization, a single unreferenced public Git blob was uploaded
+and its full API readback matched the bundle byte-for-byte. No binary was committed
+to source history. [The manifest](docs/releases/child-controls-5e754c3b13e41fd8.json)
+and [download helper](scripts/download-child-update.py) provide checksum-verified
+delivery without root privileges or cloud credentials. Later documentation commits
+do not change the built payload source identity recorded above.

@@ -10,11 +10,28 @@ An executable `.pyz` bundle includes its bootstrap updater, so no Git checkout,
 developer tools, or Python dependency installation is needed. Enter parent mode
 with Ctrl+Alt+Home and save parent desktop work. In the download directory:
 
+The first bundle's release-asset upload is blocked by the builder's HTTP proxy.
+Use the public helper to fetch and verify it, without sudo:
+
+```sh
+curl -fL https://raw.githubusercontent.com/famulare/ToddlerBox/main/scripts/download-child-update.py -o download-child-update.py
+/usr/bin/python3 download-child-update.py
+```
+
+The helper refuses to overwrite a different existing file. This is a temporary
+unreferenced public Git blob, so the binary does not enter repository history.
+Its [download manifest](releases/child-controls-5e754c3b13e41fd8.json) records the
+exact bytes/source/checksum. A local maintainer may upload these verified bytes as
+a normal release asset; use the same digest regardless of transport.
+
 ```sh
 sha256sum ToddlerBox-update.pyz
 # Compare the result with the independently published release checksum BEFORE sudo.
 sudo /usr/bin/python3 ToddlerBox-update.pyz --sha256 EXPECTED_SHA256
 ```
+
+This controls bundle's SHA-256 is
+`6907bb8d89dada2b9e6cf8d6a23d7d16f9a4678b751bdb65a3902a492849cb3c`.
 
 The updater requires Ubuntu 24.04 x86-64 and parent mode. It verifies the open
 bundle and every payload checksum, stages private copies, checks available disk
