@@ -268,3 +268,10 @@ data_root/
   downsampling reduces allocation below the existing 40M decoded-pixel budget.
   Full-resolution and non-JPEG paths retain the 40M limit and bomb protections.
 - See docs/drive-sync.md and docs/drive-sync-package.md for the public protocol.
+
+## Child-session hardware controls
+
+- Touchscreen, physical trackpad clicks and tap-to-click support the same minimal UI.
+- Volume-up/down/mute keys work in child mode without an on-screen overlay.
+- Audio commands are bounded and never block parent escape or health supervision.
+- Music and Reading share the child account audio service; parent GNOME keeps ordinary controls.

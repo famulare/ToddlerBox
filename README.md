@@ -49,6 +49,8 @@ It is a small, comprehensible appliance built on top of Ubuntu.
 
 The bootable system runs Cage directly under GDM, with no surrounding GNOME
 session. Child-session key inhibitors are released when entering parent mode.
+Tap-to-click and hardware volume/mute keys are handled in the child session.
+See [the HP controls patch](docs/child-controls.md) for updating an existing install.
 The old global keyd setup is retired. See [system/README.md](system/README.md).
 
 ---

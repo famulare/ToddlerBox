@@ -115,6 +115,60 @@ class SyncChord:
         return bool(ready)
 
 
+class VolumeKeys:
+    """Child-only media keys; bounded subprocess work never stalls supervision."""
+    ACTIONS = {113: 'mute', 114: 'down', 115: 'up'}
+
+    def __init__(self, child_uid):
+        self.child_uid = child_uid
+        self.pending = []
+        self.process = None
+        self.deadline = 0.0
+        self.next_repeat = 0.0
+
+    def event(self, code, value, now):
+        if code not in self.ACTIONS or value not in {1, 2}:
+            return
+        if value == 2 and (code == 113 or now < self.next_repeat):
+            return
+        self.next_repeat = now + .15
+        if len(self.pending) < 8:
+            self.pending.append(self.ACTIONS[code])
+
+    def tick(self, now, *, child_mode):
+        if not child_mode:
+            self.pending.clear()
+        if self.process is not None:
+            result = self.process.poll()
+            if result is None:
+                if not child_mode or now >= self.deadline:
+                    try:
+                        # Popen has not reaped this session leader, so its process
+                        # group identity cannot be reused before the next poll.
+                        os.killpg(self.process.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                return
+            if result:
+                print('Child volume command failed; inspect PipeWire/WirePlumber.', flush=True)
+            self.process = None
+        if child_mode and self.pending:
+            action = self.pending.pop(0)
+            environment = dict(os.environ)
+            environment.pop('NOTIFY_SOCKET', None)
+            try:
+                self.process = subprocess.Popen(
+                    ['/usr/sbin/runuser', '-u', 'toddlerbox', '--', '/usr/bin/env',
+                     f'XDG_RUNTIME_DIR=/run/user/{self.child_uid}',
+                     '/usr/local/libexec/toddlerbox-volume', action],
+                    env=environment, stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                    start_new_session=True)
+                self.deadline = now + 2
+            except OSError:
+                print('Child volume command could not start.', flush=True)
+
+
 class SyncBridge:
     """Bounded asynchronous IPC; sync never waits in the controller event loop."""
     def __init__(self, health, control, child_uid):
@@ -403,6 +457,7 @@ def main() -> None:
     chord = EscapeChord()
     sync_chord = SyncChord()
     sync_bridge = SyncBridge(health, control, child_uid)
+    volume_keys = VolumeKeys(child_uid)
     devices: dict[str, int] = {}
     watchdog = Watchdog(time.monotonic())
     next_scan = 0.0
@@ -511,6 +566,8 @@ def main() -> None:
                     for _sec, _usec, kind, code, value in INPUT_EVENT.iter_unpack(data):
                         if kind == 1:  # EV_KEY
                             chord.event(key.fd, code, value)
+                            if mode == "child":
+                                volume_keys.event(code, value, time.monotonic())
                         elif kind == 0 and code == 3:  # SYN_DROPPED: discard stale keys
                             chord.keys.pop(key.fd, None)
                 except OSError:
@@ -519,6 +576,7 @@ def main() -> None:
                     devices.pop(key.data, None)
                     chord.keys.pop(key.fd, None)
         sync_bridge.tick(time.monotonic())
+        volume_keys.tick(time.monotonic(), child_mode=mode == "child")
         if mode == "child":
             if chord.held(time.monotonic()):
                 transition("parent", "Ctrl+Alt+Home held for two seconds")

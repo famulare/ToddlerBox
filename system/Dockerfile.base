@@ -1,4 +1,27 @@
 ARG UBUNTU_IMAGE
+FROM ${UBUNTU_IMAGE} AS toddlerbox-cage-builder
+ARG UBUNTU_SNAPSHOT
+ENV DEBIAN_FRONTEND=noninteractive
+COPY system/cage-tap-to-click.patch /tmp/tap.patch
+RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
+    printf 'Types: deb deb-src\nURIs: https://snapshot.ubuntu.com/ubuntu/%s/\nSuites: noble noble-updates noble-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' "$UBUNTU_SNAPSHOT" >/etc/apt/sources.list.d/ubuntu.sources && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca update && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca build-dep -y --no-install-recommends cage && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca install -y --no-install-recommends libinput-dev patch && \
+    cd /tmp && apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca source cage
+RUN cd /tmp/cage-* && \
+    meson setup /tmp/cage-before -Dxwayland=disabled -Dman-pages=disabled && \
+    ninja -C /tmp/cage-before && \
+    ln -s /tmp/cage-before/cage /tmp/cage-command && (runuser -u nobody -- /tmp/cage-command -h >/tmp/cage-before-help 2>&1 || test "$?" = 1) && \
+    cat /tmp/cage-before-help && grep -q Usage /tmp/cage-before-help && \
+    patch --fuzz=0 -p1 </tmp/tap.patch && \
+    meson setup /tmp/cage-build -Dxwayland=disabled -Dman-pages=disabled && \
+    ninja -C /tmp/cage-build && \
+    ln -sf /tmp/cage-build/cage /tmp/cage-command && (runuser -u nobody -- /tmp/cage-command -h >/tmp/cage-after-help 2>&1 || test "$?" = 1) && \
+    grep -q Usage /tmp/cage-after-help && \
+    diff /tmp/cage-before-help /tmp/cage-after-help && \
+    cp /tmp/cage-build/cage /toddlerbox-cage
+
 FROM ${UBUNTU_IMAGE}
 ARG UBUNTU_SNAPSHOT
 ENV DEBIAN_FRONTEND=noninteractive
@@ -11,3 +34,6 @@ RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* /tmp/packages.txt && \
     sed -i 's/^# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen && \
     printf 'LANG=en_US.UTF-8\n' >/etc/default/locale
+
+# Ubuntu archive source plus the narrowly scoped child touchpad policy.
+COPY --from=toddlerbox-cage-builder /toddlerbox-cage /usr/local/libexec/toddlerbox-cage

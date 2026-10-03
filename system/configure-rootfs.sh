@@ -14,6 +14,7 @@ install -m 0755 "$source_dir/bin/toddlerbox-sync" /usr/local/sbin/
 install -m 0755 "$source_dir/bin/toddlerbox-sync-worker" /usr/local/libexec/
 install -d -m 0700 /etc/toddlerbox-sync /var/lib/toddlerbox-sync
 install -m 0755 "$source_dir/bin/toddlerbox-mode" "$source_dir/bin/toddlerbox-firstboot" "$source_dir/bin/toddlerbox-install-release" /usr/local/sbin/
+install -m 0755 "$source_dir/bin/toddlerbox-volume" /usr/local/libexec/
 install -m 0755 "$source_dir/bin/toddlerbox-session" /usr/local/libexec/
 install -m 0644 "$source_dir"/units/* /etc/systemd/system/
 ln -s "releases/$release_id" /opt/toddlerbox/current

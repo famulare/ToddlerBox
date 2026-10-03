@@ -1,0 +1,37 @@
+--- a/seat.c
++++ b/seat.c
+@@ -12,6 +12,8 @@
+ 
+ #include <assert.h>
+ #include <linux/input-event-codes.h>
++#include <libinput.h>
++#include <wlr/backend/libinput.h>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <wayland-server-core.h>
+@@ -432,6 +434,15 @@
+ 		handle_new_keyboard(seat, wlr_keyboard_from_input_device(device), false);
+ 		break;
+ 	case WLR_INPUT_DEVICE_POINTER:
++		/* Child-session policy only; GNOME's touchpad settings are separate. */
++		if (wlr_input_device_is_libinput(device)) {
++			struct libinput_device *pointer = wlr_libinput_get_device_handle(device);
++			if (libinput_device_config_tap_get_finger_count(pointer) > 0 &&
++			    libinput_device_config_tap_set_enabled(pointer, LIBINPUT_CONFIG_TAP_ENABLED) !=
++				    LIBINPUT_CONFIG_STATUS_SUCCESS) {
++				wlr_log(WLR_ERROR, "Could not enable touchpad tap-to-click");
++			}
++		}
+ 		handle_new_pointer(seat, wlr_pointer_from_input_device(device));
+ 		break;
+ 	case WLR_INPUT_DEVICE_TOUCH:
+--- a/meson.build
++++ b/meson.build
+@@ -152,6 +152,7 @@
+     wayland_server,
+     wlroots,
+     xkbcommon,
++    dependency('libinput'),
+     math,
+   ],
+   install: true,
