@@ -227,7 +227,7 @@ After merge, the parent maintainer switches Pages to main /docs and verifies
 both URLs; preserve the old `codex/drive-sync-site` hosting branch until then.
 Do not merge that branch's orphan history into application main.
 
-Hold Ctrl+Alt+S for two seconds in child mode. The independent controller sends
+Hold ctrl-alt-s for two seconds in child mode. The independent controller sends
 an authenticated shooting-star receipt and starts one explicit systemd job.
 The receipt is independent of transfer outcome. The worker requests a durable
 app save with a five-second deadline, snapshots stable files into private staging,

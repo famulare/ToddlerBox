@@ -239,7 +239,7 @@ data_root/
 
 ## 9. Explicit private Drive copies
 
-- Parent holds Ctrl+Alt+S for two seconds on one keyboard; no Shift required.
+- Parent holds ctrl-alt-s for two seconds on one keyboard; no Shift required.
   One request per hold, rearmed by release. Ctrl+Alt+Home retains priority.
 - Authenticated receipt is a quiet 48px shooting star left of Home for 1.5 seconds,
   fading over the last 0.3 seconds, on the launcher and all five activities.

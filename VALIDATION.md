@@ -395,7 +395,7 @@ requires Unix-socket permission in a sandbox; its initial denied `bind()` was a
 sandbox limitation, and it passed when that permission was provided. Linux
 credential/pidfd checks were retained; Darwin does not supply those APIs.
 
-Intended differences: explicit Ctrl+Alt+S sync and its transient receipt;
+Intended differences: explicit ctrl-alt-s sync and its transient receipt;
 root-owned copy/import/recovery tooling; acceptance of large JPEG/MPO primary
 frames through bounded decoder reduction. Invariants: unchanged inactive UI,
 unchanged saved content, independent parent escape/watchdogs, existing durable
@@ -451,10 +451,9 @@ reports `v1.60.1-DEV`) and system Pillow `10.2.0-1ubuntu1.3`. An actual packaged
 rclone local-file listing confirmed the lowercase `md5` field used by the adapter.
 The Mac's rclone 1.75.1 is a separate runtime; builder tests never contact Drive.
 
-Build/VM evidence and final artifact identity are appended after qualification.
-Local Google tests, physical HP touchscreen/graphics/audio, USB media readback
-and extended operation remain separate acceptance gates. This section does not
-claim those gates from synthetic or VM results.
+Build/installed-VM evidence and final artifact identity follow below. Local Google
+results are explicitly attributed to local orchestration; physical HP testing,
+USB media readback and extended operation remain separate acceptance gates.
 
 ### Local private acceptance evidence (reported by local orchestration)
 
@@ -481,3 +480,100 @@ No private input was transferred to this builder. The local Mac reports:
 These are local reports, not builder cloud tests. The Mac 1.60.1 build differs
 from Ubuntu's security-patched package and Go toolchain; installed-VM checks of
 that exact package are recorded separately.
+
+### Built image and installed-VM evidence (2026-10-03)
+
+The tested image was built from exact commit
+`bf48568a02ead0e7da80ac34c93d9e047d412ad5`, with installed content/release ID
+`374e31452f4672ea`. Subsequent documentation, consent-site and transfer-metadata
+commits do not change the bytes of this candidate. The build completed filesystem
+checks, compared raw/QCOW disk contents, and verified the installer payload. The
+public artifacts contain no Google credentials or family media. Before cleanup,
+the image's private config/state and photo library were checked empty.
+
+The installer booted under x86-64 QEMU/UEFI using **TCG**, two CPUs and 4 GiB RAM,
+with **no virtual NIC** and an independent serial console. It verified the payload,
+installed to a new 16 GiB virtual disk after the exact erase confirmation, passed
+filesystem checks/resizing, and shut down. That installed disk then booted without
+the ISO. Previous qualified Reading/Music/system VM disks were preserved.
+
+The installed system reports Ubuntu 24.04.5, kernel 6.8.0-142, Python 3.12.3,
+pygame-ce 2.5.8 / SDL 2.32.10, app Pillow 12.3.0, root-worker Pillow 10.2.0,
+and packaged rclone `1.60.1+dfsg-3ubuntu0.24.04.6` / `v1.60.1-DEV`, Go 1.22.2.
+
+| Installed-VM check | Observed result |
+| --- | --- |
+| Fresh boot | Standalone Cage child session, no child GNOME shell, healthy frames, zero retries; sync static/inactive and initially never run. |
+| Actual keyboard and graphics | `ctrl-alt-s` without Shift produced visible receipts on launcher and all five activities; every continuous hold faded without repeating, and release rearmed it. |
+| Authentication and setup | Forged child-origin packets refused; root-only configuration/state and 0600 credentials inaccessible to child. Synthetic large MPO setup imported original bytes and started no job. |
+| Actual Ubuntu rclone without networking | Explicit request ended as partial/offline-or-unreachable; authenticated durable save succeeded and child remained healthy. |
+| Synthetic transport through actual service | Initial backup, photo download, Paint/Typing uploads and UTF-8 exports completed with success and persisted counts. No real provider was contacted. |
+| Save/upload race and History | Editing Typing after private staging changed local work while uploaded bytes stayed exactly equal to the acknowledged earlier snapshot; three replaced cloud files were preserved. |
+| Active-job exclusion and receipt | A further hold visibly rendered the star while worker PID and child session stayed unchanged. Concurrent setup returned busy and retained its transfer archive. |
+| Frozen-app parent escape | With a stalled transfer and stopped launcher, Ctrl+Alt+Home reached parent mode and removed the frozen child process; worker PID remained unchanged. |
+| Watchdog during stalled sync | Startup stall and separately a previously healthy event-loop freeze recovered to healthy child frames; old PIDs disappeared while the root worker continued unchanged. |
+| Killed and timed-out jobs | Actual SIGKILL recorded interrupted; systemd timeout recorded timed_out. Both retained the earlier successful completion/counts. |
+| Actual full photo filesystem | A disposable 16 MiB photo filesystem was filled to ENOSPC. Publication was refused, old files survived, partial failure was recorded, and last success remained. |
+| Repeat setup and consumption | Same verified package preserved UUID, credentials, current work and downloaded photos, then consumed only the successfully installed transfer archive. |
+| Parent GNOME and desktop tool | Authenticated parent login rendered GNOME, normal keyboard search found the tools, and the Sync Status entry opened its authenticated terminal with the expected partial/last-success record. Return to child restored healthy Cage frames. |
+| Repeated installed boot | Healthy standalone child session with zero retries, UUID and saved-file SHA-256 values unchanged, last run ID unchanged, no automatic sync, no NIC, no remaining QA override, and production timeout still 15min. |
+
+![Parent GNOME status entry with synthetic data](docs/images/drive-sync-parent-status.png)
+
+Fault-injection overrides existed only under `/run/systemd/system` in the
+**installed disposable VM**, never in the ISO. The transport fixture was a local
+synthetic executable bind-mounted over rclone while retaining the production
+service sandbox. A first fixture location under `/run` was refused by its noexec
+mount; moving that fixture into private executable state fixed the harness without
+removing the guard. The timeout check shortened only `TimeoutStartSec` to 12s;
+production was checked at 15min before and after. All overrides were removed.
+The photo ENOSPC test used a separate mounted filesystem and then restored the
+original library. Fixed-delay visual/startup assertions were replaced with bounded
+waits for actual pixels or healthy frames under slow TCG; they are not reported
+as product passes until the corresponding observable check passed.
+
+The build/VM logs and synthetic screenshots are retained in
+`build/drive-sync-qa/` and `build/vm/`; the committed receipt contact sheet is above.
+To repeat the faults after a fresh installation, use independent serial access:
+request sync with `sudo toddlerbox-sync run`, inspect `sudo toddlerbox-sync status`,
+stop only its worker with `sudo systemctl kill --kill-whom=main -s KILL toddlerbox-sync`,
+and inspect the resulting interrupted record. For a stalled-transport test, put a
+synthetic `#!/bin/sh` / `exec /bin/sleep 600` fixture under private executable state
+and use a temporary runtime service `BindReadOnlyPaths=...:/usr/bin/rclone` override.
+Keep all production restrictions. While the worker is stalled, send actual
+key-down/key-up events for the two-second chords, freeze only the identified
+launcher PID with SIGSTOP, and verify replacement PID, healthy frames, parent
+transition and unchanged worker PID. Remove the override and daemon-reload before
+checking production timeout and reboot behavior. Never run these destructive
+fault fixtures on the child's live computer or against real Drive data.
+
+Artifact SHA-256 values:
+
+```text
+67a11431ee0d98998fac70c34f10a175886757a05c9a5aa4ba3be51a80b5049f  toddlerbox.img
+c9088485420f88e73cb7a3d2cec80411f391db154174f521708a0f7852d9772a  toddlerbox.qcow2
+def9b5cfcd55e4ebc2c66938b5b43006f584ae49d620ddd1ab3d5d607bf92fa4  toddlerbox-installer.iso
+e5240d239e08d738bc4fb975a9cae3db0154a3924d688649d350274e16438e5b  toddlerbox-app-374e31452f4672ea.tar.gz
+```
+
+The installer is **1,530,040,320 bytes**. All 183 temporary public transfer chunks
+were uploaded and are listed in
+[the complete checksum manifest](docs/builds/374e31452f4672ea-transfer.json).
+The local Mac reports reassembly and an independent full-file SHA-256 reread both
+matched. Local orchestration owns publishing ordinary assets on release
+`candidate-drive-sync-374e31452f4672ea` (GitHub release ID 402370934), merging the
+reviewed PR, switching Pages to main/docs and flashing/readback of the USB. The
+builder's ordinary upload endpoint returned HTTP 400 Bad Content-Length even for
+255 bytes; the approved temporary blob route succeeded without binary commits.
+
+Limits: TCG/UEFI VM qualification does not establish HP touchscreen edges,
+multitouch, graphics, speakers, USB/Secure Boot compatibility, sleep/resume,
+physical power-loss durability, whole-root ENOSPC or extended soak performance.
+The actual Ubuntu rclone binary was exercised offline and with a local listing;
+real Google transport checks used the separately reported Mac builds. Drive
+operations through rclone cannot provide atomic compare-and-swap against another
+writer changing the same cloud file after the worker's last check. The documented
+history/checksum safeguards apply; simultaneous external editing remains a limit.
+The application archive alone does not install the system/controller feature:
+use the qualified installer with backup verification and human confirmation of
+the exact physical target disk.

@@ -66,7 +66,7 @@ start empty on a clean image; later setup never overwrites their work. Add
 Originals on the Mac remain untouched. Repeating the same installed package does
 not roll back refreshed credentials or replace newer local files.
 
-Hold **Ctrl+Alt+S for two seconds** from the child session. Shift is unnecessary.
+Hold **ctrl-alt-s for two seconds** from the child session. Shift is unnecessary.
 The keys must belong to one keyboard; release the chord before requesting again.
 Ctrl+Alt+Home retains priority. A small shooting star appears for 1.5 seconds near
 Home on every healthy child screen, including the launcher. It means receipt,

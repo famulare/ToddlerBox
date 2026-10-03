@@ -387,7 +387,7 @@ under [assets/music](assets/music/README.md) and [assets/reading](assets/reading
 ## Optional private Drive copies
 
 A parent can request an offline-first, copy-only Drive transfer by holding
-**Ctrl+Alt+S for two seconds**. The shooting star confirms receipt only; parent
+**ctrl-alt-s for two seconds**. The shooting star confirms receipt only; parent
 status reports the result. There are no automatic sync jobs. See
 [setup and operation](docs/drive-sync.md), the
 [private package format](docs/drive-sync-package.md), and the
