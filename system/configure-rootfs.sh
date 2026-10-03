@@ -7,6 +7,8 @@ source_dir=/usr/local/share/toddlerbox-build
 install -d /etc/toddlerbox /usr/local/lib/toddlerbox-system /usr/local/libexec
 install -d -m 0700 /var/lib/toddlerbox-system
 install -m 0644 "$source_dir/controller.py" /usr/local/lib/toddlerbox-system/controller.py
+install -m 0644 "$source_dir/update_bundle.py" /usr/local/lib/toddlerbox-system/update_bundle.py
+install -m 0755 "$source_dir/bin/toddlerbox-update" /usr/local/sbin/
 install -d /usr/local/lib/toddlerbox-system/tbx_sync
 install -m 0644 "$source_dir"/tbx_sync/*.py /usr/local/lib/toddlerbox-system/tbx_sync/
 install -m 0644 /source/src/toddlerbox/runtime/image_safety.py /usr/local/lib/toddlerbox-system/tbx_sync/image_safety.py
@@ -14,6 +16,7 @@ install -m 0755 "$source_dir/bin/toddlerbox-sync" /usr/local/sbin/
 install -m 0755 "$source_dir/bin/toddlerbox-sync-worker" /usr/local/libexec/
 install -d -m 0700 /etc/toddlerbox-sync /var/lib/toddlerbox-sync
 install -m 0755 "$source_dir/bin/toddlerbox-mode" "$source_dir/bin/toddlerbox-firstboot" "$source_dir/bin/toddlerbox-install-release" /usr/local/sbin/
+install -m 0755 "$source_dir/bin/toddlerbox-volume" /usr/local/libexec/
 install -m 0755 "$source_dir/bin/toddlerbox-session" /usr/local/libexec/
 install -m 0644 "$source_dir"/units/* /etc/systemd/system/
 ln -s "releases/$release_id" /opt/toddlerbox/current

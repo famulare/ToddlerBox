@@ -233,6 +233,9 @@ data_root/
 - Boot-menu parent recovery and independent console access.
 - Shared system disk for VM testing and USB installation.
 - Versioned app environments; previous release retained during app updates.
+- Parent-initiated checksum-verified update bundles can carry fixed system controls
+  and an optional app release without reinstalling Ubuntu. Preserve child work,
+  private configuration and rollback backups; no automatic update polling.
 - Cleanup acknowledgement and a bounded five-second grace precede forced termination; launcher identity is pinned with pidfds.
 - Release changes are serialized and directory-synced, with declared data-schema compatibility. Rollback retains an identifiable previous target and requires parent mode.
 - See `system/README.md` for exact behavior, artifact identity, and qualification limits.
@@ -268,3 +271,10 @@ data_root/
   downsampling reduces allocation below the existing 40M decoded-pixel budget.
   Full-resolution and non-JPEG paths retain the 40M limit and bomb protections.
 - See docs/drive-sync.md and docs/drive-sync-package.md for the public protocol.
+
+## Child-session hardware controls
+
+- Touchscreen, physical trackpad clicks and tap-to-click support the same minimal UI.
+- Volume-up/down/mute keys work in child mode without an on-screen overlay.
+- Audio commands are bounded and never block parent escape or health supervision.
+- Music and Reading share the child account audio service; parent GNOME keeps ordinary controls.

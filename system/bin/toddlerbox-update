@@ -1,0 +1,6 @@
+#!/usr/bin/python3
+"""Root-owned updater; only the parent deliberately initiates maintenance."""
+import sys
+sys.path.insert(0, "/usr/local/lib/toddlerbox-system")
+from update_bundle import main
+main()

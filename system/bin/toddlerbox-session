@@ -10,8 +10,12 @@ export WLR_RENDERER=pixman SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_ALLOW_LI
 export PYGAME_HIDE_SUPPORT_PROMPT=1 KIDBOX_CONFIG=/etc/toddlerbox/config.yaml
 export TODDLERBOX_APP_CONTROL=1
 export TODDLERBOX_HEALTH_SOCKET=/run/toddlerbox-health.sock
+# One audio route for both activities; the child user manager owns the server.
+# Bound startup so an unavailable audio device cannot strand session recovery.
+timeout 8 systemctl --user start pipewire.socket pipewire-pulse.socket wireplumber.service || true
+export SDL_AUDIODRIVER=pulseaudio
 # Cage owns the seat. Do not use -s (which enables virtual-terminal switching).
 # Inhibitors live only as long as the child session; parent GNOME has normal keys.
 exec systemd-inhibit --what=handle-power-key:handle-suspend-key:handle-hibernate-key:handle-lid-switch \
     --who=ToddlerBox --why='Child session' --mode=block \
-    cage -- .venv/bin/python -m toddlerbox.launcher
+    /usr/local/libexec/toddlerbox-cage -- .venv/bin/python -m toddlerbox.launcher

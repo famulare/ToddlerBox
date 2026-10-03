@@ -606,3 +606,98 @@ is claimed. The parent recovery guide records the exact local ISO, GUI flashing
 and validation steps, managed-Mac authorization options, private import steps
 and physical acceptance checklist. Physical laptop disk selection and erase
 confirmation remain the parent's action.
+
+## First HP controls patch — focused validation
+
+Base: actual main `0e246e291ff50bddadad5044f5e3a7c97521680c`.
+An unmodified archive passed **253 tests** in the same frozen Linux Python
+3.12.14 / pygame-ce 2.5.8 / Pillow 12.3.0 environment. The patch passed **265 tests**
+(4.82s), including media-key actions, child-only execution, bounded autorepeat,
+nonblocking timeout/cancellation, command-group termination and the actual shell
+helper's output selection, unmute and 100% ceiling. Shell syntax checks passed.
+The app source, assets, configuration defaults and data schema are byte-identical
+to main; no rendered controls, saved-document formats or private Drive files change.
+
+Ubuntu snapshot `20260926T000000Z` authenticated Cage source
+`0.1.5+20240127-2build1` was compiled before and after the tap patch, using the
+same Ubuntu base/toolchain. The patch applied with no fuzzy matching. Both builds
+completed and their actual CLI help output matched exactly. Compiler target:
+x86-64, wlroots 0.17.1 / libinput 1.25.0; no Xwayland. The built binary is 205,664
+bytes, SHA-256:
+
+```text
+1f415b196c3502ac8e41f5785aa3f4c088fd3df10f53e5fd3dbf1712c2b0ffee  toddlerbox-cage
+```
+
+Repeat commands:
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q
+source system/versions.env
+docker build --platform linux/amd64 --target toddlerbox-cage-builder \
+  --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt \
+  --build-arg UBUNTU_IMAGE="$UBUNTU_IMAGE" \
+  --build-arg UBUNTU_SNAPSHOT="$UBUNTU_SNAPSHOT" \
+  -f system/Dockerfile.base -t toddlerbox-cage-check .
+bash -n system/bin/toddlerbox-volume system/bin/toddlerbox-session scripts/update-child-controls.sh
+```
+
+This budget-limited pass did **not** rebuild or qualify a complete installer/VM,
+run the updater on the HP, test real touchpad taps, or establish the cause of its
+silent Music output. PipeWire service/routing and physical volume-key behavior
+need the hardware follow-up described in [the patch instructions](docs/child-controls.md).
+Initial binary publication was blocked by automatic approval review because the
+previous transport instruction covered the ISO. The parent subsequently requested
+the combined downloadable updater and approved PR #5 after its completion.
+The previous qualified installer and VM disk/checksum evidence remain preserved;
+user-authorized cleanup removed disposable Docker images/containers/build caches.
+
+## Parent update bundle — focused validation
+
+Same actual unmodified main `0e246e291ff50bddadad5044f5e3a7c97521680c`
+and frozen environment: **253 passed** (5.08s). Controls plus updater:
+**280 passed** (4.91s). Fifteen additional updater checks exercised actual durable
+file replacement/backups/journal, checksum failure and verified-open-descriptor
+substitution, parent-only/platform guards, unexpected paths/symlink rejection,
+disk reserve, offline apt failure, failed replacement rollback, interrupted-update
+recovery, corrupt-backup refusal, repeat-install no-op, app-failure restoration,
+and a combined update through the existing production app installer. External
+apt/systemctl/ldd calls were replaced with test commands; the file/app installer
+code was real. Protected child/private paths remained byte-identical.
+
+Repeat: `SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q`.
+In this managed execution environment, the real AF_UNIX credential test requires
+the tool's network permission even though it contacts no cloud service. One run
+without that permission failed at socket bind; granting it passed the unchanged
+test and both complete old/new suites. Production authentication was not weakened.
+
+The bundle uses only Python's standard library, with a fixed allowlist of system
+destinations and fixed package operations. No update job, timer, network poll or
+background downloader is installed. Existing data/configuration formats and
+child UI are unchanged. Bootstrap and installed-command usage, rollback boundaries
+and the explicit power-interruption recovery route are in
+[docs/updates.md](docs/updates.md).
+
+Limits: no new full image/VM build; actual HP updater/package transactions,
+power-interruption recovery and physical taps/audio remain hardware follow-up.
+This patch does not diagnose the unreproduced Paint drag incident. The compiled
+compositor is the previously checked snapshot build above; the new bundle packages
+it without a compositor rebuild. Whole-OS rollback still uses the preserved USB
+image; bundle rollback restores controls/app links and retains audio packages.
+
+The executable update bundle was built from commit
+`253350775ad7125f47c9815bf39641bf4e2ce5df`, source content ID
+`5e754c3b13e41fd8`: **100,905 bytes**, SHA-256
+`6907bb8d89dada2b9e6cf8d6a23d7d16f9a4678b751bdb65a3902a492849cb3c`.
+Two actual builds produced identical bytes; the bootstrap `--help` ran, and the
+real installer staged/verified all six fixed system payloads. There is no app
+payload because this patch leaves application code unchanged.
+
+Ordinary release uploads and an explicit Content-Length upload both failed with
+HTTP 400 Bad Content-Length (even the tiny checksum file). Under the renewed
+update delivery authorization, a single unreferenced public Git blob was uploaded
+and its full API readback matched the bundle byte-for-byte. No binary was committed
+to source history. [The manifest](docs/releases/child-controls-5e754c3b13e41fd8.json)
+and [download helper](scripts/download-child-update.py) provide checksum-verified
+delivery without root privileges or cloud credentials. Later documentation commits
+do not change the built payload source identity recorded above.

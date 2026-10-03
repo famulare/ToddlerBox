@@ -42,3 +42,6 @@ util-linux
 busybox-initramfs
 rclone
 python3-pil
+pipewire
+pipewire-pulse
+wireplumber
