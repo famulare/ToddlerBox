@@ -160,6 +160,9 @@ at capacity, leaving current work intact. Parent export/cleanup makes space;
 archive writes leave a 16 MiB reserve for current saves.
 
 App code and its uv-created environment live in `/opt/toddlerbox/releases/<id>`.
+For ordinary parent maintenance, use the [combined update bundle](../docs/updates.md).
+It can carry system controls and an optional app release in one checked download,
+preserving work/private configuration and retaining system/app rollback backups.
 Runtime directly executes the installed Python environment and does not resolve
 or download dependencies. To update from a trusted build of the same system ABI,
 enter parent mode, copy the app bundle, and use its independently checked checksum:

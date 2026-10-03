@@ -646,8 +646,41 @@ This budget-limited pass did **not** rebuild or qualify a complete installer/VM,
 run the updater on the HP, test real touchpad taps, or establish the cause of its
 silent Music output. PipeWire service/routing and physical volume-key behavior
 need the hardware follow-up described in [the patch instructions](docs/child-controls.md).
-The source PR is a draft. The compiled binary remains local: automatic approval
-review rejected new temporary Git-blob distribution under the previous ISO-only
-transport instruction. Binary delivery requires renewed artifact authorization.
+Initial binary publication was blocked by automatic approval review because the
+previous transport instruction covered the ISO. The parent subsequently requested
+the combined downloadable updater and approved PR #5 after its completion.
 The previous qualified installer and VM disk/checksum evidence remain preserved;
 user-authorized cleanup removed disposable Docker images/containers/build caches.
+
+## Parent update bundle — focused validation
+
+Same actual unmodified main `0e246e291ff50bddadad5044f5e3a7c97521680c`
+and frozen environment: **253 passed** (5.08s). Controls plus updater:
+**280 passed** (4.91s). Fifteen additional updater checks exercised actual durable
+file replacement/backups/journal, checksum failure and verified-open-descriptor
+substitution, parent-only/platform guards, unexpected paths/symlink rejection,
+disk reserve, offline apt failure, failed replacement rollback, interrupted-update
+recovery, corrupt-backup refusal, repeat-install no-op, app-failure restoration,
+and a combined update through the existing production app installer. External
+apt/systemctl/ldd calls were replaced with test commands; the file/app installer
+code was real. Protected child/private paths remained byte-identical.
+
+Repeat: `SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q`.
+In this managed execution environment, the real AF_UNIX credential test requires
+the tool's network permission even though it contacts no cloud service. One run
+without that permission failed at socket bind; granting it passed the unchanged
+test and both complete old/new suites. Production authentication was not weakened.
+
+The bundle uses only Python's standard library, with a fixed allowlist of system
+destinations and fixed package operations. No update job, timer, network poll or
+background downloader is installed. Existing data/configuration formats and
+child UI are unchanged. Bootstrap and installed-command usage, rollback boundaries
+and the explicit power-interruption recovery route are in
+[docs/updates.md](docs/updates.md).
+
+Limits: no new full image/VM build; actual HP updater/package transactions,
+power-interruption recovery and physical taps/audio remain hardware follow-up.
+This patch does not diagnose the unreproduced Paint drag incident. The compiled
+compositor is the previously checked snapshot build above; the new bundle packages
+it without a compositor rebuild. Whole-OS rollback still uses the preserved USB
+image; bundle rollback restores controls/app links and retains audio packages.

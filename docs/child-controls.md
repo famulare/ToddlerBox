@@ -29,6 +29,10 @@ unidentified device-routing issue.
 
 ## Update an existing installation without erasing work
 
+The simplest route is the [single parent update bundle](updates.md), which
+includes the matching compositor and installs the updater for future releases.
+No OS reinstall is needed. The developer checkout route remains available:
+
 Use a checked-out revision of this feature and its matching compiled
 `toddlerbox-cage` binary. Verify the published binary SHA-256 independently.
 Enter parent mode with Ctrl+Alt+Home and save parent desktop work, then run:
