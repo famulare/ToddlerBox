@@ -209,3 +209,41 @@ settings; graphics; all touchscreen edges and multiple fingers; touch mapping;
 keyboard and trackpad; power/lid behavior in each mode; sleep/resume in parent
 mode; and repeated cold boots. Its exact model and existing session are still
 unknown. No finding from this VM diagnoses its previous gesture escapes.
+
+## Explicit private Google Drive copies
+
+The image includes rclone from the pinned Ubuntu package snapshot, root-owned
+sync software, an unenabled `toddlerbox-sync.service`, and parent desktop entries.
+Credentials, UUID and state are provisioned separately after installation;
+images and app bundles contain none. This system change requires the new system
+image; an app-only update does not install its controller, packages or service.
+
+See [setup and parent maintenance](../docs/drive-sync.md),
+[privacy/scopes](../docs/drive-sync-privacy.md), and the
+[verified photos-only package format](../docs/drive-sync-package.md).
+The public consent URLs are https://famulare.github.io/ToddlerBox/ and
+https://famulare.github.io/ToddlerBox/privacy.html. Their persistent orphan branch
+`codex/drive-sync-site` is hosting source; never merge it into application main or
+remove it with feature-branch cleanup.
+
+Hold Ctrl+Alt+S for two seconds in child mode. The independent controller sends
+an authenticated shooting-star receipt and starts one explicit systemd job.
+The receipt is independent of transfer outcome. The worker requests a durable
+app save with a five-second deadline, snapshots stable files into private staging,
+and performs bounded directional copies. Ctrl+Alt+Home and health supervision
+remain independent. No sync timer, path unit, boot enablement or network trigger
+is installed, and the unit has `Restart=no`.
+
+The service has a 15-minute deadline, 512 MiB memory bound, one transfer, low
+CPU/I/O priority and filesystem write restrictions to its private configuration,
+state/staging and Photos library. Child-writable input is traversed with pinned
+directory descriptors; symlinks, hardlinks and path traversal are refused.
+Parent status includes the last complete success, counts and partial failures;
+ExecStopPost and status reconciliation distinguish killed/timed-out jobs.
+
+Qualify fresh setup, repeated holds, unconfigured/offline/auth failure, durable
+save/upload races, interrupted transfers, disk reserve, replaced-version history,
+parent escape and watchdog recovery during stalled transfers. No real Drive or
+family data is permitted on the image builder; local private acceptance checks
+and physical HP/USB qualification remain separate gates. Consult VALIDATION.md
+for actual evidence rather than treating these requirements as completed tests.

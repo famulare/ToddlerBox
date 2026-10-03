@@ -21,8 +21,12 @@ def validate_photo(data, name):
         with warnings.catch_warnings():
             warnings.simplefilter('error', Image.DecompressionBombWarning)
             with Image.open(io.BytesIO(data)) as image:
-                if image.format != expected or getattr(image, 'n_frames', 1) != 1:
-                    raise ValueError('Image format does not match its name, or is animated')
+                if image.format not in ({'JPEG','MPO'} if expected=='JPEG' else {'PNG'}):
+                    raise ValueError('Image format does not match its name')
+                if expected=='PNG' and getattr(image,'n_frames',1)!=1:
+                    raise ValueError('Animated PNG is not supported')
+                # JPEG-compatible MPO gain-map containers use their primary frame
+                # exactly as Photos does; preserve all original bytes on disk.
                 prepare_decoder(image, (1920, 1920))
                 image.load()  # Strict decoder: do not enable LOAD_TRUNCATED_IMAGES.
     except (Image.DecompressionBombWarning, Image.DecompressionBombError) as exc:

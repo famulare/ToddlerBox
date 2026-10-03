@@ -52,8 +52,7 @@ def test_setup_verified_repeat_preserves_newer_files_credentials_uuid_and_work(t
     assert load(locations.state/'device.json')==identity
     assert (locations.library/'example.png').read_bytes()==png('purple')
     assert (locations.config/'rclone.conf').read_bytes()==refreshed
-    assert b'newer' not in (locations.data/'typing/current.json').read_bytes()  # serialized glyphs
-    assert load(locations.data/'typing/current.json')['rich_lines'][0][-1]['char']=='k'
+    assert (locations.data/'typing/current.json').read_bytes()==typing('newer work')
     assert stat.S_IMODE((locations.config/'rclone.conf').stat().st_mode)==0o600
 
 
@@ -306,3 +305,129 @@ def test_large_png_and_excessive_jpeg_headers_are_refused_before_decode(tmp_path
     with pytest.raises(ValueError,match='40000000'):validate_photo(path.read_bytes(),path.name)
     huge=tmp_path/'header.jpg';huge.write_bytes(large_jpeg(10000,8001))
     with pytest.raises(ValueError,match='absolute header'):_decode_photo(huge,(320,240))
+
+
+def test_initial_backup_matches_mac_flat_manifest_and_large_original_import(tmp_path):
+    original=large_jpeg()
+    locations=paths(tmp_path/'device')
+    archive,checksum=package(tmp_path,photos={'original.jpg':original})
+    setup(locations,archive,checksum,minimum=0)
+    assert (locations.library/'original.jpg').read_bytes()==original
+    records={'original.jpg':{'size':len(original),'sha256':hashlib.sha256(original).hexdigest()}}
+    raw=(json.dumps({'format':'toddlerbox-initial-photos','version':1,'files':records},sort_keys=True,indent=2)+'\n').encode()
+    drive=MemoryDrive();drive.files={'Initial backup/2026-10-03/original.jpg':original,
+                                   'Initial backup/2026-10-03/manifest.json':raw}
+    result=Run(locations,factory=drive,save=lambda:'ok',minimum=0).execute()
+    assert result['state']=='success'
+    assert drive.files['Initial backup/2026-10-03/manifest.json']==raw
+    assert [p for p in drive.files if p.startswith('Initial backup/')]==[
+        'Initial backup/2026-10-03/original.jpg','Initial backup/2026-10-03/manifest.json']
+    assert load(locations.state/'initial.json')['complete']
+
+
+def test_credentials_parser_error_does_not_echo_private_configuration():
+    with pytest.raises(ValueError) as error:
+        credentials_bytes(b'[toddlerbox]\nprivate_token_without_equals',json.loads(CONFIG)['root_folder_id'])
+    assert 'private_token' not in str(error.value)
+
+
+def test_interrupted_download_keeps_original_and_does_not_publish_partial(tmp_path):
+    locations=installed(tmp_path);drive=MemoryDrive()
+    drive.files['Photos/new.png']=png('green')
+    get=drive.get
+    def interrupted(remote,destination):
+        if remote=='Photos/new.png':
+            Path(destination).write_bytes(b'partial')
+            raise TransferError('transfer-failed')
+        get(remote,destination)
+    drive.get=interrupted
+    result=Run(locations,factory=drive,save=lambda:'ok',minimum=0).execute()
+    assert result['state']=='partial'
+    assert (locations.library/'example.png').read_bytes()==png()
+    assert not (locations.library/'new.png').exists()
+    assert list((locations.state/'staging').iterdir())==[]
+
+
+def test_stalled_rclone_process_is_killed_at_job_deadline(tmp_path):
+    locations=paths(tmp_path/'device');initialize(locations)
+    # Synthetic executable, no provider or network. Verifies actual subprocess cleanup.
+    fake=tmp_path/'stalled-rclone'
+    fake.write_text('#!/bin/sh\nexec sleep 60\n');fake.chmod(0o700)
+    stage=locations.state/'staging'
+    remote=Rclone(locations,'synthetic_root_1234567890',stage,deadline=time.monotonic()+.2,binary=str(fake),minimum=0)
+    started=time.monotonic()
+    with pytest.raises(TransferError,match='timed-out'):remote.list('Photos')
+    assert time.monotonic()-started<3
+    assert not list(stage.iterdir())
+
+
+def test_actual_read_rejects_in_place_mutation_during_snapshot(tmp_path,monkeypatch):
+    path=tmp_path/'work.json';path.write_bytes(b'old')
+    real=os.fstat;seen=[0]
+    def mutate(fd):
+        result=real(fd)
+        if result.st_ino==path.stat().st_ino:
+            seen[0]+=1
+            if seen[0]==1:path.write_bytes(b'changed')
+        return result
+    monkeypatch.setattr(os,'fstat',mutate)
+    with SafeTree(tmp_path) as tree,pytest.raises(ValueError,match='changed'):
+        tree.read('work.json')
+
+
+def test_reconnect_cannot_adopt_different_oauth_client(tmp_path):
+    locations=installed(tmp_path)
+    original=(locations.config/'rclone.conf').read_bytes()
+    other=tmp_path/'new';other.mkdir()
+    archive,checksum=package(other,files={'config.json':CONFIG,'rclone.conf':CREDENTIALS.replace(b'synthetic-client.',b'another-client.')})
+    with pytest.raises(ValueError,match='OAuth client'):
+        setup(locations,archive,checksum,reconnect=True,minimum=0)
+    assert (locations.config/'rclone.conf').read_bytes()==original
+
+
+def test_private_mac_package_helper_roundtrip_with_synthetic_originals(tmp_path):
+    import subprocess
+    private=tmp_path/'private';private.mkdir(mode=0o700)
+    (private/'config.json').write_bytes(CONFIG)
+    (private/'rclone.conf').write_bytes(CREDENTIALS)
+    originals=tmp_path/'originals';originals.mkdir()
+    content=large_jpeg();(originals/'large.jpg').write_bytes(content)
+    archive=private/'public-fixture.toddlerbox-setup.tar.gz'
+    subprocess.run([sys.executable,str(Path(__file__).parents[1]/'scripts/prepare-drive-setup.py'),
+                    'package','--private-dir',str(private),'--photos',str(originals),'--output',str(archive)],
+                   check=True,capture_output=True)
+    locations=paths(tmp_path/'device')
+    setup(locations,archive,digest(archive),minimum=0)
+    assert (locations.library/'large.jpg').read_bytes()==content
+    assert (originals/'large.jpg').read_bytes()==content
+
+
+def test_jpeg_mpo_primary_frame_is_bounded_and_original_container_preserved(tmp_path,monkeypatch):
+    from sync_fixtures import mpo
+    from toddlerbox.runtime.image_safety import prepare_decoder
+    raw=mpo(large=True)
+    source=tmp_path/'original.JPEG';source.write_bytes(raw)
+    with Image.open(io.BytesIO(raw)) as im:
+        assert im.format=='MPO' and im.n_frames==2 and im.size==(8192,6075)
+        im.seek(1);assert im.size==(64,48);im.load()
+    loaded=[];real=ImageFile.ImageFile.load
+    def bounded(image,*args,**kwargs):
+        loaded.append(image.size)
+        assert image.width*image.height<13_000_000
+        return real(image,*args,**kwargs)
+    monkeypatch.setattr(ImageFile.ImageFile,'load',bounded)
+    thumb=_prepare_thumbnail(source,tmp_path/'thumb.png',(320,240))
+    main=_decode_photo(source,(1366,768),upscale=True)
+    validate_photo(raw,'original.JPEG')
+    archive,checksum=package(tmp_path,photos={'original.JPEG':raw})
+    locations=paths(tmp_path/'device');setup(locations,archive,checksum,minimum=0)
+    assert (locations.library/'original.JPEG').read_bytes()==raw==source.read_bytes()
+    assert thumb[1][0]<=320 and main[1][0]<=1366 and loaded
+    with pytest.raises(ValueError,match='40000000'):_decode_photo(source)
+
+
+def test_animated_png_stays_rejected():
+    data=io.BytesIO()
+    Image.new('RGB',(8,8),'red').save(data,format='PNG',save_all=True,
+                                     append_images=[Image.new('RGB',(8,8),'blue')],duration=100,loop=0)
+    with pytest.raises(ValueError,match='Animated PNG'):validate_photo(data.getvalue(),'animated.png')

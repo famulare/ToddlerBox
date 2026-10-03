@@ -139,3 +139,24 @@ def large_png(width=8192,height=6075):
     compressed=b''.join(encoder.compress(row) for _ in range(height))+encoder.flush()
     return (b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',width,height,8,0,0,0,0))+
             chunk(b'IDAT',compressed)+chunk(b'IEND',b''))
+
+
+def mpo(*,large=False):
+    """Valid two-JPEG MPF container, assembled without full primary allocation."""
+    import struct
+    from PIL import TiffImagePlugin
+    first=large_jpeg() if large else large_jpeg(1024,768)
+    second=large_jpeg(64,48)
+    # Put an APP2/MPF segment immediately after SOI; offsets in MP entries are
+    # relative to the TIFF header at byte 10, except primary's special zero.
+    ifd=TiffImagePlugin.ImageFileDirectory_v2()
+    ifd[0xB000]=b'0100';ifd[0xB001]=2
+    def header(primary_size,secondary_offset):
+        ifd[0xB002]=struct.pack('<LLLHH',0x030000,primary_size,0,0,0)+struct.pack('<LLLHH',0,len(second),secondary_offset,0,0)
+        tiff=b'II\x2a\x00'+struct.pack('<L',8)+ifd.tobytes(8)
+        payload=b'MPF\0'+tiff
+        return b'\xff\xe2'+struct.pack('>H',len(payload)+2)+payload
+    segment=header(0,0)
+    size=len(first)+len(segment)
+    segment=header(size,size-10)
+    return first[:2]+segment+first[2:]+second

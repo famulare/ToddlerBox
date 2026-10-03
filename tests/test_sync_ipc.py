@@ -161,3 +161,20 @@ def test_overlay_has_real_pixels_fades_and_disappears_without_touching_input(mon
         assert pygame.image.tobytes(surface,'RGB')==before
         assert pygame.event.get()==[]
     finally:pygame.quit()
+
+
+def test_kernel_supplied_credentials_reject_unprivileged_datagram(tmp_path):
+    if os.geteuid()==0:
+        pytest.skip('Unprivileged sender test; privileged receive is exercised in VM')
+    # Real AF_UNIX and SCM_CREDENTIALS, no mocked ancillary payload.
+    endpoint=str(tmp_path/'controller.sock')
+    with socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM) as root_receiver:
+        root_receiver.bind(endpoint)
+        channel=AppChannel(endpoint,clock=lambda:10)
+        try:
+            with socket.socket(socket.AF_UNIX,socket.SOCK_DGRAM) as sender:
+                sender.sendto(b'sync-received',channel.socket.getsockname())
+                sender.sendto(b'save-current:'+b'a'*32,channel.socket.getsockname())
+            saves=[];channel.service(lambda:saves.append(True))
+            assert channel.received_at==float('-inf') and not saves
+        finally:channel.close()

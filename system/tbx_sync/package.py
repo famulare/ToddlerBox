@@ -34,7 +34,10 @@ def credentials_bytes(data, root_id):
     if len(data) > 65536:
         raise ValueError('Credentials too large')
     config = configparser.ConfigParser(interpolation=None, strict=True)
-    config.read_string(data.decode('utf-8'))
+    try:
+        config.read_string(data.decode('utf-8'))
+    except configparser.Error:
+        raise ValueError('Invalid private rclone configuration') from None
     keys = {'type', 'client_id', 'client_secret', 'scope', 'token', 'root_folder_id'}
     if config.defaults() or config.sections() != ['toddlerbox'] or set(config['toddlerbox']) != keys:
         raise ValueError('Only the fixed toddlerbox Drive remote is allowed')
@@ -55,6 +58,8 @@ def credentials_bytes(data, root_id):
         item = token.get(key)
         if not isinstance(item, str) or not 8 <= len(item) <= 8192 or any(ord(c) < 33 for c in item):
             raise ValueError('Missing OAuth token field')
+    if not isinstance(token.get('expiry'),str):
+        raise ValueError('Invalid OAuth expiry field')
     dt.datetime.fromisoformat(token['expiry'].replace('Z', '+00:00'))
     config['toddlerbox']['scope'] = 'drive.readonly,drive.file'
     output = io.StringIO()

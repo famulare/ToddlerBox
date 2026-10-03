@@ -63,3 +63,17 @@ verified `Initial backup/<package creation date>` deposit. Setup itself starts n
 network job. The Mac helper can perform that same deposit explicitly before
 installation. Routine sync never propagates deletions, restores cloud creations,
 or prunes History. Work restoration is a separate explicit parent import.
+
+## Initial cloud deposit interoperability
+
+The worker derives the backup date from the UTC `created_at` date above. The Mac
+helper's `backup --date YYYY-MM-DD` must use that same date. Files are flat:
+`Initial backup/YYYY-MM-DD/<original basename>` and `manifest.json`; the cloud
+backup does not contain the package's `photos/library/` prefix.
+
+The cloud manifest is `{"format":"toddlerbox-initial-photos","version":1,
+"files":{"original.jpg":{"size":123,"sha256":"lowercase SHA-256"}}}`.
+Its exact bytes are Python `json.dumps(value, sort_keys=True, indent=2)` encoded
+as UTF-8 plus one final newline. The worker and Mac helper both use these bytes.
+Matching immutable cloud files are skipped and then downloaded for SHA-256
+verification; different existing bytes cause failure, never replacement.

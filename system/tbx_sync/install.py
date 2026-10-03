@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import configparser
 import hashlib
 import json
 import os
@@ -13,12 +14,12 @@ from .safeio import MAX_TOTAL, SafeTree, atomic_json, parts
 from .state import initialize, load, lock, private_directory
 
 
-def ensure_library(paths):
+def ensure_data_directory(paths, components):
     with SafeTree(paths.data) as data:
         owner = os.fstat(data.fd)
         fd = os.dup(data.fd)
         try:
-            for component in ['photos','library']:
+            for component in components:
                 made = False
                 try:
                     os.mkdir(component,0o755,dir_fd=fd)
@@ -56,11 +57,19 @@ def setup(paths, archive, expected, *, consume=False, reconnect=False, minimum=5
         elif reconnect:
             raise ValueError('Setup is required before reconnect')
         credentials = credentials_bytes((stage/'rclone.conf').read_bytes(),config['root_folder_id'])
+        if reconnect:
+            old_remote = configparser.ConfigParser(interpolation=None)
+            new_remote = configparser.ConfigParser(interpolation=None)
+            with SafeTree(paths.config) as private:
+                old_remote.read_string(credentials_bytes(private.read('rclone.conf',limit=65536),config['root_folder_id']).decode())
+            new_remote.read_string(credentials.decode())
+            if old_remote['toddlerbox']['client_id'] != new_remote['toddlerbox']['client_id']:
+                raise ValueError('Reconnect must retain the existing OAuth client')
         photos = {name.removeprefix('photos/library/'):entry for name,entry in manifest['files'].items()
                   if name.startswith('photos/library/')}
         imported = 0
         if not reconnect:
-            ensure_library(paths)
+            ensure_data_directory(paths, ['photos','library'])
             # Check every collision before publishing any photo. Entries can still
             # race; the final link operation never replaces a racing destination.
             with SafeTree(paths.library) as library:
@@ -129,13 +138,17 @@ def restore_archives(paths, source, expected, *, minimum=512*1024**2):
                 target = 'paint/restored-'+run_id+'-'+components[-1]
             elif name.endswith('.json'):
                 typing_text(data)
-                target = 'typing/archive/restored-'+run_id+'-'+components[-1]
+                target = 'typing/archive/restored-'+run_id+'-'+hashlib.sha256(name.encode()).hexdigest()[:12]+'-'+components[-1]
             else:
                 data.decode('utf-8')
                 continue  # Authoritative JSON carries styling; text is an export.
             with SafeTree(temporary) as copies:
                 copies.publish(target,data,mode=0o600,minimum=minimum)
             staged.append(target)
+        # On an untouched installation these directories may not exist yet.
+        # Keep new directories writable by the child, as in normal app startup.
+        ensure_data_directory(paths, ['paint'])
+        ensure_data_directory(paths, ['typing','archive'])
         imported = 0
         with SafeTree(paths.data) as destination, SafeTree(temporary) as copies:
             for target in staged:

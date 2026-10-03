@@ -87,4 +87,5 @@ def finalize(paths, result):
         value['state'] = 'timed_out' if result == 'timeout' else 'interrupted'
         value['completed_at'] = now()
         value.setdefault('issues', []).append('job-'+value['state'])
+        value['issue_count'] = value.get('issue_count',0) + 1
         atomic_json(paths.state/'status.json', value)

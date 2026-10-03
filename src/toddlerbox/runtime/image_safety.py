@@ -5,7 +5,7 @@ MAX_JPEG_HEADER_PIXELS = 80_000_000
 
 def prepare_decoder(image, size=None):
     pixels = image.width * image.height
-    if size is not None and getattr(image, 'format', None) == 'JPEG':
+    if size is not None and getattr(image, 'format', None) in {'JPEG', 'MPO'}:
         if pixels > MAX_JPEG_HEADER_PIXELS:
             raise ValueError(f'JPEG exceeds {MAX_JPEG_HEADER_PIXELS}-pixel absolute header limit')
         if len(size) != 2 or any(type(n) is not int or n <= 0 for n in size):
