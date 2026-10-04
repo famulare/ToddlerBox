@@ -164,3 +164,48 @@ def test_install_rejects_archive_path_escape(release_installer, release_tree, tm
         installer.install(archive, digest, root=root, mode_file=mode)
     assert not (root / "releases" / release_id).exists()
     assert not (root / "releases/escape").exists()
+
+
+def test_verified_current_release_reuse_preserves_previous(release_installer, release_tree, tmp_path):
+    installer, _ = release_installer
+    root, mode = release_tree
+    archive, digest, release_id = bundle(tmp_path)
+    installer.install(archive, digest, root=root, mode_file=mode)
+    assert installer.install(archive, digest, root=root, mode_file=mode) == release_id
+    assert (root / "previous").resolve() == root / "releases/old"
+
+
+def test_verified_rolled_back_release_can_be_retried(release_installer, release_tree, tmp_path):
+    installer, controller = release_installer
+    root, mode = release_tree
+    archive, digest, release_id = bundle(tmp_path)
+    installer.install(archive, digest, root=root, mode_file=mode)
+    controller.replace_release_link(root, "current", root / "releases/old")
+    assert installer.install(archive, digest, root=root, mode_file=mode) == release_id
+    assert (root / "previous").resolve() == root / "releases/old"
+    assert (root / "current").resolve().name == release_id
+
+
+@pytest.mark.parametrize("mutation", ["bytes", "mode", "hardlink", "cache-symlink", "destination-symlink"])
+def test_existing_release_reuse_refuses_changes(release_installer, release_tree, tmp_path, mutation):
+    installer, controller = release_installer
+    root, mode = release_tree
+    archive, digest, release_id = bundle(tmp_path)
+    installer.install(archive, digest, root=root, mode_file=mode)
+    destination = root / "releases" / release_id
+    controller.replace_release_link(root, "current", root / "releases/old")
+    launcher = destination / "src/toddlerbox/launcher.py"
+    if mutation == "bytes":
+        launcher.write_bytes(b"changed")
+    elif mutation == "mode":
+        launcher.chmod(0o666)
+    elif mutation == "hardlink":
+        (destination / "extra").hardlink_to(launcher)
+    elif mutation == "cache-symlink":
+        (destination / "__pycache__").symlink_to(tmp_path)
+    else:
+        destination.rename(root / "releases/moved")
+        destination.symlink_to(root / "releases/moved")
+    with pytest.raises(ValueError, match="differs|Hardlinked|Unsafe"):
+        installer.install(archive, digest, root=root, mode_file=mode)
+    assert (root / "current").resolve() == root / "releases/old"

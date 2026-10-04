@@ -26,6 +26,7 @@ FILES = {
     "toddlerbox-cage": ("usr/local/libexec/toddlerbox-cage", 0o755),
     "update_bundle.py": ("usr/local/lib/toddlerbox-system/update_bundle.py", 0o644),
     "toddlerbox-update": ("usr/local/sbin/toddlerbox-update", 0o755),
+    "toddlerbox-install-release": ("usr/local/sbin/toddlerbox-install-release", 0o755),
     "appliance.py": ("usr/local/lib/toddlerbox-system/appliance.py", 0o644),
     "release_client.py": ("usr/local/lib/toddlerbox-system/release_client.py", 0o644),
     "toddlerbox-maintenance": ("usr/local/sbin/toddlerbox-maintenance", 0o755),

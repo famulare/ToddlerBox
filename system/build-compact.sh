@@ -16,7 +16,7 @@ mounts=()
 discard=1
 if [[ -n $scratch ]]; then
     mkdir -p "$scratch" "$output/rootfs"
-    mounts=(-v "$scratch:/build/rootfs")
+    mounts=(-v "$scratch/rootfs:/build/rootfs")
     discard=0
 fi
 release_id=$(uv run --no-project --python /usr/bin/python3 system/source-id.py)
@@ -27,8 +27,13 @@ docker build "${args[@]}" -f system/Dockerfile.tools -t toddlerbox-image-tools .
 docker build "${args[@]}" --build-arg "UV_IMAGE=$UV_IMAGE" --build-arg "RELEASE_ID=$release_id" \
     -f system/Dockerfile.compact -t "toddlerbox-compact:$release_id" .
 docker image save "toddlerbox-compact:$release_id" | gzip -1 >"$archive"
-docker run --rm --network=none -v "$output:/build" "${mounts[@]}" -v "$PWD:/source:ro" -v "$archive:/tmp/image.tar.gz:ro" \
-    toddlerbox-image-tools python3 /source/system/extract-docker-save.py /tmp/image.tar.gz /build/rootfs
+if [[ -n $scratch ]]; then
+    docker run --rm --network=none -v "$scratch:/scratch" -v "$PWD:/source:ro" -v "$archive:/tmp/image.tar.gz:ro" \
+        toddlerbox-image-tools python3 /source/system/extract-docker-save.py /tmp/image.tar.gz /scratch/rootfs
+else
+    docker run --rm --network=none -v "$output:/build" -v "$PWD:/source:ro" -v "$archive:/tmp/image.tar.gz:ro" \
+        toddlerbox-image-tools python3 /source/system/extract-docker-save.py /tmp/image.tar.gz /build/rootfs
+fi
 rm "$archive"
 # This removes only the just-built image tag; retained bases/checkpoints are files.
 docker image rm "toddlerbox-compact:$release_id"
