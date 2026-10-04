@@ -16,13 +16,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/1e136b40a252ca52-transfer.json toddlerbox-installer.iso
-          printf '%s  %s\n' 'cf77521416b89ab187e31fc64dad36f73fc48d17081b1bd0f4705cde3bea7db8' toddlerbox-installer.iso > SHA256SUMS
-          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/1e136b40a252ca52-update-transfer.json ToddlerBox-update.pyz
-          printf '%s  %s\n' 'f56c93babcf6b449a4c56850f0c43b3d9c1b7ce12bbae73ee71c45f12d913595' ToddlerBox-update.pyz >> SHA256SUMS
+          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/8776dfa5476b7156-transfer.json toddlerbox-installer.iso
+          printf '%s  %s\n' 'c8ea365bcacfe5d6957cea14152a68edd9ac168a4214e01022ccf72160a4a235' toddlerbox-installer.iso > SHA256SUMS
+          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/8776dfa5476b7156-update-transfer.json ToddlerBox-update.pyz
+          printf '%s  %s\n' '1e8f4839cfac6bc732071068ed460a18fa2fedb344753e78ed7277d3cd829bf9' ToddlerBox-update.pyz >> SHA256SUMS
           sha256sum -c SHA256SUMS
-          cp docs/releases/installer-1e136b40a252ca52.json source.json
-          cp docs/releases/packages-1e136b40a252ca52.tsv packages.tsv
+          cp docs/releases/installer-8776dfa5476b7156.json source.json
+          cp docs/releases/packages-8776dfa5476b7156.tsv packages.tsv
           cp releases/stable.json releases/stable.json.sig .
       - name: Publish normal release assets after checksum verification
         env:

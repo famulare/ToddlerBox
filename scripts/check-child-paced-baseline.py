@@ -14,6 +14,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--output", type=Path, default=Path("build/reading-piano-qa/comparison"))
+    parser.add_argument("--all-activities", action="store_true", help="Compare Music and Reading too when their behavior is unchanged")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     old, output = args.baseline.resolve(), args.output.resolve()
@@ -22,9 +23,12 @@ def main():
         subprocess.run([sys.executable, str(root/"scripts/check-sync-rendering.py"),
                         "--render", str(source), "--output", str(output/name),
                         "--state", "baseline"], check=True)
+    frames = {"launcher", "paint", "photos", "typing"}
+    if args.all_activities:
+        frames.update({"music", "reading"})
     for size in ("1024x600", "1366x768"):
         for original in (output/"old"/size).iterdir():
-            if original.stem in {"launcher", "paint", "photos", "typing"} or original.name.startswith("saved-"):
+            if original.stem in frames or original.name.startswith("saved-"):
                 assert original.read_bytes() == (output/"new"/size/original.name).read_bytes(), original
                 key = "unchanged_saved_outputs" if original.name.startswith("saved-") else "unchanged_frames"
                 counts[key] += 1

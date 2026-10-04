@@ -3,7 +3,7 @@
 # ToddlerBox appliance hardening plan
 
 Planning baseline: `ea0dca7d9efcc01dc746733f6513a8f1d005110e`.
-Current qualified installer: `a60a9ddeca41e3f6`, built from `9952ee142fd128aeec326161c01ddeb91166b155`.
+Qualified installer at planning: `a60a9ddeca41e3f6`, built from `9952ee142fd128aeec326161c01ddeb91166b155`.
 This document proposes implementation; it does not claim the new behavior is built or qualified.
 
 ## Goal and scope

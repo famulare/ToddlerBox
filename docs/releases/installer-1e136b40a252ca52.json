@@ -30,5 +30,7 @@
     "speaker loudness/pronunciation",
     "sleep/resume",
     "Secure Boot unsupported"
-  ]
+  ],
+  "status": "superseded-unqualified-permission-failure",
+  "failure": "Factory uv lock was world-writable; complete release reuse was correctly refused. Rebuild normalizes group/other write bits."
 }
