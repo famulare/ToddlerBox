@@ -1,7 +1,9 @@
 # Reinstalling the repaired ToddlerBox image
 
 Use the installer linked in [the current build record](builds/README.md).
-Download and verify the complete ISO checksum before flashing with Etcher.
+Use the release download helper linked there to verify the complete ISO automatically,
+then flash with Etcher and let its write validation complete. No manual release-hash
+comparison is required.
 Choose the USB by its physical identity; the ISO is an installer, and the HP's
 installation prompt separately requires confirmation of its exact internal disk.
 

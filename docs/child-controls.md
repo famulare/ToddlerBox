@@ -1,4 +1,4 @@
-# First HP run: taps and sound
+# Child input and audio
 
 The first physical run reported working touchscreen input and trackpad movement
 with a working physical click, but no tap-to-click. Reading was quiet, Music's
@@ -27,7 +27,13 @@ volume with the hardware keys after the patch, and select the intended speakers
 in parent Sound settings if necessary. Do not change app gains to hide an
 unidentified device-routing issue.
 
-## Update an existing installation without erasing work
+## Current appliance release
+
+ToddlerBox 0.3.0 includes these controls. Use **ToddlerBox Setup & Maintenance**
+for later signed public updates; see [updates](updates.md). Hardware acceptance
+is still required because a VM has no HP trackpad or speakers.
+
+## Historical repair for an older installation
 
 The simplest route is the [single parent update bundle](updates.md), which
 includes the matching compositor and installs the updater for future releases.

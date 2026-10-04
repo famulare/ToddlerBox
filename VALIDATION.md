@@ -1,7 +1,9 @@
+> Evidence is chronological. Historical installer IDs and pending items below belong to their recorded checkpoints; the final 0.3.0 section defines the current qualification and remaining limits. Previously qualified artifacts remain preserved.
+
 # Bootable system validation — 2026-10-02
 
-The [Reading qualification](#reading-application-qualification) below is the
-current result for release **`c12b9037f41f5f85`**. Earlier sections retain the
+The [Reading qualification](#reading-application-qualification) below records
+the historical release **`c12b9037f41f5f85`**. Earlier sections retain the
 shared interface, Music/repair and initial system results as historical evidence.
 
 This is a development baseline for VM iteration. Hardware, extended operation,

@@ -1,4 +1,8 @@
-# Offline Wi-Fi repair for the first HP installation
+# Historical offline Wi-Fi repair
+
+ToddlerBox 0.3.0 already includes this backend; use parent setup on a fresh install.
+These commands are retained for an earlier installation with no working network.
+They are not part of current installation or routine updates.
 
 The HP kernel log shows an Intel Dual Band Wireless AC 3165, loaded `iwlwifi`
 firmware and interface `wlo1`. NetworkManager reports the Wi-Fi interface as

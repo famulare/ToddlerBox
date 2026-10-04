@@ -102,8 +102,8 @@ schema compatibility and keeps previous releases. Backup child work separately
 before maintenance, as with other computer updates.
 
 The initial hardware-controls bundle contains only system changes. Future app
-changes can be included in the same download. A desktop button/file picker can
-be added later; the current interface is one parent command.
+changes can be included in the same download. This historical bootstrap is retained only for older installations; the appliance
+release uses the parent setup and maintenance menu above.
 
 ## Build a bundle
 

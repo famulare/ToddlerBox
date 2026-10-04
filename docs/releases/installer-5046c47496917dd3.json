@@ -28,5 +28,7 @@
     "speaker loudness/pronunciation",
     "sleep/resume",
     "Secure Boot unsupported"
-  ]
+  ],
+  "qualification": "superseded-unqualified-prototype",
+  "superseded_by": "1e136b40a252ca52"
 }
