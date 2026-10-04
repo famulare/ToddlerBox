@@ -18,7 +18,7 @@ RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* && \
     sed -i 's/^# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen && \
     printf 'LANG=en_US.UTF-8\n' >/etc/default/locale && \
-    install -m 0755 /run/toddlerbox-cage /usr/local/libexec/toddlerbox-cage && \
+    install -D -m 0755 /run/toddlerbox-cage /usr/local/libexec/toddlerbox-cage && \
     cp /run/uv /usr/local/bin/uv && \
     mkdir -p /opt/toddlerbox/releases/${RELEASE_ID} && \
     cp -a /source/src /source/assets /source/pyproject.toml /source/uv.lock /source/README.md /source/LICENSE /source/config.yaml /source/data-schema.json /opt/toddlerbox/releases/${RELEASE_ID}/ && \
