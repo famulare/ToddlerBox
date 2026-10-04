@@ -75,15 +75,15 @@ jobs:
           if ! gh release view v0.4.0 >/dev/null 2>&1; then
             gh release create v0.4.0 --draft --target "$GITHUB_SHA" --title 'ToddlerBox 0.4.0' --notes 'Six offline activities; 18-song scrollable Music library. Candidate remains unqualified and unpublished until VM evidence and signing checks finish.'
           fi
-          test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .draft)" = true
-          test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .target_commitish)" = "$GITHUB_SHA"
+          test "$(gh api repos/$GITHUB_REPOSITORY/releases/$(gh release view v0.4.0 --json databaseId --jq .databaseId) --jq .draft)" = true
+          test "$(gh api repos/$GITHUB_REPOSITORY/releases/$(gh release view v0.4.0 --json databaseId --jq .databaseId) --jq .target_commitish)" = "$GITHUB_SHA"
           gh release upload v0.4.0 build/release-0.4/toddlerbox-installer.iso build/release-0.4/ToddlerBox-update.pyz build/release-0.4/INSTALLER-SHA256SUMS build/release-0.4/source.json build/release-0.4/packages.tsv --clobber
       - name: Fetch and verify the same draft candidate for a qualification retry
         if: ${{ inputs.reuse_candidate }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .draft)" = true
+          test "$(gh api repos/$GITHUB_REPOSITORY/releases/$(gh release view v0.4.0 --json databaseId --jq .databaseId) --jq .draft)" = true
           mkdir -p build/release-0.4
           gh release download v0.4.0 --dir build/release-0.4 --pattern toddlerbox-installer.iso --pattern ToddlerBox-update.pyz --pattern source.json --pattern packages.tsv --pattern INSTALLER-SHA256SUMS
           uv run --frozen python - <<'PYVERIFY'
@@ -99,7 +99,7 @@ jobs:
               assert (p/name).stat().st_size==row['bytes']
               with (p/name).open('rb') as f: assert hashlib.file_digest(f,'sha256').hexdigest()==row['sha256']
           PYVERIFY
-          test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .target_commitish)" = "$(jq -r .git build/release-0.4/source.json)"
+          test "$(gh api repos/$GITHUB_REPOSITORY/releases/$(gh release view v0.4.0 --json databaseId --jq .databaseId) --jq .target_commitish)" = "$(jq -r .git build/release-0.4/source.json)"
           candidate_git=$(jq -r .git build/release-0.4/source.json)
           if gh api repos/$GITHUB_REPOSITORY/git/ref/tags/v0.4.0 > /tmp/tag-ref.json 2> /tmp/tag-ref.json.err; then
             tag_type=$(jq -r .object.type /tmp/tag-ref.json)
@@ -134,7 +134,7 @@ jobs:
           v['qualification']=json.loads(Path('build/release-qa/results.json').read_text())
           path.write_text(json.dumps(v,indent=2)+'\n')
           PYRESULT
-          test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .draft)" = true
+          test "$(gh api repos/$GITHUB_REPOSITORY/releases/$(gh release view v0.4.0 --json databaseId --jq .databaseId) --jq .draft)" = true
           gh release upload v0.4.0 build/release-0.4/source.json build/release-qa/results.json --clobber
       - name: Retain selected public qualification evidence
         if: always()
