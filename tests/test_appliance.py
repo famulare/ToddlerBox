@@ -128,6 +128,71 @@ def test_non_object_recovery_state_latches_parent(appliance_machine, updater, mo
     assert (appliance_machine / recovery.STATE / "parent-mode").exists()
 
 
+@pytest.mark.parametrize("failure", ["nonzero", "timeout", "unavailable"])
+def test_setup_autostart_retries_only_failed_terminal_creation(appliance_machine, modules, monkeypatch, failure):
+    maintenance = modules[3]
+    from types import SimpleNamespace
+    monkeypatch.setattr(maintenance.os, "getuid", lambda: 1000)
+    monkeypatch.setattr(maintenance.pwd, "getpwnam", lambda _: SimpleNamespace(pw_uid=1000))
+    sleeps, calls = [], []
+    monkeypatch.setattr(__import__("time"), "sleep", sleeps.append)
+    def run(args, **kwargs):
+        calls.append(args)
+        assert kwargs == {"timeout": 45}
+        if len(calls) == 1:
+            if failure == "timeout":
+                raise subprocess.TimeoutExpired(args, 45)
+            if failure == "unavailable":
+                raise FileNotFoundError("terminal")
+            return subprocess.CompletedProcess(args, 1)
+        return subprocess.CompletedProcess(args, 0)
+    monkeypatch.setattr(maintenance.subprocess, "run", run)
+    maintenance.autostart(appliance_machine)
+    assert len(calls) == 2 and sleeps == [5]
+    assert calls[1] == ["gnome-terminal", "--", "/usr/local/sbin/toddlerbox-maintenance", "--first-run"]
+
+
+def test_finished_setup_never_opens_autostart_window(appliance_machine, modules, monkeypatch):
+    maintenance = modules[3]
+    from types import SimpleNamespace
+    monkeypatch.setattr(maintenance.os, "getuid", lambda: 1000)
+    monkeypatch.setattr(maintenance.pwd, "getpwnam", lambda _: SimpleNamespace(pw_uid=1000))
+    (appliance_machine / "run/toddlerbox-system/setup-complete").touch()
+    monkeypatch.setattr(maintenance.subprocess, "run", lambda *a, **k: pytest.fail("Unexpected terminal creation"))
+    maintenance.autostart(appliance_machine)
+
+
+def test_parent_report_authenticates_visibly_before_capture(modules, monkeypatch):
+    maintenance = modules[3]
+    calls = []
+    def run(args, **kwargs):
+        calls.append((args, kwargs))
+        return subprocess.CompletedProcess(args, 0, stdout='{"format":1}')
+    monkeypatch.setattr(maintenance.subprocess, "run", run)
+    assert maintenance.parent_status() == {"format": 1}
+    assert calls[0] == (["sudo", "-v"], {"check": True})
+    assert calls[1][0][:2] == ["sudo", "-n"]
+    assert calls[1][1] == {"capture_output": True, "text": True, "check": True}
+
+
+def test_autostart_never_traverses_private_setup_state(appliance_machine, modules, monkeypatch):
+    maintenance = modules[3]
+    from types import SimpleNamespace
+    monkeypatch.setattr(maintenance.os, "getuid", lambda: 1000)
+    monkeypatch.setattr(maintenance.pwd, "getpwnam", lambda _: SimpleNamespace(pw_uid=1000))
+    real_exists = Path.exists
+    private = appliance_machine / "var/lib/toddlerbox-system"
+    def exists(path):
+        if path.is_relative_to(private):
+            raise PermissionError("Root-private production directory")
+        return real_exists(path)
+    monkeypatch.setattr(Path, "exists", exists)
+    calls = []
+    monkeypatch.setattr(maintenance.subprocess, "run", lambda *a, **k: calls.append(a) or subprocess.CompletedProcess(a, 0))
+    maintenance.autostart(appliance_machine)
+    assert len(calls) == 1
+
+
 def test_restore_interruption_resumes_using_resident_code(appliance_machine, updater, modules, tmp_path, monkeypatch):
     recovery = modules[0]
     pending(appliance_machine, updater, tmp_path)
@@ -162,6 +227,12 @@ def test_setup_requires_actual_recovery_test_and_preserves_checks(appliance_mach
     core.finish(appliance_machine)
     assert core.progress(appliance_machine)["checks"]["drive"] == "skipped"
     assert (appliance_machine / recovery.STATE / "setup-complete").exists()
+    visible = appliance_machine / recovery.SETUP_VISIBLE
+    assert visible.read_bytes() == b"complete\n"
+    assert visible.stat().st_mode & 0o777 == 0o644
+    visible.unlink()
+    assert recovery.gate(appliance_machine)
+    assert visible.read_bytes() == b"complete\n"
     (appliance_machine / "run/toddlerbox-system/mode").write_text("child")
     with pytest.raises(ValueError, match="parent mode"):
         core.check("network", "passed", appliance_machine)
@@ -236,6 +307,21 @@ def test_report_excludes_synthetic_private_content(appliance_machine, modules, m
     for forbidden in ("secret-network-name", "keep-private-and-child-work", "rclone.conf", "current.png", "device_uuid"):
         assert forbidden not in result
     assert '"NetworkManager": "unknown"' in result
+
+
+def test_report_identifies_current_and_candidate_without_raw_metadata(appliance_machine, updater, modules, tmp_path, monkeypatch):
+    recovery, _, _, maintenance = modules
+    pending(appliance_machine, updater, tmp_path)
+    job, value = recovery.latest(appliance_machine)
+    value["source"] = {"content": "a" * 16, "private": "synthetic-secret"}
+    recovery.record(job / "state.json", value)
+    monkeypatch.setattr(maintenance.subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout="active"))
+    result = maintenance.report(appliance_machine)
+    assert result["update_source"] == "a" * 16
+    assert "synthetic-secret" not in json.dumps(result)
+    value["source"] = []
+    recovery.record(job / "state.json", value)
+    assert maintenance.report(appliance_machine)["update_source"] == "never-run"
 
 
 def test_setup_routes_to_parent_without_completion(tmp_path, monkeypatch):

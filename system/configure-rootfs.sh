@@ -88,7 +88,7 @@ install -d -o parent -g parent /home/parent/.config /home/parent/.config/autosta
 cat >/home/parent/.config/autostart/toddlerbox-setup.desktop <<'EOF'
 [Desktop Entry]
 Name=ToddlerBox First Setup
-Exec=gnome-terminal -- /usr/local/sbin/toddlerbox-maintenance --first-run
+Exec=/usr/local/sbin/toddlerbox-maintenance --autostart
 Type=Application
 OnlyShowIn=GNOME;
 EOF

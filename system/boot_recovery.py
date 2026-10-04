@@ -27,6 +27,7 @@ DESTINATIONS = {
     "release-public-key.pem": ("etc/toddlerbox/release-public-key.pem", 0o644),
 }
 STATE = Path("var/lib/toddlerbox-system")
+SETUP_VISIBLE = Path("run/toddlerbox-system/setup-complete")
 
 
 def safe(root, relative):
@@ -71,6 +72,17 @@ def atomic(path, content, mode=0o600):
 
 def record(path, value):
     atomic(path, (json.dumps(value, sort_keys=True) + "\n").encode())
+
+
+def publish_setup(root=Path("/")):
+    """Expose only the completion boolean; keep authoritative state private."""
+    target = safe(root, SETUP_VISIBLE)
+    target.parent.mkdir(mode=0o755, parents=True, exist_ok=True)
+    if safe(root, STATE / "setup-complete").exists():
+        atomic(target, b"complete\n", 0o644)
+    else:
+        target.unlink(missing_ok=True)
+        fsync_dir(target.parent)
 
 
 def read(path):
@@ -159,6 +171,7 @@ def gate(root=Path("/"), *, failure=False):
     state = safe(root, STATE)
     state.mkdir(mode=0o700, parents=True, exist_ok=True)
     try:
+        publish_setup(root)
         item = latest(root)
         maintenance = safe(root, STATE / "maintenance")
         if maintenance.exists() and item is None:

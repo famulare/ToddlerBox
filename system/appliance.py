@@ -9,7 +9,7 @@ import subprocess
 import time
 import uuid
 
-from boot_recovery import STATE, atomic, latest, record, safe, validate
+from boot_recovery import STATE, atomic, latest, record, safe, validate, publish_setup
 
 STEPS = ("network", "audio", "input", "recovery", "drive")
 
@@ -68,6 +68,7 @@ def finish(root=Path("/")):
     if set(value["checks"]) != set(STEPS) or value["checks"]["recovery"] != "passed":
         raise ValueError("Complete the checks and confirm authenticated parent recovery first")
     atomic(safe(root, STATE / "setup-complete"), b"setup-v1\n")
+    publish_setup(root)
 
 
 @contextmanager
