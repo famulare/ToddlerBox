@@ -120,7 +120,11 @@ class Qualification:
 
     def install(self):
         self.start(installer=True)
-        self.wait_text('Install ToddlerBox','VM serial')
+        try:
+            self.wait_text('Install ToddlerBox','serial console')
+        except TimeoutError:
+            self.shot('installer')  # Safe: no password has been entered yet.
+            raise
         self.shot('installer')
         self.key('down');self.key('ret')
         with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as conn:
@@ -308,7 +312,11 @@ def main():
     p.add_argument('--image-dir',required=True,type=Path);p.add_argument('--output',required=True,type=Path)
     args=p.parse_args();q=Qualification(args.image_dir,args.output)
     try:
-        q.install();q.smoke()
+        q.install();print('Fresh installation and parent password completed',flush=True);q.smoke()
+    except Exception:
+        result=subprocess.run(['docker','logs','--tail','60',q.name],capture_output=True,text=True)
+        print((result.stdout+result.stderr).replace(q.password,'[redacted]'),flush=True)
+        raise
     finally:
         q.stop()
         # Probe could be mid-password if a run failed. It is never a publication artifact.
