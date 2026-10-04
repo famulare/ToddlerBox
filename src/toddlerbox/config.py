@@ -6,23 +6,47 @@ from typing import Any, Dict
 
 import yaml
 
+STANDARD_ORDER = ("Paint", "Photos", "Music", "Typing", "Reading", "Math")
+MATH_ENTRY = {"name": "Math", "icon_path": "assets/icons/math/math.png",
+              "command": "python -m toddlerbox.math"}
+
+
+def _standard_profile(nested_icons=False):
+    """Exact historical shipped entries, not a heuristic based on app names."""
+    entries = []
+    for name in ("Paint", "Photos", "Typing", "Music", "Reading"):
+        key = name.lower()
+        path = (f"assets/icons/{key}/{key}_512.png" if nested_icons else f"assets/icons/{key}.png")
+        if name in ("Music", "Reading"):
+            path = f"assets/icons/{key}/{key}.png"
+        entries.append({"name": name, "icon_path": path, "command": f"python -m toddlerbox.{key}"})
+    return entries
+
+
+def _with_math_standard_layout(apps):
+    if apps == _standard_profile() or apps == _standard_profile(nested_icons=True):
+        entries = {entry["name"]: entry for entry in apps}
+        entries["Math"] = dict(MATH_ENTRY)
+        return [dict(entries[name]) for name in STANDARD_ORDER]
+    return apps  # Custom commands, ordering, paths and explicit omissions stay intact.
+
 DEFAULT_CONFIG: Dict[str, Any] = {
     "data_root": "/data",
     "launcher": {
         "apps": [
             {
                 "name": "Paint",
-                "icon_path": "assets/icons/paint.png",
+                "icon_path": "assets/icons/paint/paint_512.png",
                 "command": "python -m toddlerbox.paint",
             },
             {
                 "name": "Photos",
-                "icon_path": "assets/icons/photos.png",
+                "icon_path": "assets/icons/photos/photos_512.png",
                 "command": "python -m toddlerbox.photos",
             },
             {
                 "name": "Typing",
-                "icon_path": "assets/icons/typing.png",
+                "icon_path": "assets/icons/typing/typing_512.png",
                 "command": "python -m toddlerbox.typing",
             },
             {
@@ -62,7 +86,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "reading": {"mode": "words", "word_sets": ["short_a_cvc", "short_e_cvc", "short_i_cvc", "short_o_cvc",
                                                "short_u_cvc", "digraphs", "adjacent_consonants"], "letter_case": "lowercase",
                 "letter_audio": "sounds", "volume": 0.35},
+    "math": {"mode": "numbers", "max_number": 100, "low_number_weight": 12, "volume": 0.35},
 }
+DEFAULT_CONFIG["launcher"]["apps"] = _with_math_standard_layout(DEFAULT_CONFIG["launcher"]["apps"])
 
 
 def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any]:
@@ -100,4 +126,10 @@ def load_config() -> Dict[str, Any]:
             if isinstance(data, dict):
                 config = _deep_merge(config, data)
             break
+    launcher = config.get("launcher")
+    if isinstance(launcher, dict):
+        apps = launcher.get("apps")
+        augmented = _with_math_standard_layout(apps)
+        if augmented is not apps:
+            config = {**config, "launcher": {**launcher, "apps": augmented}}
     return config

@@ -1,7 +1,9 @@
 # Reading content and preparation
 
 This pack is entirely offline: 75 illustrated words, 26 letter-sound cards,
-and 26 letter-name cards. Numbers/math are reserved for a future separate app. Normal image builds copy the
+and 26 letter-name cards. Numbers/math are separate from Reading. The Math
+application trial references an explicit countable subset of these illustrations
+without changing their bytes or licenses. Normal image builds copy the
 prepared PNG/WAV files. The installed app never downloads or synthesizes speech.
 
 ## Credits and licenses

@@ -1063,3 +1063,139 @@ compressed working disks are restored to `build/vm/install-target.qcow2` and
 `build/vm/previous-installed.qcow2`. Earlier qualified bases/checkpoints, final factory
 artifacts, installed checkpoint and private signing key remain preserved. Only new
 assembly intermediates and rejected-candidate duplicates were discarded.
+
+
+## Math application trial — 2026-10-04
+
+Scope is `codex/math-app` only, based on actual main
+`e6c33308bf73c8e35c9ea3518ad543dbd02330a1`. The user requested a runnable Mac
+application trial before integration. No main merge, version/tag bump, signed
+catalog change, installer build, VM release qualification or HP claim is made.
+Qualified 0.3.0 artifacts/checkpoints and the private signing key remain intact.
+
+### Inputs, intended differences and invariants
+
+- uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8 / SDL 2.32.10,
+  Pillow 12.3.0, pytest 9.1.1 and PyYAML 6.0.3; existing frozen project lock.
+- Synthetic fixtures and already-public Reading art only. No family media,
+  Google credentials, learning records or child-created Math work.
+- New Math modes cover 0–100 with tap-to-reveal, passive ten-frame objects,
+  zero and crossing tens. Per-number weights are 12 for 0–20 and 1 for 21–100.
+  Addition totals/subtraction starting totals are weighted before equal ordered
+  splits; finite conditional sampling excludes only the current numerical prompt.
+- Standard launcher intentionally changes to Paint/Photos/Music above
+  Typing/Reading/Math. Recognized shipped five-entry profiles upgrade in memory;
+  custom entries/order/paths/commands and configuration bytes are preserved.
+- Existing app rendering, saved work, media, recovery/controller code and
+  authenticated IPC protections remain unchanged. Math calls the existing
+  before-flip control service and no-work save acknowledgement.
+
+### Automated and visual evidence
+
+- Actual unmodified baseline: **361 passed**. Final application branch:
+  **399 passed**, Linux full suite with AF_UNIX networking/socket permission.
+  An intermediate full run exposed five existing assertions expecting five tiles;
+  they now expect the intentionally requested sixth tile, retaining layout,
+  non-overlap and Reading-control checks. No pre-existing failure is claimed.
+- Pure checks cover all 5,151 ordered prompts per arithmetic mode and every
+  quantity's ten-frame geometry through 100. Focused tests cover exact weights,
+  conditional exclusion, invalid config, singleton/zero, hidden pixel leakage,
+  passive object taps, reveal/Next/mode/focus ownership, dense actual rendering,
+  cache bounds, missing assets, save ACK and actual service/flip/heartbeat order.
+- Genuine old/new code under identical fixtures: **10 activity PNG frames**,
+  **8 saved outputs** and **532 existing media files** match exactly. The five
+  activities are compared at 1024×600 and 1366×768; the changed launcher is
+  explicitly excluded. All **35 existing PNG icons** also remain byte-identical.
+  Evidence: ignored `build/math-qa/final-comparison/result.json`.
+- Public screenshot harness renders real Math and launcher screens at 800×600
+  and 1366×768: hidden/revealed numerals, count21, 8+7, 50+50, 23−8,
+  100−0, 100−100 and hidden/revealed zero. Native dense screenshots inspected;
+  ten-frame groups remain distinguishable at the minimum supported viewport.
+  Arithmetic shares its illustration size across collections. These are Linux
+  software-rendered application screenshots, not physical Mac/HP evidence.
+- Committed synthetic previews: `docs/images/math-trial.png` and
+  `docs/images/math-launcher.png`. The new glossy Math abacus uses the original
+  Music icon as its style reference. Its SHA-256 is
+  `2a3dfda0f100389f9676531073b98c11ba216782aee9e659ab65670243c7172d`.
+- Independent **Astra medium** plan review incorporated: hidden/zero distinction,
+  conditional sampling, dense-screen gate, subtraction cancellation grammar,
+  narrow configuration handling, optional audio and application-only boundary.
+  Independent **Sol** implementation review found one PNG CRC exception gap.
+  Fixed `SyntaxError` isolation; corrupt synthetic cat art is skipped while valid
+  egg art survives. Oversize/incorrect-format/CRC fixtures cannot reach the SDL
+  decoder. Reviewer confirmed resolution and no remaining scoped findings.
+- Actual standalone `python -m toddlerbox.math` process starts, stays running,
+  then handles TERM and exits 0. Uses isolated synthetic data/SDL dummy drivers;
+  only parent logs are written, with no child work or learning history.
+- Current local documentation links resolve. No new Python dependencies or
+  installer/updater changes; the complete audio pack remains unverified and
+  the first trial is deliberately silent.
+
+### Repeatable commands and remaining user checks
+
+Use `UV_CACHE_DIR=/tmp/uv-cache` on this restricted builder. Use a fresh output
+folder for baseline evidence rather than overwriting preserved comparisons:
+
+```bash
+git archive e6c33308bf73c8e35c9ea3518ad543dbd02330a1 | tar -x -C /tmp/toddlerbox-math-baseline
+uv run --frozen pytest -q
+uv run --frozen python scripts/preview-math.py --output build/math-qa/screens
+uv run --frozen python scripts/check-child-paced-baseline.py --baseline /tmp/toddlerbox-math-baseline --all-activities --exclude-launcher --output build/math-qa/final-comparison
+```
+
+Create the baseline directory first; comparison output must not already exist.
+Exact Mac checkout/uv setup/launch commands and the short manual smoke checklist
+are in `MATH_DESIGN.md#mac-trial`. **Actual Mac launch, font/rendering/pointer
+behavior and Rosie's educational/user response remain untested here.** The Linux
+IPC test correctly skips on Mac; production authentication is not relaxed.
+Release/main/installer integration remains held for the user's trial feedback.
+
+
+## Math Mac follow-up — objects first and deliberate number speech (2026-10-04)
+
+The user reported the first Math trial functional on Mac and liked its artwork.
+This follow-up starts from actual feature revision
+`cfd76d6b2f30aafb021fbf3897d13d138179866f`; released-main baseline remains
+`e6c33308bf73c8e35c9ea3518ad543dbd02330a1`. It supersedes the silent/four-mode
+trial above. Intended changes: merge number modes into pictures-first Numbers,
+keep quantities visible while tap reveals the numeral, and add explicit speech
+of the disclosed number/result. Addition/subtraction sampling, work persistence,
+parent recovery, controller authentication and supervision remain unchanged.
+
+- **419 Linux tests passed**, including all 101 bundled recordings' exact hashes,
+  complete PCM payloads, format, duration and non-clipping/non-silent peak checks.
+  Failed/truncated/symlink/oversize/wrong-format recordings are isolated. Playback
+  tests cover no autoplay, no hidden-answer speech, silent reveal, interruption,
+  bounded stalls, retryable device failure, focus/Next/mode/Home cleanup, and a
+  real SDL dummy-driver clip followed by Home stopping/unloading it.
+- Genuine released-baseline comparison again produced **10 identical existing
+  activity frames, 8 identical saved outputs and 532 identical existing media**.
+  Follow-up comparison against genuine cfd76d6 produced **40 Math frames identical
+  outside the changed mode label and new speaker control**, at 800×600/1366×768,
+  including zero, objects-first 1/21/100, crossing tens and dense arithmetic.
+- Refreshed synthetic screenshots at both sizes; visually inspected the 800×600
+  contact sheet. Committed overview: `docs/images/math-trial.png`. Icon unchanged.
+- Independent Sol review identified a huge-integer-volume `OverflowError`; fixed
+  float-only finiteness validation and added +/-10**400 clamp regressions. Reviewer
+  confirmed all eight volume cases and no remaining scoped findings.
+- Runtime toolchain remains uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8/SDL 2.32.10,
+  Pillow 12.3.0, pytest 9.1.1, PyYAML 6.0.3. Maintainer-only preparation uses pinned
+  Piper 1.4.2/ONNX Runtime 1.30.0/NumPy 2.5.3 and FFmpeg 7.1.5. Public model hashes,
+  revision, synthesis settings and each resulting WAV hash/frame count are in
+  `assets/math/audio/catalog.json`; sources/license notes in `assets/math/README.md`.
+  All 101 clips occupy about 8MB. No model/runtime dependency is added.
+
+Repeatable follow-up commands (create the baseline directory first):
+
+```bash
+git archive cfd76d6b2f30aafb021fbf3897d13d138179866f | tar -x -C /tmp/toddlerbox-math-followup-baseline
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/preview-math.py --output build/math-qa/audio-screens
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-math-followup.py --baseline /tmp/toddlerbox-math-followup-baseline
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-child-paced-baseline.py --baseline /tmp/toddlerbox-math-baseline --all-activities --exclude-launcher --output build/math-qa/audio-comparison
+```
+
+The final comparison output must be a fresh directory. Automated waveform and
+SDL checks do not establish pronunciation quality, comfort or real Mac device
+routing; parent listening remains the next trial check. No installer build,
+main merge, release publication or physical-HP qualification is included.

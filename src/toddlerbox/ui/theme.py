@@ -47,7 +47,7 @@ def artwork(kind: str, size: tuple[int, int]) -> pygame.Surface:
     """Reuse ToddlerBox's original illustrated artwork at each display size."""
     base = Path(__file__).resolve().parents[3] / "assets" / "icons"
     names = {"home": "home/home_256.png", "photos": "photos/photos_512.png",
-             "music": "music/music.png", "reading": "reading/reading.png"}
+             "music": "music/music.png", "reading": "reading/reading.png", "math": "math/math.png"}
     try:
         source = pygame.image.load(str(base / names[kind])).convert_alpha()
     except (pygame.error, OSError):

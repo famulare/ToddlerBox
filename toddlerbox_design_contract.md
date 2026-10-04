@@ -3,6 +3,8 @@
 This document is the source of truth for the ToddlerBox application and system contract.
 The bootable system recipe and its qualification gates are documented in `system/README.md`.
 Hardware qualification remains separate from application and VM tests.
+On `codex/math-app`, Math and the six-tile launcher are application-only trials;
+released 0.3.0/main/installer remain unchanged pending Mac user testing.
 
 ## 0. Global invariants
 
@@ -22,12 +24,14 @@ Hardware qualification remains separate from application and VM tests.
 
 ### 1.1 UX
 
-- Fullscreen home view with five large app icons, in centered rows when needed:
+- Standard fullscreen home view explicitly uses two rows of three app icons:
   - Paint
   - Photos
-  - Typing
   - Music
+  - Typing
   - Reading
+  - Math (application trial)
+- Top row: Paint/Photos/Music; bottom row: Typing/Reading/Math. Custom launcher lists retain their own entries/order.
 - Icon hit targets are computed from screen size (minimum 120px)
 - Function keys `F1`-`F12` are ignored
 - System image: deliberate parent chord reaches authenticated GNOME parent login
@@ -35,7 +39,7 @@ Hardware qualification remains separate from application and VM tests.
 
 ### 1.2 App handoff model
 
-- Built-in apps (`toddlerbox.paint`, `toddlerbox.photos`, `toddlerbox.typing`, `toddlerbox.music`, `toddlerbox.reading`) run embedded in-process.
+- Built-in apps (`toddlerbox.paint`, `toddlerbox.photos`, `toddlerbox.typing`, `toddlerbox.music`, `toddlerbox.reading`, `toddlerbox.math`) run embedded in-process.
 - Launcher keeps a single pygame window and switches scenes to reduce transition flicker.
 - Non-built-in commands are refused in the supervised child session; desktop development retains subprocess fallback.
 - Subprocess fallback suppresses child stdout/stderr.
@@ -172,7 +176,7 @@ Hardware qualification remains separate from application and VM tests.
 
 ## 4b. Reading App
 
-- One word or letter; numbers/math belong to a future separate app.
+- One word or letter; numbers/math are separate from Reading.
 - Word units are explicit: `ship` is `sh/i/p`, `duck` is `d/u/ck`.
 - Each large sound-unit tap plays only that sound, without automatically advancing to another.
 - A separate whole-word button reads the word; picture tap replays the whole word.
@@ -194,6 +198,34 @@ Hardware qualification remains separate from application and VM tests.
   source art, license terms and reproducible preparation records ship under `assets/reading/`.
 - Playback is offline PCM. No runtime
   speech synthesis, new data schema or child-created Reading document is introduced.
+
+## 4c. Math App — application trial
+
+- Three modes: objects-first Numbers, addition, subtraction. Tap the large
+  question card to reveal the numeral or answer; object taps have no action.
+  Numbers keeps its pictures visible after revelation.
+- Full default range 0–100, including zero and crossing tens. Display numerals,
+  not written number names. No answer entry, assessment, scoring or stored history.
+- Each integer 0–20 has weight 12; each integer 21–100 has weight 1. Addition
+  weights its total; subtraction weights its starting total. Ordered partitions
+  divide that total's weight equally. Next conditions this finite distribution
+  on excluding the current numerical prompt, independently of artwork.
+- Ten-frames use two rows of five, complete tens and a partial frame. Empty
+  frames represent zero; hidden content uses a visibly different neutral area.
+- Addition has two input collections and a separate combined result. Subtraction
+  ghosts/cancels the last B objects inside original A positions, with C survivors
+  regrouped in a separate result panel.
+- One countable illustration per example from Reading's explicitly curated
+  artwork, with existing source/license records and PNG bytes retained.
+- Home, Next and one mode control; no left rail. Existing single-pointer cleanup,
+  frame supervision and authenticated screen-only receipt remain in use.
+- No child work is written; save-current uses the existing no-work acknowledgement.
+- A speaker button reads the disclosed number/answer on deliberate tap only.
+  No autoplay or speech-controlled revelation. Offline bounded 0–100 WAV clips
+  stop on Home, Next, mode/focus changes; no runtime synthesis/network access.
+- `MATH_DESIGN.md` records sampling details, configuration and Mac launch commands.
+  Trial qualification stops at tests, independent review and a draft PR, before
+  main integration, release signing, installers or VM release qualification.
 
 ## 5. Data layout
 
@@ -224,6 +256,7 @@ data_root/
 - `music.volume`, `music.autoplay`, `music.latency_ms`
 - `reading.mode`, `reading.word_sets`, `reading.letter_case`, `reading.letter_audio`
 - `reading.volume`
+- `math.mode`, `math.max_number`, `math.low_number_weight`
 
 ## 7. Error handling
 
@@ -263,7 +296,7 @@ data_root/
 - Parent holds ctrl-alt-s for two seconds on one keyboard; no Shift required.
   One request per hold, rearmed by release. Ctrl+Alt+Home retains priority.
 - Authenticated receipt is a quiet 48px shooting star left of Home for 1.5 seconds,
-  fading over the last 0.3 seconds, on the launcher and all five activities.
+  fading over the last 0.3 seconds, on the launcher and every activity.
   It confirms recognition, including offline/unconfigured/already-running states;
   it conveys no transfer outcome and never enters saved content or thumbnails.
 - Root worker runs only on explicit request, with one job/transfer, low CPU/I/O

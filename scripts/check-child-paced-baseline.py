@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--output", type=Path, default=Path("build/reading-piano-qa/comparison"))
     parser.add_argument("--all-activities", action="store_true", help="Compare Music and Reading too when their behavior is unchanged")
+    parser.add_argument("--exclude-launcher", action="store_true", help="Explicitly omit intentional launcher changes; keep all activity/save comparisons")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     old, output = args.baseline.resolve(), args.output.resolve()
@@ -26,6 +27,8 @@ def main():
     frames = {"launcher", "paint", "photos", "typing"}
     if args.all_activities:
         frames.update({"music", "reading"})
+    if args.exclude_launcher:
+        frames.discard("launcher")
     for size in ("1024x600", "1366x768"):
         for original in (output/"old"/size).iterdir():
             if original.stem in frames or original.name.startswith("saved-"):

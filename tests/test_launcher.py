@@ -52,6 +52,28 @@ def test_module_name_for_command_ignores_non_module_command():
     assert module_name is None
 
 
+def test_standard_six_tiles_have_explicit_two_by_three_layout(monkeypatch):
+    import pygame
+    from toddlerbox.config import DEFAULT_CONFIG, STANDARD_ORDER
+    from toddlerbox.launcher import _load_apps, _build_buttons
+    monkeypatch.setenv("SDL_VIDEODRIVER", "dummy")
+    monkeypatch.setenv("SDL_AUDIODRIVER", "dummy")
+    pygame.init()
+    try:
+        for size in ((800,600), (1366,768), (2560,1440)):
+            screen = pygame.display.set_mode(size)
+            buttons = _build_buttons(_load_apps(DEFAULT_CONFIG), screen.get_rect())
+            assert [b.label for b in buttons] == list(STANDARD_ORDER)
+            assert len({b.rect.y for b in buttons}) == 2
+            assert [b.rect.x for b in buttons[:3]] == [b.rect.x for b in buttons[3:]]
+            assert len({b.rect.x for b in buttons}) == 3
+            assert all(screen.get_rect().contains(b.rect) for b in buttons)
+            assert all(b.image is not None for b in buttons)
+        assert "toddlerbox.math" in _EMBEDDED_RUNNERS
+    finally:
+        pygame.quit()
+
+
 def test_supervised_launcher_refuses_uninstrumented_subprocess(monkeypatch):
     from unittest.mock import Mock
     from toddlerbox.launcher import LauncherApp, _launch_app
