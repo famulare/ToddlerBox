@@ -72,12 +72,13 @@ PY
 corrupt)
     python3 - <<'PY'
 from pathlib import Path
-from boot_recovery import latest
+from boot_recovery import latest,atomic
 job,value=latest(Path('/'))
 assert value['status']=='pending'
+assert value['old_files'].get('controller.py'), 'Regenerate fixtures before installing: the corrupted file must be a tracked backup'
 source=job/'controller.py'
-Path('/root/appliance-qa/intact-backup').write_bytes(source.read_bytes())
-source.write_bytes(b'synthetic corrupt backup')
+atomic(Path('/root/appliance-qa/intact-backup'),source.read_bytes(),0o600)
+atomic(source,b'synthetic corrupt backup',0o644)
 PY
     echo 'Reset VM; parent recovery must refuse corrupt backup and keep Status usable.'
     ;;

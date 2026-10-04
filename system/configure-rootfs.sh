@@ -30,7 +30,7 @@ install -m 0755 "$source_dir/bin/toddlerbox-volume" /usr/local/libexec/
 install -m 0755 "$source_dir/bin/toddlerbox-session" /usr/local/libexec/
 install -m 0644 "$source_dir"/units/* /etc/systemd/system/
 ln -s "releases/$release_id" /opt/toddlerbox/current
-chmod -R a+rX /opt/toddlerbox/releases
+chmod -R a+rX,go-w /opt/toddlerbox/releases
 cp /opt/toddlerbox/current/config.yaml /etc/toddlerbox/config.yaml
 sed -i 's|data_root: ./data|data_root: /var/lib/toddlerbox|' /etc/toddlerbox/config.yaml
 printf '\ntyping:\n  autosave_seconds: 5\n' >>/etc/toddlerbox/config.yaml

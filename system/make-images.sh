@@ -8,7 +8,7 @@ test -d rootfs/boot
 rm -f rootfs/.dockerenv rootfs/.containerenv
 find rootfs/run -mindepth 1 -delete
 echo toddlerbox >rootfs/etc/hostname
-chmod -R a+rX rootfs/opt/toddlerbox/releases
+chmod -R a+rX,go-w rootfs/opt/toddlerbox/releases
 printf '127.0.0.1 localhost\n127.0.1.1 toddlerbox\n::1 localhost ip6-localhost\n' >rootfs/etc/hosts
 rm -f rootfs/etc/resolv.conf
 ln -s /run/NetworkManager/resolv.conf rootfs/etc/resolv.conf
