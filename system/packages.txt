@@ -11,6 +11,7 @@ gnome-control-center
 gnome-terminal
 nautilus
 network-manager-gnome
+wpasupplicant
 gnome-keyring
 dbus-user-session
 policykit-1

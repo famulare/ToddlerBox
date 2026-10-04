@@ -701,3 +701,30 @@ to source history. [The manifest](docs/releases/child-controls-5e754c3b13e41fd8.
 and [download helper](scripts/download-child-update.py) provide checksum-verified
 delivery without root privileges or cloud credentials. Later documentation commits
 do not change the built payload source identity recorded above.
+
+## First HP Wi-Fi omission — offline repair
+
+The supplied HP kernel log identifies Intel AC 3165 with successfully loaded
+`iwlwifi` firmware; NetworkManager reports `wlo1` unavailable. Both original
+qualified package records (`build/packages.tsv` and the Drive qualification copy)
+lack `wpasupplicant`/`iwd`, libnl and libpcsclite. The build explicitly disables
+recommended packages and did not request the Wi-Fi backend. This confirms an
+image omission; whether it fully resolves the observed HP issue awaits the repair.
+
+`wpasupplicant` is now explicit in image packages and future parent updater package
+operations. The Mac-compatible offline helper downloads five Ubuntu 24.04 amd64
+packages (1,750,228 bytes) directly from the same snapshot `20260926T000000Z`.
+Package versions/hashes came from the existing authenticated Cage-builder apt
+metadata, not guessed URLs. All five actual downloads passed those SHA-256 checks;
+`dpkg-deb` checked their package identities/dependencies. All 15 dependency/version
+requirements are satisfied by the actual qualified package record plus these five
+packages. Bash syntax/diff checks passed; the unchanged full app/system suite
+passed **280 tests** (5.06s).
+
+Repeat downloader: `bash scripts/download-wifi-repair.sh` on a connected Mac/Linux
+machine; [offline HP instructions](docs/wifi-repair.md) do not need network access.
+No family data, credentials or releases are replaced. This is a package repair,
+not a rebuilt installer; preserve the original qualified USB. Physical scans and
+association remain the HP acceptance check. VM virtual Ethernet could not have
+validated Wi-Fi service completeness; the earlier qualification did not claim
+physical Wi-Fi acceptance.

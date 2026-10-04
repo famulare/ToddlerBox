@@ -27,7 +27,7 @@ FILES = {
     "update_bundle.py": ("usr/local/lib/toddlerbox-system/update_bundle.py", 0o644),
     "toddlerbox-update": ("usr/local/sbin/toddlerbox-update", 0o755),
 }
-PACKAGES = ["pipewire", "pipewire-pulse", "wireplumber"]
+PACKAGES = ["pipewire", "pipewire-pulse", "wireplumber", "wpasupplicant"]
 STATE = "var/lib/toddlerbox-system/updates"
 APP = "opt/toddlerbox"
 SERVICE = "toddlerbox-controller.service"
