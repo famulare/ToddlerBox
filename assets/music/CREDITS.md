@@ -1,7 +1,7 @@
 # Music sources and credits
 
 The compositions, source editions, instrument recordings, and new arrangements
-are distinct. All six playback files are newly rendered instrumental piano
+are distinct. All eighteen playback files are newly rendered instrumental piano
 arrangements for ToddlerBox. No third-party finished recording is included.
 Source files/records and SHA-256 hashes are retained in `sources/manifest.json`.
 The new score events and accompaniment are in `scores/*.json`; playback and cue
@@ -54,3 +54,31 @@ properties and timing, **not a person's listening approval**. A person still
 needs to listen for timbre, correct phrasing, balance and suitable volume on the
 VM/HP playback path. Speaker loudness and physical output latency remain
 hardware qualification work.
+
+
+## 0.4 expansion
+
+Twelve additional short arrangements use historical melodies, with no imported
+finished recordings, modern lyrics or modern accompaniment. The traditional
+melodies are Hot Cross Buns, London Bridge, Itsy Bitsy Spider, Old MacDonald,
+This Old Man, Hickory Dickory Dock, Pop Goes the Weasel, Bingo and Mulberry Bush.
+These are historical/traditional tunes, not recordings of recent commercial
+children's versions. New note events, sparse roots and piano performances are
+ToddlerBox MIT contributions; original six outputs remain unchanged.
+
+The classical motifs are Brahms's *Wiegenlied*, Op.49 No.4 (1868), Grieg's
+*Morning Mood* from *Peer Gynt* (1875; Suite Op.46), and Dvořák's Symphony No.9,
+Op.95 second-movement Largo (1893). These compositions are public domain; the
+Largo follows the instrumental theme, not the later *Goin' Home* song arrangement.
+All three are transposed to C and use simple sparse accompaniment. Morning Mood
+keeps its compound-meter contour with a slower pulse. Lullaby's pickup/dotted
+rhythm and Weasel's jig quarter/eighth pairs have source-grounded fixtures.
+
+Brahms reference: pinned Mutopia public-domain LilyPond score retained as
+`sources/lullaby.ly`, crediting its Indiana University source. Weasel reference:
+John B. Walsh's ABC transcription of the historical jig (Coles p.24.6), retained
+as `sources/weasel.abc` from music21. The traditional composition is public domain;
+the repository BSD-3-Clause notice is retained in `licenses/music21-BSD.txt`.
+Exact source revisions, URLs and SHA-256 hashes are in `sources/manifest.json`.
+The sources establish reference facts, not approval of the simplified arrangement.
+Manual listening on the HP remains necessary for phrasing, timbre and comfort.

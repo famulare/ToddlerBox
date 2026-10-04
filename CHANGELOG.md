@@ -1,11 +1,14 @@
 # Changelog
 
-## Unreleased — Math application trial
+## 0.4.0 - 2026-10-04
 
-- Separate `codex/math-app` branch for Mac user testing; no installer or released-main changes.
+- Math approved after Mac testing and integrated as the sixth offline activity.
 - Three passive, tap-to-reveal number/arithmetic modes through 100, weighted per number and grouped into tens.
 - Standard launcher: Paint/Photos/Music above Typing/Reading/Math; existing custom configuration is preserved.
 - Pictures-first Numbers and on-demand offline speech for 0–100; no autoplay, scoring, learning history or object-tapping controls.
+
+- Music expands from six to eighteen public-domain piano arrangements; scrollable left song rail keeps Free Play, Pause and Autoplay reachable. Existing six performances and piano samples remain unchanged.
+- Explicit GitHub build/VM qualification workflow keeps installer construction reproducible without using private family data.
 
 ## 0.3.0 - 2026-10-04
 

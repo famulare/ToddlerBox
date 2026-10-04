@@ -1,0 +1,95 @@
+name: Build and qualify release candidate
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - name: Install host inspection tool and run suite
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr
+          uv sync --frozen --group dev --python /usr/bin/python3
+          uv run --frozen pytest -q
+      - name: Build pinned Ubuntu disk and installer
+        env:
+          TODDLERBOX_BUILD_DIR: ${{ github.workspace }}/build/release-0.4
+          TODDLERBOX_DOCKER_ARCHIVE: /tmp/toddlerbox-release-image.tar.gz
+          TODDLERBOX_PRUNE_BUILD_CACHE: '1'
+        run: |
+          df -h . /tmp
+          ./system/build-compact.sh
+          container=$(docker create toddlerbox-cage-builder)
+          docker cp "$container:/toddlerbox-cage" build/release-0.4/toddlerbox-cage
+          docker rm "$container"
+          id=$(cat build/release-0.4/release-id)
+          uv run --frozen python system/build-update.py --cage build/release-0.4/toddlerbox-cage --app "build/release-0.4/toddlerbox-app-$id.tar.gz" --output build/release-0.4/ToddlerBox-update.pyz
+      - name: Qualify fresh installation without networking
+        run: |
+          uv run --frozen python scripts/qualify-release-vm.py --image-dir build/release-0.4 --output build/release-qa
+      - name: Publish public installer to a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          uv run --frozen python - <<'PY'
+          import hashlib,json,os
+          from pathlib import Path
+          p=Path('build/release-0.4')
+          files={}
+          for name in ('toddlerbox-installer.iso','ToddlerBox-update.pyz'):
+              with (p/name).open('rb') as f: digest=hashlib.file_digest(f,'sha256').hexdigest()
+              files[name]={'bytes':(p/name).stat().st_size,'sha256':digest}
+          source={'version':'0.4.0','git':os.environ['GITHUB_SHA'],'content':(p/'release-id').read_text().strip(),
+                  'architecture':'x86-64','ubuntu':'24.04','package_snapshot':'20260926T000000Z','artifacts':files,
+                  'qualification':json.loads(Path('build/release-qa/results.json').read_text()),
+                  'workflow_run':os.environ['GITHUB_RUN_ID']}
+          (p/'source.json').write_text(json.dumps(source,indent=2)+'\n')
+          (p/'INSTALLER-SHA256SUMS').write_text(''.join(f"{v['sha256']}  {name}\n" for name,v in files.items()))
+          PY
+          # Refuse any existing tag from a different candidate, including annotated tags.
+          if gh api repos/$GITHUB_REPOSITORY/git/ref/tags/v0.4.0 > /tmp/tag-ref.json 2>/dev/null; then
+            tag_type=$(jq -r .object.type /tmp/tag-ref.json)
+            tag_sha=$(jq -r .object.sha /tmp/tag-ref.json)
+            while test "$tag_type" = tag; do
+              gh api repos/$GITHUB_REPOSITORY/git/tags/$tag_sha > /tmp/tag-ref.json
+              tag_type=$(jq -r .object.type /tmp/tag-ref.json)
+              tag_sha=$(jq -r .object.sha /tmp/tag-ref.json)
+            done
+            test "$tag_type" = commit
+            test "$tag_sha" = "$GITHUB_SHA"
+          fi
+          if ! gh release view v0.4.0 >/dev/null 2>&1; then
+            gh release create v0.4.0 --draft --target "$GITHUB_SHA" --title 'ToddlerBox 0.4.0' --notes 'Six offline activities; 18-song scrollable Music library. Candidate publication remains draft until source review, VM evidence and signing checks finish.'
+          fi
+          test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .draft)" = true
+          test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .target_commitish)" = "$GITHUB_SHA"
+          gh release upload v0.4.0 build/release-0.4/toddlerbox-installer.iso build/release-0.4/ToddlerBox-update.pyz build/release-0.4/INSTALLER-SHA256SUMS build/release-0.4/source.json build/release-0.4/packages.tsv build/release-qa/results.json --clobber
+      - name: Retain selected public qualification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-0.4-public-evidence
+          if-no-files-found: ignore
+          path: |
+            build/release-qa/installer.png
+            build/release-qa/first-boot-password.png
+            build/release-qa/six-activity-launcher.png
+            build/release-qa/music-*.png
+            build/release-qa/math-*.png
+            build/release-qa/paint.png
+            build/release-qa/photos.png
+            build/release-qa/typing.png
+            build/release-qa/reading.png
+            build/release-qa/*-recovery.png
+            build/release-qa/*-launcher.png
+            build/release-qa/authenticated-parent-greeter.png
+            build/release-qa/results.json
+            build/release-0.4/source.json
+            build/release-0.4/packages.tsv

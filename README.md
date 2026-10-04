@@ -1,11 +1,10 @@
 # ToddlerBox
 
-**Math application trial:** this branch adds Math and a two-row launcher for Mac
-user testing. [Trial design and exact Mac instructions](MATH_DESIGN.md#mac-trial).
-Released **0.3.0**, its main branch and installer remain unchanged.
+**ToddlerBox 0.4:** six offline activities, a two-row launcher, pictures-first Math
+with deliberate number speech, and 18 short songs in a scrollable Music library.
 
 ToddlerBox is a minimalist, offline-first Linux "kid mode" designed for very young children.
-This trial's fullscreen launcher has six large buttons in two rows:
+The fullscreen launcher has six large buttons in two rows:
 
 - **Paint**
 - **Photos**
@@ -18,7 +17,7 @@ All six activities share a cream-and-sage interface and the same Home button.
 The original illustrated icons are preserved; newer activities have matching icons.
 Shared pygame styling lives in `src/toddlerbox/ui/theme.py`.
 
-![Math trial launcher and activities](docs/images/math-trial.png)
+![Six-activity launcher and Math](docs/images/math-trial.png)
 
 There is no desktop environment visible, no file browser, no login/logout flow, and no network dependency during normal use. The system is intentionally constrained, predictable, and robust against accidental input, while remaining easy for a parent to administer and extend.
 
@@ -81,7 +80,7 @@ The old global keyd setup is retired. See [system/README.md](system/README.md).
 │  - Typing                  │
 │  - Music                   │
 │  - Reading                 │
-│  - Math (application trial) │
+│  - Math │
 │                            │
 │  Fullscreen, no chrome     │
 │  Exit = return to launcher │
@@ -103,7 +102,7 @@ The launcher supervises apps. Apps exit cleanly back to the launcher. If an app 
 
 Fullscreen home screen with large, simple app targets.
 
-![ToddlerBox trial launcher](docs/images/math-launcher.png)
+![ToddlerBox launcher](docs/images/math-launcher.png)
 
 ### Paint
 
@@ -125,7 +124,7 @@ Large-format typing surface with per-character styling controls and recall.
 
 ### Music
 
-Six short piano arrangements with song choices, autoplay, pause and a passive
+Eighteen short piano arrangements with a scrollable left song rail with song choices, autoplay, pause and a passive
 falling-note keyboard with playable keys and Free Play. Audio and note cues are generated from the same score.
 
 ![ToddlerBox Music App](assets/screenshots/music.png)
@@ -137,11 +136,11 @@ to hear the word and reveal its picture. Next chooses another random card withou
 
 ![ToddlerBox Reading App](assets/screenshots/reading.png)
 
-### Math application trial
+### Math
 
 Three modes: pictures-first Numbers, Addition and Subtraction. Passive illustrated
 ten-frames cover 0–100; a speaker button reads the revealed number on demand.
-See [the trial design and Mac instructions](MATH_DESIGN.md).
+See [the design and desktop instructions](MATH_DESIGN.md).
 
 ---
 
@@ -149,7 +148,7 @@ See [the trial design and Mac instructions](MATH_DESIGN.md).
 
 ### Launcher
 
-- Standard trial home screen has six icons in two rows of three
+- Standard home screen has six icons in two rows of three
 - Runs built-in apps in-process (`paint`, `photos`, `typing`, `music`, `reading`, `math`)
 - Subprocess fallback only in unsupervised desktop development
 - No clickable "exit" control on-screen
@@ -216,7 +215,7 @@ See [the trial design and Mac instructions](MATH_DESIGN.md).
 - Random Next excludes the current card; no scores, rewards, tests or learning history
 - 75 illustrated words across short vowels, digraphs and consonant blends, plus alphabet sounds/names
 - Defaults mix three-, four- and selected five-letter words; parent settings can narrow the deck
-- Numbers and arithmetic stay separate in the Math application trial
+- Numbers and arithmetic stay separate in the Math application
 - Next, Home, focus changes and parent recovery stop speech
 - [Content credits and preparation](assets/reading/README.md); [design decisions](READING_DESIGN.md)
 
@@ -278,8 +277,8 @@ the selected deck without changing its difficulty settings.
 
 App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
 an older installation, add the Music and/or Reading launcher entries from this
-repository's `config.yaml` in parent mode. Released 0.3.0 images include five apps;
-the separate Math trial adds the sixth without changing that installer.
+repository's `config.yaml` in parent mode. Released 0.4.0 images include five apps;
+0.4 adds Math as the sixth activity.
 
 ---
 
@@ -418,3 +417,6 @@ status reports the result. There are no automatic sync jobs. See
 ---
 
 For Rosemary.
+
+Music's left song list scrolls by touch or wheel, with Free Play always visible.
+![Expanded Music library](docs/images/music-library.png)

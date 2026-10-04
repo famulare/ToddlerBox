@@ -1199,3 +1199,61 @@ The final comparison output must be a fresh directory. Automated waveform and
 SDL checks do not establish pronunciation quality, comfort or real Mac device
 routing; parent listening remains the next trial check. No installer build,
 main merge, release publication or physical-HP qualification is included.
+
+## 0.4 release preparation — Math integration and expanded Music (2026-10-04)
+
+User approved and merged Math PR #9 on main at
+`93c8c37357234402c641eb315e736dc06387304b`. This is the actual baseline for the
+Music expansion. Math's existing Mac feedback and offline-number/audio tests
+remain applicable; original five-activity recovery/authentication code is unchanged.
+
+- Local Linux suite: **439 passed**. Tests add clipped/bounded rail scrolling,
+  drag without selection, wheel scope, last-song reachability, fixed Free Play,
+  focus/foreign-finger cleanup and held-piano preservation while using Pause,
+  Autoplay or song selection. All 18 WAVs pass exact cue/score/frame checks,
+  audible onset, non-silence, no clipping and quiet complete tails.
+- Genuine baseline comparison: **10 identical unaffected frames, 8 saved outputs,
+  529 original media files**. Intentional differences are Music's song rail and
+  expanded catalog/build/source manifests. Original six scores/WAVs/cues,
+  instrument samples and playable-piano samples remain byte-identical.
+- Offline pinned NumPy 2.2.6 renderer rebuild reproduces all **38** playback,
+  catalog and manifest output files exactly. No new runtime dependency is added.
+- Twelve new historical melodies are documented in `assets/music/CREDITS.md`;
+  retained Mutopia public-domain Brahms and music21/John B. Walsh Weasel notation,
+  pinned revisions/hashes and BSD notice ground the corrected rhythm fixtures.
+- Independent Sol review found held-key interruption on rail controls, Brahms/
+  Weasel rhythm discrepancies and a clipped Mulberry label. Fixed all three;
+  targeted review recheck and 48 Music tests pass. No listening approval claimed.
+- Actual Music contact sheets at 800×600 and 1366×768 cover first song, last song
+  and Free Play; the small-screen contact sheet was visually inspected.
+  `docs/images/music-library.png` is public synthetic review evidence.
+- Version becomes **0.4.0** and signed-release floor **2**. Source tests use
+  uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8/SDL 2.32.10, Pillow 12.3.0,
+  pytest 9.1.1 and PyYAML 6.0.3. Runtime package/snapshot pins stay unchanged.
+
+Repeatable commands:
+
+```bash
+mkdir -p /tmp/toddlerbox-0.4-baseline
+git archive 93c8c37357234402c641eb315e736dc06387304b | tar -x -C /tmp/toddlerbox-0.4-baseline
+PYTHONPATH=/tmp/toddlerbox-0.4-baseline/src UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest /tmp/toddlerbox-0.4-baseline/tests -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --offline --frozen --script scripts/build-music.py --output build/music-expansion-qa/rebuild
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/preview-music-library.py
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-child-paced-baseline.py --baseline /tmp/toddlerbox-0.4-baseline --all-activities --expanded-music --output build/music-expansion-qa/final-comparison
+```
+
+Use fresh comparison output directories. Before publishing, the explicit
+`Build and qualify release candidate` workflow must build this exact source,
+install its ISO in a fresh x86-64 no-NIC Q35/UEFI/TCG VM, test all six activities,
+HDA output/cleanup, setup, parent escape, actual watchdog process replacement
+and reboot. Selected screenshots/results are public; VM disks, ephemeral test
+passwords, family data and signing material are excluded. The managed workspace
+has insufficient free storage for another full build; automatic approval review
+rejected replacing preserved VM checkpoints. They remain intact, and an isolated
+GitHub runner provides fresh build storage. A draft stays unpublished until its
+source/tag identities, artifacts and signatures have been checked.
+
+VM/image qualification and publication results will be appended after execution.
+Physical HP Wi-Fi, touch gestures, trackpad, audible sound and sleep/resume remain
+hardware acceptance checks. No real Google/family-data test runs on the builder.

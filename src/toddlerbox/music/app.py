@@ -42,6 +42,7 @@ class MusicApp:
         self._layout()
         self.piano = Piano(self.keys, self.logger)
         self.free_play = False
+        self._rail_track = 0
         self._static = self._background()
         self._scan_index = 0
         self._scan_track = -1
@@ -59,25 +60,50 @@ class MusicApp:
         self.keys = piano_keys(self.keyboard_rect, self.low, self.high)
         self.pause_rect = pygame.Rect(self.rail_rect.x,self.rail_rect.bottom-100,self.rail_rect.w,48)
         self.auto_rect = pygame.Rect(self.rail_rect.x,self.rail_rect.bottom-44,self.rail_rect.w,44)
-        count = max(1, len(self.player.tracks) + 1)
-        card_height = min(58, (self.pause_rect.top-self.rail_rect.top-16-(count-1)*7)//count)
-        self.song_rects = [pygame.Rect(self.rail_rect.x,self.rail_rect.y+i*(card_height+7),
-                                      self.rail_rect.w,card_height) for i in range(len(self.player.tracks))]
-        self.free_rect = pygame.Rect(self.rail_rect.x, self.rail_rect.y + len(self.player.tracks)*(card_height+7),
-                                     self.rail_rect.w, card_height)
+        self.free_rect = pygame.Rect(self.rail_rect.x, self.pause_rect.top-66, self.rail_rect.w, 58)
+        self.song_list_rect = pygame.Rect(self.rail_rect.x, self.rail_rect.y,
+                                         self.rail_rect.w, self.free_rect.top-self.rail_rect.y-8)
+        self.rail_offset = 0
+        self.pressed = None
+        self._scroll_y = None
         self.song_labels = []
         self.song_kinds = []
         ids = ["mary", "twinkle", "ode", "frere", "row", "minuet"]
         short_titles = dict(zip(ids,["Little Lamb", "Twinkle", "Ode to Joy", "Frère Jacques", "Row Your Boat", "Minuet in G"]))
-        for i, (track, rect) in enumerate(zip(self.player.tracks, self.song_rects)):
+        short_titles["mulberry"] = "Mulberry Bush"
+        for i, track in enumerate(self.player.tracks):
             label = short_titles.get(track.id,track.title)
             self.song_kinds.append(ids.index(track.id) if track.id in ids else 5)
             size = 20
             font = theme.ui_font(size)
-            while font.size(label)[0] > rect.w-65 and size > 12:
+            while font.size(label)[0] > self.rail_rect.w-65 and size > 12:
                 size -= 1
                 font = theme.ui_font(size)
             self.song_labels.append(font.render(label,True,INK))
+
+    @property
+    def song_rects(self):
+        return [pygame.Rect(self.song_list_rect.x, self.song_list_rect.y+i*66-int(self.rail_offset),
+                            self.song_list_rect.w, 58) for i in range(len(self.player.tracks))]
+
+    def _scroll(self, delta):
+        maximum = max(0, len(self.player.tracks)*66-8-self.song_list_rect.h)
+        self.rail_offset = max(0, min(maximum, self.rail_offset+delta))
+
+    def _target(self, pos):
+        if self.song_list_rect.collidepoint(pos):
+            for i, row in enumerate(self.song_rects):
+                if row.collidepoint(pos):
+                    return ("song", i)
+        for name, rect in (("free", self.free_rect), ("pause", self.pause_rect), ("auto", self.auto_rect)):
+            if rect.collidepoint(pos) and (name == "free" or not self.free_play):
+                return (name, None)
+        return None
+
+    def reset_input(self):
+        self.pointer.reset()
+        self.pressed = None
+        self._scroll_y = None
 
     def _background(self) -> pygame.Surface:
         surface = pygame.Surface(self.rect.size)
@@ -94,13 +120,23 @@ class MusicApp:
         return surface
 
     def _draw_controls(self) -> None:
+        old_clip = self.screen.get_clip()
+        self.screen.set_clip(self.song_list_rect)
         for i,rect in enumerate(self.song_rects):
+            if not rect.colliderect(self.song_list_rect):
+                continue
             selected = i == self.player.index and not self.free_play
             theme.card(self.screen, rect, selected=selected)
             icon_rect = pygame.Rect(rect.x+7,rect.y+4,46,rect.h-8)
             kind = self.song_kinds[i]
             draw_song_icon(self.screen,icon_rect,kind,SONG_COLORS[kind])
             self.screen.blit(self.song_labels[i],(rect.x+59,rect.centery-self.song_labels[i].get_height()//2))
+        self.screen.set_clip(old_clip)
+        maximum = max(0, len(self.player.tracks)*66-8-self.song_list_rect.h)
+        if maximum:
+            height = max(24, round(self.song_list_rect.h**2/(maximum+self.song_list_rect.h)))
+            y = self.song_list_rect.y + round((self.song_list_rect.h-height)*self.rail_offset/maximum)
+            pygame.draw.rect(self.screen, theme.MUTED, (self.song_list_rect.right-4,y,3,height), border_radius=2)
         theme.card(self.screen, self.free_rect, selected=self.free_play)
         piano = pygame.Rect(self.free_rect.x + 10, self.free_rect.centery - 13, 39, 26)
         pygame.draw.rect(self.screen, PAPER, piano)
@@ -154,6 +190,13 @@ class MusicApp:
 
     def render(self) -> None:
         self.screen.blit(self._static,(0,0))
+        if not self.free_play and self.player.index != self._rail_track and self._scroll_y is None:
+            row = self.song_rects[self.player.index]
+            if row.top < self.song_list_rect.top:
+                self._scroll(row.top-self.song_list_rect.top)
+            elif row.bottom > self.song_list_rect.bottom:
+                self._scroll(row.bottom-self.song_list_rect.bottom)
+            self._rail_track = self.player.index
         track = None if self.free_play else self.player.track
         if track:
             title = self.title.render(track.title,True,INK)
@@ -204,33 +247,51 @@ class MusicApp:
         if is_escape_chord(event) and not os.environ.get("TODDLERBOX_HEALTH_SOCKET"):
             return False
         if event.type in FOCUS_EVENTS:
-            self.pointer.reset()
+            self.reset_input()
             self.piano.close()
             return True
         if self.piano.event(event, self.rect):
             return True
         if not self.pointer.accept(event):
             return True
-        if is_primary_pointer_event(event,is_down=True):
-            pos = pointer_event_pos(event,self.rect)
-            if pos is None:
-                return True
+        if event.type == pygame.MOUSEWHEEL:
+            if self.song_list_rect.collidepoint(getattr(event, "pos", pygame.mouse.get_pos())):
+                self.reset_input()
+                self._scroll(-event.y*66)
+            return True
+        pos = pointer_event_pos(event, self.rect)
+        if pos is None:
+            return True
+        if event.type in {pygame.MOUSEMOTION, pygame.FINGERMOTION} and self._scroll_y is not None:
+            self._scroll(self._scroll_y-pos[1])
+            self._scroll_y = pos[1]
+            if self.pressed and (pygame.Vector2(pos)-self.pressed[1]).length() > 8:
+                self.pressed = None
+            return True
+        if is_primary_pointer_event(event, is_down=True):
             if self.home_rect.collidepoint(pos):
                 return False
-            if self.free_rect.collidepoint(pos):
-                self.free_play = True
-                self.player.close()
-                self.piano.close()
-            elif self.pause_rect.collidepoint(pos) and not self.free_play:
-                self.player.toggle_pause()
-            elif self.auto_rect.collidepoint(pos) and not self.free_play:
-                self.player.toggle_autoplay()
-            else:
-                for i,rect in enumerate(self.song_rects):
-                    if rect.collidepoint(pos):
-                        self.free_play = False
-                        self.player.select(i)
-                        break
+            self.pressed = self._target(pos), pos
+            self._scroll_y = pos[1] if self.song_list_rect.collidepoint(pos) else None
+            return True
+        if not is_primary_pointer_event(event, is_down=False):
+            return True
+        self._scroll_y = None
+        pressed, self.pressed = self.pressed, None
+        if not pressed or pressed[0] is None or pressed[0] != self._target(pos) or (pygame.Vector2(pos)-pressed[1]).length() > 24:
+            return True
+        name, index = pressed[0]
+        if name == "free":
+            self.piano.close()
+            self.free_play = True
+            self.player.close()
+        elif name == "song":
+            self.free_play = False
+            self.player.select(index)
+        elif name == "pause":
+            self.player.toggle_pause()
+        elif name == "auto":
+            self.player.toggle_autoplay()
         return True
 
     def run(self) -> None:
@@ -258,7 +319,7 @@ class MusicApp:
         finally:
             self.player.close()
             self.piano.close()
-            self.pointer.reset()
+            self.reset_input()
 
 
 def run_embedded(screen: pygame.Surface, screen_rect: pygame.Rect, clock: pygame.time.Clock) -> None:

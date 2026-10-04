@@ -73,6 +73,22 @@
       "url": "https://github.com/sgossner/VSCO-2-CE/blob/6dd651d55dde97fd4028699be9d4481f26917891/Readme.txt",
       "revision": "6dd651d55dde97fd4028699be9d4481f26917891",
       "contributor": "Versilian Studios"
+    },
+    {
+      "file": "sources/lullaby.ly",
+      "sha256": "f5b2ee47a7b0be8810f3f992243c42593ff97819ee204852c697249f6ae9668c",
+      "license": "Public Domain",
+      "url": "https://github.com/MutopiaProject/MutopiaProject/blob/5c6d4a30cf3e9a03876698bbc24f14c34b98d701/ftp/BrahmsJ/O49/Wiegenlied/Wiegenlied-lys/Wiegenlied.ly",
+      "revision": "5c6d4a30cf3e9a03876698bbc24f14c34b98d701",
+      "contributor": "Mutopia; Indiana University source score"
+    },
+    {
+      "file": "sources/weasel.abc",
+      "sha256": "92891da76cdd7cfc7439a2c03b60b1b51c205d21de6881f29344950927102edb",
+      "license": "BSD-3-Clause",
+      "url": "https://github.com/cuthbertLab/music21/blob/46453ed2f53314d7c4928b8b0a0d3693c30ed473/music21/corpus/ryansMammoth/PopGoesTheWeasel.abc",
+      "revision": "46453ed2f53314d7c4928b8b0a0d3693c30ed473",
+      "contributor": "John B. Walsh transcription; Coles p.24.6, traditional jig"
     }
   ]
 }

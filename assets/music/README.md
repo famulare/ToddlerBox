@@ -1,6 +1,6 @@
 # Bundled Music collection
 
-`catalog.json` lists the six tracks in playback order. Audio and cue filenames
+`catalog.json` lists the eighteen tracks in playback order. Audio and cue filenames
 are relative to this directory. Each WAV is mono 22050 Hz signed 16-bit PCM;
 the collection is deliberately kept in PCM to avoid codec timing offsets.
 The runtime reads only the catalog, WAVs and cue JSON; it downloads nothing.
@@ -25,7 +25,7 @@ For a comparison without overwriting committed playback assets:
 UV_CACHE_DIR=/workspace/.cache/uv uv run --offline --locked scripts/build-music.py --output build/music-check
 ```
 
-Compare the generated files to their committed equivalents: six WAVs, six cue
+Compare the generated files to their committed equivalents: eighteen WAVs, eighteen cue
 files, the catalog and the build manifest.
 Normal regeneration uses the small committed instrument excerpts. To recreate
 those excerpts from the original pinned CC0 inputs, the optional maintainer
@@ -80,4 +80,9 @@ uv run --locked scripts/build-music.py --keys-only --output assets/music/keys
 ```
 
 The key manifest pins instrument/output hashes. This command does not regenerate
-or change the six song WAVs/cues.
+or change the song WAVs/cues.
+
+The song list scrolls by touch drag, trackpad or mouse wheel inside its clipped
+rail; dragging never selects a song. Free Play, Pause and Autoplay stay pinned.
+New songs retain the same two-octave keyboard and soft CC0 piano. Existing six
+song WAVs/cues, instrument and playable-key samples remain byte-identical.

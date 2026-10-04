@@ -1,8 +1,8 @@
-# Math application trial
+# Math application
 
-This is a separate application trial on `codex/math-app`, based on released
-ToddlerBox 0.3.0. It is not in the released installer, signed update catalog or
-main branch. Mac user testing comes before integration or release qualification.
+Math was tested on Mac in PR #9 and approved for integration. ToddlerBox 0.4
+includes it in the standard six-activity launcher and qualified installation.
+The original trial and follow-up evidence remain in VALIDATION.md.
 
 ## Interaction
 
@@ -123,8 +123,8 @@ Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if needed.
 Use a separate checkout to keep your released checkout and work untouched:
 
 ```bash
-git clone --branch codex/math-app --single-branch https://github.com/famulare/ToddlerBox.git ToddlerBox-math-trial
-cd ToddlerBox-math-trial
+git clone https://github.com/famulare/ToddlerBox.git ToddlerBox
+cd ToddlerBox
 uv sync --frozen --group dev
 uv run --frozen python -m toddlerbox.launcher
 ```
@@ -146,7 +146,7 @@ uv run --frozen pytest -q tests/test_math.py tests/test_math_speech.py tests/tes
 
 The authenticated Linux IPC test skips on Mac; this does not weaken production
 authentication. The full controller suite uses Linux-only APIs and is not a Mac
-compatibility test. No OS reinstall or installer integration is part of this trial.
+compatibility test. Desktop testing complements the separate Ubuntu installer qualification.
 
 The first trial's `numerals` and `count` configuration names both map to `numbers`
 in memory without rewriting the configuration. The redundant numeral-first mode

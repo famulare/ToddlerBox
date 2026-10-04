@@ -23,7 +23,9 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets/music"
 RATE = 22050
 VERSION = "toddlerbox-sampled-piano-1"
-ORDER = ("mary", "twinkle", "ode", "frere", "row", "minuet")
+ORDER = ("mary", "twinkle", "ode", "frere", "row", "minuet",
+         "buns", "bridge", "spider", "farm", "oldman", "clock", "weasel",
+         "bingo", "mulberry", "lullaby", "morning", "largo")
 
 
 def digest(path: Path) -> str:
