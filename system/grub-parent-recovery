@@ -1,0 +1,12 @@
+#!/bin/sh
+# Persist the authenticated parent route when Ubuntu kernel hooks regenerate GRUB.
+set -eu
+kernel=$(basename "$(ls /boot/vmlinuz-* | sort -V | tail -1)")
+version=${kernel#vmlinuz-}
+cat <<EOF
+menuentry 'ToddlerBox parent recovery — Ubuntu GNOME login' {
+    search --no-floppy --fs-uuid --set=root d1952deb-9efc-4225-bc81-2d6af4e7b644
+    linux /boot/$kernel root=UUID=d1952deb-9efc-4225-bc81-2d6af4e7b644 rw console=tty0 console=ttyS0,115200 toddlerbox.parent=1
+    initrd /boot/initrd.img-$version
+}
+EOF

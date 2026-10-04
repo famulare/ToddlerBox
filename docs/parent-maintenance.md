@@ -44,6 +44,8 @@ Ubuntu updates use signed normal Noble repositories, including security fixes.
 They are parent initiated: no unattended package installs or automatic reboots.
 Check monthly and reboot when requested. These package changes are outside
 ToddlerBox bundle rollback. Retain the recovery USB and back up child work.
+The persistent GRUB recovery entry survives Ubuntu kernel/menu regeneration;
+normal Ubuntu remains the default, with the five-second menu available at boot.
 If package state is inconsistent, complete **Ubuntu updates** before installing
 another bundle or returning to child mode. A network/mirror failure with verified
 consistent package state leaves offline child use available. Local conffiles are
