@@ -70,7 +70,7 @@ def ubuntu_updates(root=Path("/")):
                 subprocess.run(args, check=True, timeout=timeout, stdin=subprocess.DEVNULL, env=environment)
             # Stream output to the parent terminal; preserve appliance conffiles.
             run(["dpkg", "--force-confdef", "--force-confold", "--configure", "-a"], 900)
-            run(["apt-get", "update"], 300)
+            run(["apt-get", "-o", "APT::Update::Error-Mode=any", "update"], 300)
             run(["apt-get", "-o", "Dpkg::Options::=--force-confdef", "-o", "Dpkg::Options::=--force-confold", "upgrade", "-y"], 1800)
             record(state / "ubuntu-maintenance.json", {"last_success": datetime.datetime.now(datetime.timezone.utc).isoformat()})
         finally:

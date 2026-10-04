@@ -327,7 +327,7 @@ def test_offline_ubuntu_check_blocks_child_only_if_packages_inconsistent(applian
     calls = []
     def run(args, **kwargs):
         calls.append((args, kwargs))
-        if args == ["apt-get", "update"]:
+        if args[0] == "apt-get" and args[-1] == "update":
             raise subprocess.CalledProcessError(100, args)
         return subprocess.CompletedProcess(args, 0, stdout="unconfigured packages" if args == ["dpkg", "--audit"] and dirty else "")
     monkeypatch.setattr(maintenance.subprocess, "run", run)

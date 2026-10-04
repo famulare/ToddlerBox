@@ -581,11 +581,15 @@ def main() -> None:
                 if key.data == "health" and uid == child_uid and mode == "child":
                     if message == b"frame":
                         watchdog.frame(time.monotonic())
-                        if (STATE / "appliance-v1").exists() and observation.frame(time.monotonic()):
-                            from appliance import observed
-                            observed()
                     elif message == b"app-frame":
                         sync_bridge.frame(credentials, _address, time.monotonic())
+                        # Promotion/setup evidence comes from the pinned launcher,
+                        # not merely any process sharing the child account UID.
+                        if ((STATE / "appliance-v1").exists() and sync_bridge.healthy(time.monotonic())
+                                and sync_bridge.peer[0] == credentials[0] and sync_bridge.peer[2] == _address
+                                and observation.frame(time.monotonic())):
+                            from appliance import observed
+                            observed()
                     elif message.startswith(b"save-result:"):
                         sync_bridge.result(message, credentials)
                 elif key.data == "control" and uid == 0:
