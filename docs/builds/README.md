@@ -1,4 +1,33 @@
-# Qualified installer and transfer record
+# Current qualified installer
+
+Source `9952ee142fd128aeec326161c01ddeb91166b155`, content ID
+`a60a9ddeca41e3f6`. ISO: 1,542,178,816 bytes; SHA-256
+`33bf906226fa2db87d87d5e325c4951bbe94a93ca9c911d7822430824ef10066`.
+The missing compositor directory is fixed in the image recipe; first installation
+verified the release path and absolute `/var/lib/toddlerbox` data root.
+
+[Release](https://github.com/famulare/ToddlerBox/releases/tag/candidate-play-a60a9ddeca41e3f6)
+and [source/checksum metadata](../releases/installer-a60a9ddeca41e3f6.json).
+The normal ISO, SHA256SUMS and source.json release assets are published. GitHub
+independently reports the expected complete ISO digest. The explicit-only
+publication workflow succeeded in [run 37170634224](https://github.com/famulare/ToddlerBox/actions/runs/37170634224).
+The builder upload endpoint still rejects direct uploads; 184 unreferenced public
+Git blobs supplied temporary transport before that job published ordinary assets:
+
+```sh
+uv run --no-project --python python3 scripts/download-public-installer.py \
+  docs/builds/a60a9ddeca41e3f6-transfer.json /chosen/path/toddlerbox-installer.iso
+```
+
+The explicit-only **Publish qualified installer** Actions workflow can reassemble
+this exact public manifest, verify the literal complete checksum, and upload normal
+release assets. It has no push, pull-request, timer or automatic triggers. No
+private setup packages, credentials or family data are inputs. Public chunks remain
+temporary transport and do not enter binary Git history.
+
+See [the private backup/reinstall checklist](../reinstall.md) before erasing the HP.
+
+## Earlier Drive sync installer / archived transfer record
 
 The earlier normal download is the [qualified Drive sync prerelease](https://github.com/famulare/ToddlerBox/releases/tag/candidate-drive-sync-374e31452f4672ea).
 Use its `toddlerbox-installer.iso`, `SHA256SUMS` and `source.json`. The installer
@@ -33,28 +62,3 @@ Image source: `bf48568a02ead0e7da80ac34c93d9e047d412ad5`, content ID
 that built image identity. GitHub Pages now uses `main /docs`; the existing
 homepage and privacy URLs were compared with the merged source.
 
-## Repaired Reading/piano installer
-
-Source `9952ee142fd128aeec326161c01ddeb91166b155`, content ID
-`a60a9ddeca41e3f6`. ISO: 1,542,178,816 bytes; SHA-256
-`33bf906226fa2db87d87d5e325c4951bbe94a93ca9c911d7822430824ef10066`.
-The missing compositor directory is fixed in the image recipe; first installation
-verified the release path and absolute `/var/lib/toddlerbox` data root.
-
-[Release](https://github.com/famulare/ToddlerBox/releases/tag/candidate-play-a60a9ddeca41e3f6)
-and [source/checksum metadata](../releases/installer-a60a9ddeca41e3f6.json).
-The builder upload endpoint still rejects normal assets; 184 unreferenced public
-Git blobs provide the same verified transfer route as the earlier image:
-
-```sh
-uv run --no-project --python python3 scripts/download-public-installer.py \
-  docs/builds/a60a9ddeca41e3f6-transfer.json /chosen/path/toddlerbox-installer.iso
-```
-
-The explicit-only **Publish qualified installer** Actions workflow can reassemble
-this exact public manifest, verify the literal complete checksum, and upload normal
-release assets. It has no push, pull-request, timer or automatic triggers. No
-private setup packages, credentials or family data are inputs. Public chunks remain
-temporary transport and do not enter binary Git history.
-
-See [the private backup/reinstall checklist](../reinstall.md) before erasing the HP.

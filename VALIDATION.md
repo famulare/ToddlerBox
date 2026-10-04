@@ -849,3 +849,20 @@ on this builder/in the PR/image. Earlier qualified ISO and VM bases/checkpoints
 remain preserved. Physical flashing, HP wireless scan/association/reconnection,
 trackpad/touchscreen acceptance, output routing/loudness and human listening
 remain outstanding. See `docs/reinstall.md` for private backup before erasure.
+
+Publication completed through explicit Actions run
+[37170634224](https://github.com/famulare/ToddlerBox/actions/runs/37170634224).
+It reassembled all 184 public chunks, verified the literal full ISO SHA-256 and
+uploaded ordinary ISO/checksum/source release assets. GitHub's asset digest and
+size independently match; the published direct download returns HTTP 200.
+PR #7 is merged on main (`65b4633`); PR #6 is included/closed as merged.
+The image remains revision `9952ee1` / content ID `a60a9ddeca41e3f6`; subsequent
+validation/delivery documentation does not alter that built identity. The new
+installed VM checkpoint is `build/play-qualified/disk.qcow2`, SHA-256
+`8ca8edc23ac602a665407b38222870b87c0dc2bf0f179e81012b08cf51435624`;
+its OVMF variables SHA-256 is
+`3cc9ac3a14040608c8c4b1bb9319d0216acbc194a4628b4b2a26e437eb8338c0`.
+Checkpoint conversion reports identical guest sectors; previous installed disks
+are restored to their original paths, alongside all earlier bases/qualified ISO.
+Duplicate raw assembly/intermediates and unused caches were cleared; the new ISO
+and golden qcow2 remain.
