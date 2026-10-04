@@ -76,7 +76,10 @@ def record(path, value):
 def read(path):
     if path.stat().st_size > 65536:
         raise ValueError("Oversized recovery state")
-    return json.loads(path.read_text())
+    value = json.loads(path.read_text())
+    if not isinstance(value, dict):
+        raise ValueError("Recovery state must be an object")
+    return value
 
 
 def latest(root):
@@ -92,7 +95,7 @@ def latest(root):
 
 
 def validate(root, job, value):
-    if value.get("protocol") != 1 or value.get("status") not in {"applying", "pending", "accepted", "restoring"} or type(value.get("app_changed")) is not bool:
+    if not isinstance(value, dict) or value.get("protocol") != 1 or value.get("status") not in {"applying", "pending", "accepted", "restoring"} or type(value.get("app_changed")) is not bool:
         raise ValueError("Unsupported recovery journal")
     files = value["old_files"]
     if not isinstance(files, dict) or not set(files) <= DESTINATIONS.keys():

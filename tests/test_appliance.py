@@ -115,6 +115,19 @@ def test_bad_backup_never_promoted_or_restored(appliance_machine, updater, modul
         core._candidate_entry(appliance_machine)
 
 
+@pytest.mark.parametrize("content", [[], None, 7, "invalid"])
+@pytest.mark.parametrize("target", ["journal", "marker"])
+def test_non_object_recovery_state_latches_parent(appliance_machine, updater, modules, tmp_path, content, target):
+    recovery = modules[0]
+    pending(appliance_machine, updater, tmp_path)
+    job, _ = recovery.latest(appliance_machine)
+    path = job / "state.json" if target == "journal" else appliance_machine / recovery.STATE / "updates/latest.json"
+    recovery.record(path, content)
+    assert recovery.gate(appliance_machine) is False
+    assert (appliance_machine / recovery.STATE / "recovery-error").read_bytes() == b"ValueError\n"
+    assert (appliance_machine / recovery.STATE / "parent-mode").exists()
+
+
 def test_restore_interruption_resumes_using_resident_code(appliance_machine, updater, modules, tmp_path, monkeypatch):
     recovery = modules[0]
     pending(appliance_machine, updater, tmp_path)

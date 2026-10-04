@@ -54,6 +54,11 @@ def report(root=Path("/")):
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
         value["drive"] = "unavailable"
     value["ubuntu_reboot_required"] = (root / "var/run/reboot-required").exists()
+    try:
+        at = json.loads((root / STATE / "ubuntu-maintenance.json").read_text())["last_success"]
+        value["last_ubuntu_success"] = at if isinstance(at, str) and re.fullmatch(r"[0-9TZ:+.\-]{10,32}", at) else "unknown"
+    except (OSError, ValueError, KeyError, TypeError):
+        value["last_ubuntu_success"] = "never-run"
     # Deliberately no journal, filenames, identifiers, config, network names or logs.
     return value
 

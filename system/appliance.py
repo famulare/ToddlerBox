@@ -44,7 +44,7 @@ def progress(root=Path("/")):
     if path.stat().st_size > 8192:
         raise ValueError("Invalid setup state")
     value = json.loads(path.read_text())
-    if value.get("version") != 1 or not isinstance(value.get("checks"), dict):
+    if not isinstance(value, dict) or value.get("version") != 1 or not isinstance(value.get("checks"), dict):
         raise ValueError("Unsupported setup state")
     if not set(value["checks"]) <= set(STEPS) or any(v not in {"passed", "skipped", "failed"} for v in value["checks"].values()):
         raise ValueError("Invalid setup checks")
