@@ -13,6 +13,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
       - name: Copy selected public evidence to the same draft
         env:
           GH_TOKEN: ${{ github.token }}
@@ -25,7 +28,7 @@ jobs:
           test "$(jq -r .conclusion candidate/run.json)" = success
           test "$(jq -r .head_sha candidate/run.json)" = "$(jq -r .qualification_revision candidate/source.json)"
           gh run download "$run" --name release-0.4-public-evidence --dir evidence
-          python3 - <<'PY'
+          uv run --no-project --python /usr/bin/python3 python - <<'PY'
           from pathlib import Path
           import zipfile
           names={'installer.png','first-boot-password.png','six-activity-launcher.png','music-first-song.png','music-scrolled.png','music-largo.png','music-free-play.png','math-objects-first.png','math-revealed.png','math-speaking.png','paint.png','photos.png','typing.png','reading.png','frozen-app-parent-recovery.png','watchdog-recovered-launcher.png','rebooted-launcher.png','authenticated-parent-greeter.png','results.json','source.json','packages.tsv'}
