@@ -1,8 +1,8 @@
-# Music: research and proposed design
+# Music: historical research and current implementation
 
 Research date: 2026-10-02. Baseline: `3b2917941187627360371447447dcfd465ba4457`, branch `system/bootable-ubuntu`.
 
-**Status: approved design, now implemented.** This document preserves the research proposal that the user approved. Implementation ships six 21–33-second PCM piano tracks, an embedded activity, and an audio-enabled VM fixture. See [the current contract](toddlerbox_design_contract.md), [asset sources and generation recipe](assets/music/README.md), and [validation results](VALIDATION.md) for current behavior and evidence. The proposal's source-selection and qualification notes below describe what was known at the research checkpoint.
+**Historical research, not current UI instructions.** Music now also supports playable piano keys over a song and Free Play; the current contract and asset guide define shipped behavior. This document preserves the research proposal that the user approved. Implementation ships six 21–33-second PCM piano tracks, an embedded activity, and an audio-enabled VM fixture. See [the current contract](toddlerbox_design_contract.md), [asset sources and generation recipe](assets/music/README.md), and [validation results](VALIDATION.md) for current behavior and evidence. The proposal's source-selection and qualification notes below describe what was known at the research checkpoint.
 
 Implementation uses a locked Python/NumPy sample renderer with seven pinned CC0 piano excerpts instead of an SFZ engine. Mary uses a checked familiar melody from a pinned MIT-licensed MIDI fixture, with notices retained. Audio/cues regenerate identically offline. Source licenses and musical verification limits are recorded in [CREDITS.md](assets/music/CREDITS.md); human listening and HP latency/volume remain qualification steps.
 

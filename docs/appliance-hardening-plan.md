@@ -1,3 +1,5 @@
+> Approved implementation plan. Execution is recorded in VALIDATION.md; parent instructions are in parent-maintenance.md. Planning-only statements below describe the review checkpoint, not the present release status.
+
 # ToddlerBox appliance hardening plan
 
 Planning baseline: `ea0dca7d9efcc01dc746733f6513a8f1d005110e`.
