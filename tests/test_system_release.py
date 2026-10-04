@@ -209,3 +209,61 @@ def test_existing_release_reuse_refuses_changes(release_installer, release_tree,
     with pytest.raises(ValueError, match="differs|Hardlinked|Unsafe"):
         installer.install(archive, digest, root=root, mode_file=mode)
     assert (root / "current").resolve() == root / "releases/old"
+# Build layout remains compatible with the unchanged resident installer.
+
+def normalizer():
+    path = Path(__file__).parents[1] / "system/normalize_venv.py"
+    spec = importlib.util.spec_from_file_location("normalize_venv", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.normalize
+
+
+def layout(tmp_path):
+    release = tmp_path / "0123456789abcdef"
+    binary = release / ".venv/bin"
+    binary.mkdir(parents=True)
+    (binary / "python").symlink_to("/usr/bin/python3")
+    for name in ("python3", "python3.12"):
+        (binary / name).symlink_to("python")
+    return release, binary
+
+
+def test_normalized_bundle_installs_with_resident_guards(release_installer, release_tree, tmp_path):
+    release, binary = layout(tmp_path)
+    (release / "src/toddlerbox").mkdir(parents=True)
+    (release / "src/toddlerbox/launcher.py").write_text("# synthetic\n")
+    (release / "uv.lock").write_text("# synthetic\n")
+    (release / "data-schema.json").write_text('{"version":1,"typing":1,"paint":1}')
+    # Reproduce the real failure before applying the build normalization.
+    archive = tmp_path / "before.tar.gz"
+    with tarfile.open(archive, "w:gz") as target:
+        target.add(release, arcname=release.name)
+    installer, _ = release_installer
+    root, mode = release_tree
+    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    with pytest.raises(tarfile.LinkOutsideDestinationError):
+        installer.install(archive, digest, root=root, mode_file=mode)
+    assert (root / "current").resolve().name == "old"
+    normalizer()(release / ".venv")
+    archive = tmp_path / "after.tar.gz"
+    with tarfile.open(archive, "w:gz") as target:
+        target.add(release, arcname=release.name)
+    digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+    assert installer.install(archive, digest, root=root, mode_file=mode) == release.name
+    assert (binary / "python").is_symlink()
+    assert not (binary / "python3").exists()
+
+
+@pytest.mark.parametrize("unexpected", ["alias", "canonical", "entrypoint"])
+def test_unexpected_links_or_entrypoints_fail_before_removal(tmp_path, unexpected):
+    release, binary = layout(tmp_path)
+    if unexpected == "entrypoint":
+        (binary / "tool").write_text(f"#!{binary}/python3.12\n")
+    else:
+        link = binary / ("python3" if unexpected == "alias" else "python")
+        link.unlink()
+        link.symlink_to("/private/unexpected")
+    with pytest.raises(ValueError):
+        normalizer()(release / ".venv")
+    assert (binary / "python3").is_symlink()

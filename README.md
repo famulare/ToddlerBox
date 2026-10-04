@@ -277,7 +277,7 @@ the selected deck without changing its difficulty settings.
 
 App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
 an older installation, add the Music and/or Reading launcher entries from this
-repository's `config.yaml` in parent mode. Released 0.4.0 images include five apps;
+repository's `config.yaml` in parent mode. Released 0.3.0 images include five apps;
 0.4 adds Math as the sixth activity.
 
 ---

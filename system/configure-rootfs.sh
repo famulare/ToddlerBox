@@ -4,6 +4,7 @@ set -euo pipefail
 [[ -r /source/system/versions.env && -x /run/uv && $EUID == 0 ]] || { echo 'Image assembly container required' >&2; exit 1; }
 release_id=$1
 source_dir=/usr/local/share/toddlerbox-build
+python3 "$source_dir/normalize_venv.py" "/opt/toddlerbox/releases/$release_id/.venv"
 install -d /etc/toddlerbox /usr/local/lib/toddlerbox-system /usr/local/libexec
 install -d -m 0700 /var/lib/toddlerbox-system
 install -m 0644 "$source_dir/controller.py" /usr/local/lib/toddlerbox-system/controller.py
