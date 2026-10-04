@@ -38,6 +38,7 @@ class Qualification:
         self.password=secrets.token_hex(10)
         self.name='toddlerbox-release-qa'
         self.results=[]
+        self.authenticated=False
 
     def docker(self,*args,**kwargs):
         return subprocess.run(['docker',*args],check=True,**kwargs)
@@ -175,6 +176,7 @@ class Qualification:
             if status:
                 print(reply.decode(errors='replace').replace(self.password,'[redacted]'),flush=True)
                 raise RuntimeError(f'VM diagnostic failed, exit {status}')
+            self.authenticated=True
             return reply.decode(errors='replace').replace(self.password,'[redacted]')
 
     def mode(self,expected):
@@ -318,6 +320,14 @@ def main():
     try:
         q.install();print('Fresh installation and parent password completed',flush=True);q.smoke()
     except Exception:
+        if q.authenticated:
+            # Only after independent real parent authentication. Never capture
+            # a failed password-entry screen or expose the raw serial log.
+            q.shot('diagnostic-authenticated')
+            try:
+                print(q.serial('cat /run/toddlerbox-system/status.json; journalctl -b -u toddlerbox-controller -u gdm3 --no-pager -n 70; tail -60 /var/lib/toddlerbox/logs/toddlerbox.log 2>/dev/null || true'),flush=True)
+            except Exception as error:
+                print(f'Additional diagnostic unavailable: {type(error).__name__}',flush=True)
         result=subprocess.run(['docker','logs','--tail','60',q.name],capture_output=True,text=True)
         print((result.stdout+result.stderr).replace(q.password,'[redacted]'),flush=True)
         raise

@@ -136,6 +136,15 @@ jobs:
           PYRESULT
           test "$(gh api repos/$GITHUB_REPOSITORY/releases/$(gh release view v0.4.0 --json databaseId --jq .databaseId) --jq .draft)" = true
           gh release upload v0.4.0 build/release-0.4/source.json build/release-qa/results.json --clobber
+      - name: Retain authenticated failure screen on unpublished candidate
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if test -f build/release-qa/diagnostic-authenticated.png; then
+            test "$(gh release view v0.4.0 --json isDraft --jq .isDraft)" = true
+            gh release upload v0.4.0 build/release-qa/diagnostic-authenticated.png --clobber
+          fi
       - name: Retain selected public qualification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
