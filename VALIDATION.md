@@ -1045,3 +1045,21 @@ OVMF variables SHA-256
 `41121cfb7ea530fecc3b75a17d007e58c6d49333b5acbd0d552793e590777323`.
 Clean shutdown/conversion reports identical guest sectors. The factory qcow2 and
 ISO remain separate from this synthetic installed checkpoint.
+
+Publication is complete: [release v0.3.0](https://github.com/famulare/ToddlerBox/releases/tag/v0.3.0)
+is public and [PR #8](https://github.com/famulare/ToddlerBox/pull/8) merged on main
+as `b60cd96742953d50eaa332968413993183074b32`. The actual production release client
+then fetched main's catalog/signature and the complete 67,630,331-byte public bundle
+without authentication headers, verified the signature, exact bytes/SHA and source,
+and updated only an isolated synthetic trust-state fixture. Ubuntu crypto and actual
+installed application were separately tested in the no-NIC guest as described above.
+
+GitHub Pages reports main/docs built; both live consent URLs are byte-identical to
+merged files. Nine superseded remote development branches were deleted after ancestry
+checks (the former hosting orphan's four public files were preserved on main and
+live migration verified). Only main remains remotely. The unqualified 5046 draft
+release was removed; qualified release tags/assets were retained. The two temporary
+compressed working disks are restored to `build/vm/install-target.qcow2` and
+`build/vm/previous-installed.qcow2`. Earlier qualified bases/checkpoints, final factory
+artifacts, installed checkpoint and private signing key remain preserved. Only new
+assembly intermediates and rejected-candidate duplicates were discarded.
