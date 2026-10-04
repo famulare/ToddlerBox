@@ -1,4 +1,4 @@
-> Evidence is chronological. Historical installer IDs and pending items below belong to their recorded checkpoints; the final 0.3.0 section defines the current qualification and remaining limits. Previously qualified artifacts remain preserved.
+> Evidence is chronological. Historical installer IDs and pending items below belong to their recorded checkpoints; the [final 0.3.0 section](#toddlerbox-030-appliance-qualification--2026-10-04) defines the current qualification and remaining limits. Previously qualified artifacts remain preserved.
 
 # Bootable system validation — 2026-10-02
 
@@ -868,3 +868,180 @@ Checkpoint conversion reports identical guest sectors; previous installed disks
 are restored to their original paths, alongside all earlier bases/qualified ISO.
 Duplicate raw assembly/intermediates and unused caches were cleared; the new ISO
 and golden qcow2 remain.
+
+## ToddlerBox 0.3.0 appliance qualification — 2026-10-04
+
+The release build is **`0799b122a5aa9c84e15a79a2bcdb087195957c9e`**, content ID
+**`8776dfa5476b7156`**, Ubuntu 24.04 x86-64. Later documentation, transfer and
+publication commits do not change those build inputs. The README dedication added
+upstream was preserved before this final build. Version/lock metadata is 0.3.0.
+The contract, parent/setup/update/build/privacy guides and changelog are current;
+obsolete Cage migration instructions were removed, historical design work labelled,
+and AGENTS.md now requires restrained UI, preserved work and independently recoverable
+releases. Superseded development branches are retired only after their work is on main.
+
+### Baseline, invariants and source comparison
+
+The actual baseline was `ea0dca7d9efcc01dc746733f6513a8f1d005110e` (290 tests).
+Host tools: uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8, Pillow 12.3.0,
+pytest 9.1.1 and PyYAML 6.0.3. **361 Linux tests passed** with local socket access.
+One restricted-sandbox run refused AF_UNIX bind (352 passed/one environment failure);
+rerunning with socket access passed all 353 then-current tests. Eight installer
+helper checks bring the final total to 361. No production authentication or Linux
+pidfd/credential checks were weakened for portability.
+
+Intended changes: resumable authenticated parent setup, signed anonymous public
+updates, bounded candidate promotion, resident boot recovery, parent-initiated
+Ubuntu maintenance and reviewed sanitized reports. Child screens, media, ordinary
+saves, independent escape, supervision and explicit-only Drive transfers remain
+invariants. Genuine old/new sources under the same inputs produced **12 identical
+frames** (all six screens at two sizes), **eight identical saved outputs** and
+**532 identical existing media files**; this is pixel/file comparison, not an
+assertion that a draw function was called.
+
+```sh
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+# Extract the real baseline, then compare both sources in the same environment:
+git archive ea0dca7d9efcc01dc746733f6513a8f1d005110e | tar -x -C /chosen/baseline
+uv run --frozen python scripts/check-child-paced-baseline.py \
+  --baseline /chosen/baseline --all-activities --output build/appliance-comparison
+bash -n system/configure-rootfs.sh system/make-images.sh scripts/qualify-appliance-vm.sh
+git diff --check
+```
+
+Focused Sol reviews covered the boot gate/observation and release/maintenance
+boundaries. Earlier independent Wi-Fi, Music and Reading repairs remain included;
+no reviewed blocker remains. The installer helper received a separate focused review.
+
+### Build and fresh installation
+
+The pinned snapshot is `20260926T000000Z`. The [full package manifest](docs/releases/packages-8776dfa5476b7156.tsv)
+is byte-identical to the preceding candidate. Notable packages: kernel
+6.8.0-142, gh `2.45.0-1ubuntu0.3`, cryptography `41.0.7-4ubuntu0.4`,
+rclone `1.60.1+dfsg-3ubuntu0.24.04.6`, system Pillow `10.2.0-1ubuntu1.3`,
+wpasupplicant `2:2.10-21ubuntu0.4`. The compiled Cage SHA-256 remains
+`1f415b196c3502ac8e41f5785aa3f4c088fd3df10f53e5fd3dbf1712c2b0ffee`.
+Assembly passed e2fsck and sector-identical raw/qcow2 comparison.
+
+```sh
+TODDLERBOX_BUILD_DIR="$PWD/build/appliance-release" \
+TODDLERBOX_DOCKER_ARCHIVE="$PWD/build/appliance-image.tar.gz" \
+TODDLERBOX_ROOTFS_SCRATCH=/tmp/toddlerbox-appliance-rootfs \
+TODDLERBOX_DISCARD_CAGE_BUILDER=1 TODDLERBOX_PRUNE_BUILD_CACHE=1 \
+  bash system/build-compact.sh
+uv run --frozen python system/build-update.py \
+  --cage build/child-controls-qa/toddlerbox-cage \
+  --app build/appliance-release/toddlerbox-app-8776dfa5476b7156.tar.gz \
+  --output build/appliance-release/ToddlerBox-update.pyz
+# Maintainer signing uses ignored private storage; never put the key in public QA.
+uv run --frozen --with cryptography==46.0.3 python scripts/sign-release.py \
+  --bundle build/appliance-release/ToddlerBox-update.pyz --tag v0.3.0 --sequence 1
+```
+
+A genuine ISO installation to a separate blank **16 GiB VM disk** verified the
+compressed payload, required the exact `/dev/vda` erase confirmation, expanded the
+filesystem, shut down, and booted without installer media. QEMU uses x86-64 TCG,
+q35/qemu64, two CPUs, 4 GiB RAM, OVMF, virtio graphics/disk, USB tablet and emulated
+HDA, with **no NIC**. Independent serial authentication and QMP remain available.
+The factory system payload hashes exactly match the signed bundle. Ubuntu's
+packaged cryptography verifies the real detached Ed25519 manifest.
+
+The initial `1e136b40a252ca52` candidate failed full-bundle reuse because uv left
+`.venv/.lock` at 0666. The safety guard correctly refused it. Both assembly stages
+now normalize group/other write permissions before image/archive generation;
+actual chmod checks preserve executable bits. The new factory lock is **0644**,
+and no non-symlink release entry is non-root-owned or group/other writable.
+The older candidate and 5046 prototype were never published as qualified releases.
+Their rejected metadata/evidence is retained; obsolete transfer instructions are removed.
+
+### Actual behavior and recovery checks
+
+| Check | Observed result |
+| --- | --- |
+| First password/setup | Actual console password creation, authenticated parent access, durable skipped optional checks; incomplete setup cannot be finished without supervised escape evidence. |
+| Setup interruption | Reboot during unfinished child test routes parent, retains checklist and Paint/Typing hashes; completion marker is root-private with a harmless readable runtime completion bit. |
+| Child activities | Real QMP input/pixels and HDA: sound tap 4020, whole word 4788, Music 2246, Free Play 1730 peak PCM; delayed picture assertions pass. Home and Free Play idle peaks are exactly zero. These are VM samples, not hardware loudness measurements. |
+| Durable work | Actual Paint stroke and Typing `cat` saved through Home; hashes remain identical across final full update, acceptance, repeated install, frozen-app/stalled-job escape and boot recovery. |
+| Candidate promotion | Good candidate remains pending until continuous frames and actual escape; early acceptance is refused. Explicit acceptance records attempt 1 and observed frames. |
+| Complete signed bundle | Real installed updater reads verified ZIP, reuses the complete matching app tree, applies system changes, stays pending, then accepts after real frames/escape. Every installed payload hash matches. Repeating it is a no-op retaining rollback. |
+| Broken controller | Deliberate syntax failure triggers the independent resident rollback and parent recovery; work unchanged. |
+| Interrupted installation | Applying journal plus broken controller survives hard reset; resident restoration precedes controller/GDM. |
+| Corrupt backup | A tracked controller backup is durably corrupted; boot refuses it, blocks controller/child startup, leaves Status/parent recovery usable. Restoring the intact backup and Retry recovery succeeds. |
+| Offline maintenance | No-network catalog check preserves trust state. Strict apt update fails visibly, never records success; consistent dpkg state clears its maintenance block. No downloaded replacement is installed. |
+| Stalled transfer | An explicit runtime-only sleep service stands in for a stalled job. Watchdog restores a frozen launcher; actual parent escape works with a frozen final launcher while the job remains activating. Override is removed and production worker restored. No real provider/credentials involved. |
+| Boot route | Persistent parent entry and five-second menu survive actual `update-grub`; one-shot GRUB parent boot is checked independently of the parent latch. |
+| No automatic jobs | Apt install timers are masked; no sync timer exists. Unconfigured sync is never-run/inactive after ordinary boot. Only qualification explicitly starts the synthetic stall job. |
+
+The longer interruption/corruption/setup-resumption/watchdog matrix ran on the
+preceding a3a74fb candidate. Its boot gate, units, controller, updater and maintenance
+files are **byte-identical** to the final runtime; only the two packaging recipes
+and preserved README changed before rebuilding. Final-source fresh installation,
+permission guards, signatures, actual activities/saves, full-bundle reuse/promotion,
+repeat no-op and stalled-job escape were exercised again. The initial corrupt-fixture
+attempt hit an untracked backup file and did not test refusal; the repeatable harness
+now requires `old_files['controller.py']`, durably saves the intact repair copy and
+atomically injects the tracked fault before reset. No failed attempt is counted as a pass.
+
+Repeatable disposable-VM commands (root on independent console, public synthetic
+fixtures mounted read-only at `/qa`):
+
+```sh
+bash /qa/qualify.sh inspect
+bash /qa/qualify.sh fixtures
+bash /qa/qualify.sh good  # Test real child frames, escape, explicitly accept.
+bash /qa/qualify.sh bad   # Independent recovery must restore the accepted pair.
+# After fresh fixtures/good installation:
+bash /qa/qualify.sh interrupted  # Reset, check restored state and unchanged work.
+bash /qa/qualify.sh corrupt      # Reset, inspect refusal; repair restores fixture backup.
+bash /qa/qualify.sh repair
+bash /qa/qualify.sh offline
+bash /qa/qualify.sh grub
+```
+
+From the host, use `TODDLERBOX_VM_DIR` with `system/qmp.py` for resets and
+`sendkey ctrl-alt-home 3000`; run `scripts/qualify-child-paced-vm.py` at the
+1280x800 child launcher for real pixel/audio checks. Never run fault fixtures on
+the HP or a production account. Unit coverage additionally includes malformed
+journal shapes, path/link/permission guards, replay/identity/signature failures,
+concurrent maintenance and generation-bound observation. Actual Ubuntu online
+package upgrades and replay/promotion power cuts are not claimed by VM results.
+
+### Delivery and remaining limits
+
+[0.3.0 source/checksum record](docs/releases/installer-8776dfa5476b7156.json):
+ISO **1,552,717,824 bytes**, SHA-256
+`c8ea365bcacfe5d6957cea14152a68edd9ac168a4214e01022ccf72160a4a235`;
+combined update **67,630,331 bytes**, SHA-256
+`1e8f4839cfac6bc732071068ed460a18fa2fedb344753e78ed7277d3cd829bf9`.
+Raw SHA `4c5baf6e352f0483f61f6cc5e7c1025dcca027f59829b1f748df05e4eb7f0d89`;
+factory qcow2 SHA `418f7d45a6e79c18b60e5b280aa9e9ef4c2d3713af4a1b28a2dc2eb49ccc8a56`.
+Explicit publication [Actions run 37185758112](https://github.com/famulare/ToddlerBox/actions/runs/37185758112)
+reassembled public chunks and uploaded normal assets; independent GitHub size/digests
+match both files and the metadata/signatures. No binary chunks are committed/referenced.
+
+Earlier qualified ISO, bases and checkpoints are preserved. Private maintainer
+signing material remains ignored/private and must be backed up privately before
+workspace cleanup. No family media, real Google credentials or private setup package
+is on this builder, mounted in QA, or included in public artifacts.
+
+This is x86-64 software/VM qualification, not HP certification. Physical Wi-Fi
+scan/connect/reconnect, touch/trackpad edges/multi-finger/drag, speaker routing and
+pronunciation/loudness, sleep/resume and extended hardware use remain acceptance
+checks. Secure Boot is unsupported. Guests have no network: provider tests remain
+the separately recorded local-Mac tests, and online Ubuntu upgrades were not run.
+Normal updates are explicit anonymous HTTPS; the new installer helper automatically
+checks bytes/hash without Git credentials or parent hash transcription. Initial
+installer bootstrap trusts GitHub HTTPS; installed updates additionally authenticate
+Ed25519 metadata with the embedded key.
+
+Actual final-source parent GNOME password login and the maintenance program were
+visually inspected; the screenshot is committed under `docs/images`. The first
+cold root-console terminal activation timed out; retry succeeded unchanged. The
+ordinary first-run retry wrapper was verified on the byte-identical prior candidate.
+
+The installed qualified checkpoint is `build/appliance-qualified/disk.qcow2`,
+SHA-256 `b696c5c7115cb173738cd8761b9e894233b53695c0e76887a735fd5820c4ae8d`;
+OVMF variables SHA-256
+`41121cfb7ea530fecc3b75a17d007e58c6d49333b5acbd0d552793e590777323`.
+Clean shutdown/conversion reports identical guest sectors. The factory qcow2 and
+ISO remain separate from this synthetic installed checkpoint.

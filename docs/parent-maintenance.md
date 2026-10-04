@@ -1,5 +1,7 @@
 # Parent setup and maintenance
 
+![Actual parent maintenance program in the qualified synthetic VM](images/parent-maintenance.png)
+
 The appliance installer first asks for a parent password on its console. Then
 log into **parent** on the normal Ubuntu desktop. **ToddlerBox Setup & Maintenance**
 opens automatically until setup is complete, and remains in the applications menu.
