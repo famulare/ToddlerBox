@@ -3,9 +3,9 @@
 ## Unreleased — Math application trial
 
 - Separate `codex/math-app` branch for Mac user testing; no installer or released-main changes.
-- Four passive, tap-to-reveal number/arithmetic modes through 100, weighted per number and grouped into tens.
+- Three passive, tap-to-reveal number/arithmetic modes through 100, weighted per number and grouped into tens.
 - Standard launcher: Paint/Photos/Music above Typing/Reading/Math; existing custom configuration is preserved.
-- Silent initial trial; no scoring, learning history or object-tapping controls.
+- Pictures-first Numbers and on-demand offline speech for 0–100; no autoplay, scoring, learning history or object-tapping controls.
 
 ## 0.3.0 - 2026-10-04
 

@@ -139,7 +139,8 @@ to hear the word and reveal its picture. Next chooses another random card withou
 
 ### Math application trial
 
-Four tap-to-reveal modes, passive illustrated ten-frames and the full 0–100 range.
+Three modes: pictures-first Numbers, Addition and Subtraction. Passive illustrated
+ten-frames cover 0–100; a speaker button reads the revealed number on demand.
 See [the trial design and Mac instructions](MATH_DESIGN.md).
 
 ---

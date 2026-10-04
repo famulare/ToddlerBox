@@ -25,17 +25,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=Path("build/math-qa/screens"))
     args = parser.parse_args()
-    cases = [("numeral-hidden", "numerals", 100, 0, False),
-             ("numeral-100", "numerals", 100, 0, True),
-             ("count-21", "count", 21, 0, False),
+    cases = [("numbers-first", "numbers", 100, 0, False),
+             ("numbers-revealed", "numbers", 100, 0, True),
+             ("numbers-21", "numbers", 21, 0, False),
              ("add-hidden", "addition", 8, 7, False),
              ("add-8-7", "addition", 8, 7, True),
              ("add-50-50", "addition", 50, 50, True),
              ("subtract-23-8", "subtraction", 23, 8, True),
              ("subtract-100-0", "subtraction", 100, 0, True),
              ("subtract-100-100", "subtraction", 100, 100, True),
-             ("zero-hidden", "numerals", 0, 0, False),
-             ("zero-revealed", "numerals", 0, 0, True)]
+             ("zero-hidden", "numbers", 0, 0, False),
+             ("zero-revealed", "numbers", 0, 0, True)]
     pygame.init()
     try:
         for size in ((800,600),(1366,768)):
@@ -60,7 +60,7 @@ def main():
                     app.art.close()
             sheet = Image.new("RGB", (1200, 920), theme.BACKGROUND)
             draw = ImageDraw.Draw(sheet)
-            names = ["launcher", "numeral-100", "count-21", "add-hidden", "add-8-7", "add-50-50",
+            names = ["launcher", "numbers-revealed", "numbers-21", "add-hidden", "add-8-7", "add-50-50",
                      "subtract-23-8", "subtract-100-100", "zero-revealed"]
             for i, name in enumerate(names):
                 picture = Image.open(out/f"{name}.png")

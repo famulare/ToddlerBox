@@ -1149,3 +1149,53 @@ are in `MATH_DESIGN.md#mac-trial`. **Actual Mac launch, font/rendering/pointer
 behavior and Rosie's educational/user response remain untested here.** The Linux
 IPC test correctly skips on Mac; production authentication is not relaxed.
 Release/main/installer integration remains held for the user's trial feedback.
+
+
+## Math Mac follow-up — objects first and deliberate number speech (2026-10-04)
+
+The user reported the first Math trial functional on Mac and liked its artwork.
+This follow-up starts from actual feature revision
+`cfd76d6b2f30aafb021fbf3897d13d138179866f`; released-main baseline remains
+`e6c33308bf73c8e35c9ea3518ad543dbd02330a1`. It supersedes the silent/four-mode
+trial above. Intended changes: merge number modes into pictures-first Numbers,
+keep quantities visible while tap reveals the numeral, and add explicit speech
+of the disclosed number/result. Addition/subtraction sampling, work persistence,
+parent recovery, controller authentication and supervision remain unchanged.
+
+- **419 Linux tests passed**, including all 101 bundled recordings' exact hashes,
+  complete PCM payloads, format, duration and non-clipping/non-silent peak checks.
+  Failed/truncated/symlink/oversize/wrong-format recordings are isolated. Playback
+  tests cover no autoplay, no hidden-answer speech, silent reveal, interruption,
+  bounded stalls, retryable device failure, focus/Next/mode/Home cleanup, and a
+  real SDL dummy-driver clip followed by Home stopping/unloading it.
+- Genuine released-baseline comparison again produced **10 identical existing
+  activity frames, 8 identical saved outputs and 532 identical existing media**.
+  Follow-up comparison against genuine cfd76d6 produced **40 Math frames identical
+  outside the changed mode label and new speaker control**, at 800×600/1366×768,
+  including zero, objects-first 1/21/100, crossing tens and dense arithmetic.
+- Refreshed synthetic screenshots at both sizes; visually inspected the 800×600
+  contact sheet. Committed overview: `docs/images/math-trial.png`. Icon unchanged.
+- Independent Sol review identified a huge-integer-volume `OverflowError`; fixed
+  float-only finiteness validation and added +/-10**400 clamp regressions. Reviewer
+  confirmed all eight volume cases and no remaining scoped findings.
+- Runtime toolchain remains uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8/SDL 2.32.10,
+  Pillow 12.3.0, pytest 9.1.1, PyYAML 6.0.3. Maintainer-only preparation uses pinned
+  Piper 1.4.2/ONNX Runtime 1.30.0/NumPy 2.5.3 and FFmpeg 7.1.5. Public model hashes,
+  revision, synthesis settings and each resulting WAV hash/frame count are in
+  `assets/math/audio/catalog.json`; sources/license notes in `assets/math/README.md`.
+  All 101 clips occupy about 8MB. No model/runtime dependency is added.
+
+Repeatable follow-up commands (create the baseline directory first):
+
+```bash
+git archive cfd76d6b2f30aafb021fbf3897d13d138179866f | tar -x -C /tmp/toddlerbox-math-followup-baseline
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/preview-math.py --output build/math-qa/audio-screens
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-math-followup.py --baseline /tmp/toddlerbox-math-followup-baseline
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-child-paced-baseline.py --baseline /tmp/toddlerbox-math-baseline --all-activities --exclude-launcher --output build/math-qa/audio-comparison
+```
+
+The final comparison output must be a fresh directory. Automated waveform and
+SDL checks do not establish pronunciation quality, comfort or real Mac device
+routing; parent listening remains the next trial check. No installer build,
+main merge, release publication or physical-HP qualification is included.

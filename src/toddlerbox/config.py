@@ -86,7 +86,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "reading": {"mode": "words", "word_sets": ["short_a_cvc", "short_e_cvc", "short_i_cvc", "short_o_cvc",
                                                "short_u_cvc", "digraphs", "adjacent_consonants"], "letter_case": "lowercase",
                 "letter_audio": "sounds", "volume": 0.35},
-    "math": {"mode": "numerals", "max_number": 100, "low_number_weight": 12},
+    "math": {"mode": "numbers", "max_number": 100, "low_number_weight": 12, "volume": 0.35},
 }
 DEFAULT_CONFIG["launcher"]["apps"] = _with_math_standard_layout(DEFAULT_CONFIG["launcher"]["apps"])
 

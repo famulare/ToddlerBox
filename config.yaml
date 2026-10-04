@@ -59,6 +59,7 @@ reading:
   volume: 0.35
 
 math:
-  mode: numerals
+  mode: numbers
   max_number: 100
   low_number_weight: 12
+  volume: 0.35

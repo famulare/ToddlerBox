@@ -6,13 +6,13 @@ main branch. Mac user testing comes before integration or release qualification.
 
 ## Interaction
 
-Four modes cycle through one compact top control: `123`, `Count`, `+`, `−`.
+Three modes cycle through one compact top control: `Numbers`, `+`, `−`.
 Home and Next retain the shared style. Tap the large number/question card to
 reveal. Objects are visual only: tapping them has no action. There is no left
 rail, answer entry, right/wrong feedback, scoring, progression or learning history.
 
-- **Numerals:** a numeral first; tapping reveals its object collection.
-- **Count:** objects first; tapping the `?` card reveals their numeral.
+- **Numbers:** objects first; tapping the `?` card reveals their numeral.
+  The objects stay visible afterward.
 - **Addition:** `A + B = ?` above two collections; tapping reveals C and a third
   collection regrouped into tens.
 - **Subtraction:** `A − B = ?` with A colored objects; tapping marks the last B
@@ -24,10 +24,15 @@ discard stale pointer ownership. Focus changes and long frame gaps also discard
 input, so an old release cannot reveal a new question. In development, Home
 returns to the launcher (or closes standalone Math).
 
-The first trial is **silent**. Full, consistently voiced, licensed 0–100 audio
-has not been verified. Speech is optional and must not gate visual revelation.
-A future complete pack would use deliberate playback of the disclosed number,
-with no autoplay or speech-triggered reveal.
+A small speaker button appears after revelation. Each deliberate tap reads the
+disclosed numeral (Numbers) or answer (arithmetic), replacing any current clip.
+Nothing plays automatically and playback never reveals or changes an example.
+Home, Next, mode changes and focus changes stop and unload the clip. A duration
+deadline bounds a stalled stream; unavailable audio leaves visual use intact and
+device failures can be retried by tapping again. All 101 complete number names
+are bundled as bounded PCM WAVs: no network, runtime synthesis or new runtime
+dependencies. See [audio preparation and provenance](assets/math/README.md).
+The synthetic voice still needs parent listening on the Mac.
 
 ## Quantities and random selection
 
@@ -62,9 +67,10 @@ history is retained. A parent-configured singleton range hides Next.
 
 ```yaml
 math:
-  mode: numerals       # numerals, count, addition, subtraction
+  mode: numbers        # numbers, addition, subtraction
   max_number: 100      # optional parent setting, 0–100
   low_number_weight: 12
+  volume: 0.35         # optional, clamped to 0–1
 ```
 
 ## Launcher and configuration
@@ -128,16 +134,20 @@ The checkout defaults to its own `./data`. Run from its repository root so all
 existing artwork resolves. An inherited `KIDBOX_CONFIG` overrides that default;
 unset it for this isolated trial if it points at your private installed config.
 
-Try the six-tile ordering, all four modes, reveal versus inert object taps, Next,
-mode changes and Home. Check small counts, zero, crossing tens and dense 100-object
-displays for clarity. The app deliberately has no difficulty lock or audio.
-The automatic tests were run on Linux; actual Mac rendering and pointer behavior
-remain user-test checks. The focused portable suite is:
+Try the six-tile ordering, all three modes, reveal versus inert object taps, Next,
+mode changes, speaker replay/stop and Home. Check small counts, zero, crossing tens and dense 100-object
+displays for clarity. The app has no difficulty lock.
+The user reported the first trial functional on Mac; the new speech and ordering
+need another Mac listening/input pass. Automatic tests ran on Linux. The focused portable suite is:
 
 ```bash
-uv run --frozen pytest -q tests/test_math.py tests/test_config.py tests/test_launcher.py
+uv run --frozen pytest -q tests/test_math.py tests/test_math_speech.py tests/test_config.py tests/test_launcher.py
 ```
 
 The authenticated Linux IPC test skips on Mac; this does not weaken production
 authentication. The full controller suite uses Linux-only APIs and is not a Mac
 compatibility test. No OS reinstall or installer integration is part of this trial.
+
+The first trial's `numerals` and `count` configuration names both map to `numbers`
+in memory without rewriting the configuration. The redundant numeral-first mode
+was removed following Mac user feedback. Objects remain passive.

@@ -8,6 +8,7 @@ import pygame
 
 from toddlerbox.config import load_config
 from toddlerbox.math.model import MODES, choose_next, options_from_config
+from toddlerbox.math.speech import NumberPlayer
 from toddlerbox.math.visuals import Illustrations, draw_quantity, frame_geometry
 from toddlerbox.paths import get_data_root
 from toddlerbox.runtime import control, get_runtime_logger, health
@@ -17,15 +18,16 @@ from toddlerbox.ui.common import (PointerInput, create_fullscreen_window, draw_h
 
 FOCUS_EVENTS = {getattr(pygame, name, -1) for name in
                 ("WINDOWFOCUSLOST", "WINDOWFOCUSGAINED", "APP_DIDENTERFOREGROUND", "APP_WILLENTERBACKGROUND")}
-MODE_LABELS = {"numerals": "123", "count": "Count", "addition": "+", "subtraction": "−"}
+MODE_LABELS = {"numbers": "Numbers", "addition": "+", "subtraction": "−"}
 
 
 class MathApp:
-    def __init__(self, screen, screen_rect, clock, *, config=None, rng=None, library=None):
+    def __init__(self, screen, screen_rect, clock, *, config=None, rng=None, library=None, player=None):
         self.screen, self.rect, self.clock = screen, screen_rect, clock
         self.config = load_config() if config is None else config
         self.logger = get_runtime_logger(get_data_root(self.config))
         self.options = options_from_config(self.config, self.logger)
+        self.player = NumberPlayer(self.logger, volume=self.options.volume) if player is None else player
         self.mode = self.options.mode
         self.rng = random.Random() if rng is None else rng
         self.art = Illustrations() if library is None else Illustrations(library)
@@ -35,6 +37,7 @@ class MathApp:
         self.pressed = None
         self.home_rect = theme.home_rect(self.rect)
         self.mode_rect = pygame.Rect(self.rect.centerx-80, 16, 160, 58)
+        self.speech_rect = pygame.Rect(self.mode_rect.right+16, 16, 58, 58)
         self.question_rect = pygame.Rect(24, 98, self.rect.w-128, 108)
         self.next_rect = pygame.Rect(self.rect.right-80, 123, 58, 58)
         self.body_rect = pygame.Rect(24, 226, self.rect.w-48, self.rect.h-250)
@@ -51,6 +54,7 @@ class MathApp:
 
     def next_example(self):
         self.reset_input()
+        self.player.cancel()
         if not self.art.sources:
             self.example = None
             return
@@ -69,9 +73,7 @@ class MathApp:
 
     def _question(self):
         e = self.example
-        if e.mode == "numerals":
-            return str(e.a)
-        if e.mode == "count":
+        if e.mode == "numbers":
             return str(e.a) if self.revealed else "?"
         symbol = "+" if e.mode == "addition" else "−"
         return f"{e.a} {symbol} {e.b} = {e.result if self.revealed else '?'}"
@@ -85,7 +87,7 @@ class MathApp:
         self.screen.blit(glyph, glyph.get_rect(center=rect.center))
 
     def quantity_panels(self):
-        if self.mode in ("numerals", "count"):
+        if self.mode == "numbers":
             return [self.body_rect]
         # At 800×600 the shared cell size remains at least 18px even for 100.
         columns = 3 if self.mode == "addition" else 2
@@ -104,6 +106,12 @@ class MathApp:
         self._text("›", pygame.Rect(self.mode_rect.right-34, self.mode_rect.y, 28, 58), 28)
         if self.example is None:
             return
+        if self.revealed:
+            theme.card(self.screen, self.speech_rect)
+            x, y = self.speech_rect.center
+            pygame.draw.rect(self.screen, theme.INK, (x-16, y-5, 8, 10), border_radius=2)
+            pygame.draw.polygon(self.screen, theme.INK, [(x-8,y-5),(x,y-13),(x,y+13),(x-8,y+5)])
+            pygame.draw.arc(self.screen, theme.INK, (x-10,y-16,28,32), -0.85, 0.85, 3)
         theme.card(self.screen, self.question_rect)
         self._text(self._question(), self.question_rect)
         if self.can_next:
@@ -114,11 +122,8 @@ class MathApp:
         for panel in panels:
             theme.card(self.screen, panel, fill=theme.PANEL)
         areas = [p.inflate(-12, -20) for p in panels]
-        if self.mode in ("numerals", "count"):
-            if self.mode == "count" or self.revealed:
-                draw_quantity(self.screen, e.a, areas[0], self.art, e.motif)
-            else:
-                self._text("?", panels[0], 64, theme.MUTED)
+        if self.mode == "numbers":
+            draw_quantity(self.screen, e.a, areas[0], self.art, e.motif)
             return
         quantities = [e.a, e.b, e.result] if self.mode == "addition" else [e.a, e.result]
         size = min(frame_geometry(n, area)[2] for n, area in zip(quantities, areas))
@@ -136,17 +141,21 @@ class MathApp:
                            ("reveal", self.question_rect)):
             if rect.collidepoint(pos):
                 return name
+        if self.revealed and self.speech_rect.collidepoint(pos):
+            return "speech"
         if self.can_next and self.next_rect.collidepoint(pos):
             return "next"
         return None  # Objects and frames deliberately have no touch action.
 
     def handle_event(self, event):
         if event.type == pygame.QUIT:
+            self.player.cancel()
             return False
         if is_escape_chord(event) and not os.environ.get("TODDLERBOX_HEALTH_SOCKET"):
             return False
         if event.type in FOCUS_EVENTS:
             self.reset_input()
+            self.player.cancel()
             return True
         if not self.pointer.accept(event):
             return True
@@ -164,11 +173,14 @@ class MathApp:
         if pressed is None or pressed[0] != self._target(pos) or (pygame.Vector2(pos)-pressed[1]).length() > 24:
             return True
         if pressed[0] == "home":
+            self.player.cancel()
             return False
         if pressed[0] == "next":
             self.next_example()
         elif pressed[0] == "mode":
             self.change_mode()
+        elif pressed[0] == "speech":
+            self.player.play(self.example.result)
         elif pressed[0] == "reveal":
             self.reveal()
         return True
@@ -195,6 +207,7 @@ class MathApp:
                         discard_input = True
                 if not running or health.stopping():
                     break
+                self.player.update()
                 self.render()
                 control.before_flip(self.screen)  # No child work to save; existing authenticated ACK.
                 pygame.display.flip()
@@ -202,6 +215,7 @@ class MathApp:
                 self.clock.tick(60)
         finally:
             self.reset_input()
+            self.player.cancel()
             self.art.close()
 
 

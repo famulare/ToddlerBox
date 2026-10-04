@@ -15,8 +15,8 @@ from toddlerbox.ui import theme
 
 def test_full_range_defaults_and_per_number_weights_are_exact():
     options = options_from_config({}, Mock())
-    assert options == Options(100, 12, "numerals")
-    rows = dict(prompt_distribution("numerals", options))
+    assert options == Options(100, 12, "numbers")
+    rows = dict(prompt_distribution("numbers", options))
     assert set(rows) == {(n, 0) for n in range(101)}
     assert all(rows[n, 0] == 12 for n in range(21))
     assert all(rows[n, 0] == 1 for n in range(21, 101))
@@ -61,7 +61,7 @@ def test_weighted_draw_excludes_numerical_repeat_not_just_art_and_has_no_retry()
     assert (0, 0) not in candidates and new.identity != old.identity
     assert new.a+new.b == 100
     assert rng.choices.call_count == 1
-    assert choose_next("count", Options(max_number=0), rng, Example("count", 0)).a == 0
+    assert choose_next("numbers", Options(max_number=0), rng, Example("numbers", 0)).a == 0
 
 
 @pytest.mark.parametrize("raw", [{"max_number": -1}, {"max_number": True}, {"max_number": 101},
@@ -72,7 +72,7 @@ def test_invalid_parent_configuration_has_quiet_bounded_defaults(raw):
 
 
 @pytest.mark.parametrize("mode,a,b", [("addition", 100, 1), ("subtraction", 1, 2),
-                                      ("numerals", 4, 1), ("count", True, 0)])
+                                      ("numbers", 4, 1), ("numbers", True, 0)])
 def test_invalid_examples_rejected(mode, a, b):
     with pytest.raises(ValueError):
         Example(mode, a, b)
@@ -123,23 +123,24 @@ def tap(app, pos):
     return result
 
 
-def test_hidden_objects_neither_leak_quantity_nor_look_like_zero(app):
-    select(app, "numerals", 0)
+def test_hidden_arithmetic_result_neither_leaks_quantity_nor_looks_like_zero(app):
+    select(app, "subtraction", 0, 0)
     app.render()
-    hidden_zero = pixels(app, app.body_rect)
-    select(app, "numerals", 100)
+    panel = app.quantity_panels()[-1]
+    hidden_zero = pixels(app, panel)
+    select(app, "subtraction", 100, 0)
     app.render()
-    assert pixels(app, app.body_rect) == hidden_zero
-    select(app, "numerals", 0, revealed=True)
+    assert pixels(app, panel) == hidden_zero
+    app.reveal()
     app.render()
-    assert pixels(app, app.body_rect) != hidden_zero
+    assert pixels(app, panel) != hidden_zero
 
 
 def test_count_question_hides_number_but_displays_objects(app):
-    select(app, "count", 1)
+    select(app, "numbers", 1)
     app.render()
     question, body = pixels(app, app.question_rect), pixels(app, app.body_rect)
-    select(app, "count", 100)
+    select(app, "numbers", 100)
     app.render()
     assert pixels(app, app.question_rect) == question
     assert pixels(app, app.body_rect) != body
@@ -189,7 +190,7 @@ def test_dense_arithmetic_is_readable_and_reveal_does_not_change_inputs(app, siz
 
 
 def test_objects_inert_and_reveal_is_idempotent_then_next_and_mode_reset(app):
-    select(app, "numerals", 7)
+    select(app, "numbers", 7)
     tap(app, app.body_rect.center)
     assert not app.revealed
     tap(app, app.question_rect.center)
@@ -200,12 +201,12 @@ def test_objects_inert_and_reveal_is_idempotent_then_next_and_mode_reset(app):
     tap(app, app.next_rect.center)
     assert not app.revealed and app.example.identity != old.identity
     tap(app, app.mode_rect.center)
-    assert app.mode == "count" and not app.revealed
+    assert app.mode == "addition" and not app.revealed
     assert tap(app, app.home_rect.center) is False
 
 
 def test_focus_unowned_release_and_drag_do_not_reveal(app):
-    select(app, "numerals", 7)
+    select(app, "numbers", 7)
     pos = app.question_rect.center
     app.handle_event(pygame.event.Event(pygame.MOUSEBUTTONUP, button=1, pos=pos))
     assert not app.revealed
@@ -220,10 +221,10 @@ def test_focus_unowned_release_and_drag_do_not_reveal(app):
 
 def test_singleton_hides_next_but_modes_still_work(app):
     app.options = Options(max_number=0)
-    select(app, "numerals", 0)
+    select(app, "numbers", 0)
     assert not app.can_next and app._target(app.next_rect.center) is None
     tap(app, app.mode_rect.center)
-    assert app.mode == "count" and app.example.a == 0
+    assert app.mode == "addition" and app.example.a == 0
 
 
 def test_bounded_art_cache_and_all_missing_art_returns_home(app, tmp_path):

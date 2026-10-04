@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
-MODES = ("numerals", "count", "addition", "subtraction")
+MODES = ("numbers", "addition", "subtraction")
 # Each drawing depicts one countable object. Do not use arbitrary Reading cards.
 MOTIFS = ("cat", "dog", "pig", "hen", "fish", "frog", "egg", "bun", "crab", "ant")
 
@@ -11,7 +12,8 @@ MOTIFS = ("cat", "dog", "pig", "hen", "fish", "frog", "egg", "bun", "crab", "ant
 class Options:
     max_number: int = 100
     low_number_weight: int = 12
-    mode: str = "numerals"
+    mode: str = "numbers"
+    volume: float = 0.35
 
 
 def options_from_config(config, logger) -> Options:
@@ -26,11 +28,17 @@ def options_from_config(config, logger) -> Options:
             logger.info(f"Invalid Math {key}; using default")
             value = getattr(Options(), key)
         values[key] = value
-    mode = raw.get("mode", "numerals")
+    mode = raw.get("mode", "numbers")
+    if mode in ("numerals", "count"):
+        mode = "numbers"  # Read-only compatibility with the first trial.
     if not isinstance(mode, str) or mode not in MODES:
         logger.info("Invalid Math mode; using default")
-        mode = "numerals"
-    return Options(**values, mode=mode)
+        mode = "numbers"
+    volume = raw.get("volume", 0.35)
+    if type(volume) not in (int, float) or (type(volume) is float and not math.isfinite(volume)):
+        logger.info("Invalid Math volume; using default")
+        volume = 0.35
+    return Options(**values, mode=mode, volume=max(0.0, min(1.0, volume)))
 
 
 @dataclass(frozen=True)
@@ -45,7 +53,7 @@ class Example:
             raise ValueError("Unknown Math example")
         if any(type(n) is not int or not 0 <= n <= 100 for n in (self.a, self.b)):
             raise ValueError("Math numbers must be integers between zero and 100")
-        if ((self.mode in ("numerals", "count") and self.b != 0)
+        if ((self.mode == "numbers" and self.b != 0)
                 or (self.mode == "addition" and self.a + self.b > 100)
                 or (self.mode == "subtraction" and self.b > self.a)):
             raise ValueError("Math example outside supported range")

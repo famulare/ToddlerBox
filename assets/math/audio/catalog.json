@@ -1,0 +1,730 @@
+{
+  "schema_version": 1,
+  "sample_rate": 44100,
+  "generator": "Piper 1.4.2, CPU; zero inference noise",
+  "model_revision": "c10ece1aade47bb51c153c893d14e5bf8e5b7117",
+  "model_hashes": {
+    "en_US-ljspeech-medium.onnx": "6f52a751e2349abe7a76735eb09dc1875298c77ea2342ffd2fef79ff81b87f22",
+    "en_US-ljspeech-medium.onnx.json": "141d612cc0a95ed7efc1ca936b845c2364967f2e9217c5dbfcf69fc4d6c65860"
+  },
+  "model_url": "https://huggingface.co/rhasspy/piper-voices/tree/c10ece1aade47bb51c153c893d14e5bf8e5b7117/en/en_US/ljspeech/medium",
+  "model_license": "MIT (repository metadata)",
+  "dataset": "LJ Speech, public domain",
+  "speaker": "LJ Speech single US English female voice",
+  "generated_audio_license": "MIT; ToddlerBox project license",
+  "settings": {
+    "noise_scale": 0,
+    "noise_w_scale": 0,
+    "length_scale": 1.05,
+    "volume": 0.7
+  },
+  "clips": [
+    {
+      "id": "number-0",
+      "number": 0,
+      "text": "zero",
+      "frames": 26112,
+      "sha256": "8943bde9ceb229884f3954bbaccbd8f903798c89afebcfc35f9a8847d11b1b7f"
+    },
+    {
+      "id": "number-1",
+      "number": 1,
+      "text": "one",
+      "frames": 23040,
+      "sha256": "7ad1374e3f4f216ba088ccf77e60b4380ae0932112f22a12d844704037ca1b94"
+    },
+    {
+      "id": "number-2",
+      "number": 2,
+      "text": "two",
+      "frames": 23552,
+      "sha256": "c8220d7d99c537fbd90114a53e0c9961d1accecd324844fa4a6ebcbeef416c26"
+    },
+    {
+      "id": "number-3",
+      "number": 3,
+      "text": "three",
+      "frames": 24064,
+      "sha256": "57632ca51a8f5342f2343349746659fe273f33456331f4dbf3e7d71412ab3f2a"
+    },
+    {
+      "id": "number-4",
+      "number": 4,
+      "text": "four",
+      "frames": 23040,
+      "sha256": "29d374df2b8be2d680ac16e05fecdc9de1f976adabf05b3150a9accd557c1051"
+    },
+    {
+      "id": "number-5",
+      "number": 5,
+      "text": "five",
+      "frames": 26112,
+      "sha256": "13fc27530a30f0ea81ece929c2cae2ddc3a48a0a1140c3edbf7a5fc3a17382d9"
+    },
+    {
+      "id": "number-6",
+      "number": 6,
+      "text": "six",
+      "frames": 31232,
+      "sha256": "3e13cb0c2d884e0a16e143b4768b0617bc69dca67ee17846da85bb4a7c2540d0"
+    },
+    {
+      "id": "number-7",
+      "number": 7,
+      "text": "seven",
+      "frames": 28672,
+      "sha256": "f44e87df192458d3afed8f2aa08c7384a73a3f875660c00a7027926540d50647"
+    },
+    {
+      "id": "number-8",
+      "number": 8,
+      "text": "eight",
+      "frames": 19968,
+      "sha256": "5660cbe331f6bed208f7e51b7d4ce219bf12db0a8f463f82104855001dd5eac4"
+    },
+    {
+      "id": "number-9",
+      "number": 9,
+      "text": "nine",
+      "frames": 24576,
+      "sha256": "22f65590f160d556e88210e641e8561573d003b31cef9891da179f06bbf700d7"
+    },
+    {
+      "id": "number-10",
+      "number": 10,
+      "text": "ten",
+      "frames": 19456,
+      "sha256": "051e04eea65ade341d030c177d85e4b7c2a769d2135683449c0327a7eb8b01db"
+    },
+    {
+      "id": "number-11",
+      "number": 11,
+      "text": "eleven",
+      "frames": 25600,
+      "sha256": "483cf9596514c547f61152f855681d1db34ed507e0d4feb27f24342d2c3a811b"
+    },
+    {
+      "id": "number-12",
+      "number": 12,
+      "text": "twelve",
+      "frames": 25088,
+      "sha256": "c6a0e2ee60cd30384310f7c9c232a181599c2543f5c4fca6320296c656421c0c"
+    },
+    {
+      "id": "number-13",
+      "number": 13,
+      "text": "thirteen",
+      "frames": 33792,
+      "sha256": "6b9ccfed9e06142344816e1099515c5a9dbf722418b0e5a6989ebe8642cfc776"
+    },
+    {
+      "id": "number-14",
+      "number": 14,
+      "text": "fourteen",
+      "frames": 38912,
+      "sha256": "5f42737606e93080220af2baef3c36ea3afcf3a9f6e1d853f7aa3f53bca74804"
+    },
+    {
+      "id": "number-15",
+      "number": 15,
+      "text": "fifteen",
+      "frames": 33280,
+      "sha256": "48947ec3808f13f7eb43fb6c1f98bd9ed785f395228b86d5e98f24cbbe6e2f6e"
+    },
+    {
+      "id": "number-16",
+      "number": 16,
+      "text": "sixteen",
+      "frames": 40448,
+      "sha256": "6a2729e5da1856aaa28677aaef16ff8d639a2373a891eb4b0f431110075b7305"
+    },
+    {
+      "id": "number-17",
+      "number": 17,
+      "text": "seventeen",
+      "frames": 44544,
+      "sha256": "ce7dfde8f57b07ab46c7e4d4b0629bbe0d0e33e5f5aa4b06cc4354b68fb5b1c9"
+    },
+    {
+      "id": "number-18",
+      "number": 18,
+      "text": "eighteen",
+      "frames": 33280,
+      "sha256": "0e1f48b5b4d30b41d3ee8fa468598cb5b4787e0e97cda88b45fd23610ba5908f"
+    },
+    {
+      "id": "number-19",
+      "number": 19,
+      "text": "nineteen",
+      "frames": 30208,
+      "sha256": "edde0dbb030243d423b8e0040802c763d0b317a7b1acdb052278ac7c2d5c7bb9"
+    },
+    {
+      "id": "number-20",
+      "number": 20,
+      "text": "twenty",
+      "frames": 27648,
+      "sha256": "43e9395dcf7fc9d1f514f23a005c8ee22d916072ee7a9b0cdcf7128c09e0e826"
+    },
+    {
+      "id": "number-21",
+      "number": 21,
+      "text": "twenty one",
+      "frames": 38912,
+      "sha256": "f246cc5b88474e3ff8bc07fe54ac4e260baabc56bf739de4ab20cc35336be9ae"
+    },
+    {
+      "id": "number-22",
+      "number": 22,
+      "text": "twenty two",
+      "frames": 40448,
+      "sha256": "1031c46675acc43af317b601ff331837f125f99e0647b83624151d7e98190207"
+    },
+    {
+      "id": "number-23",
+      "number": 23,
+      "text": "twenty three",
+      "frames": 43008,
+      "sha256": "bda909c10ca0a4975de9f3860338be17f5f698894a493770ad46d7a7348ff26a"
+    },
+    {
+      "id": "number-24",
+      "number": 24,
+      "text": "twenty four",
+      "frames": 40960,
+      "sha256": "964e1ead2d67b285b87aed75dffee18f53990ef73ec07ea6917bf10c42960378"
+    },
+    {
+      "id": "number-25",
+      "number": 25,
+      "text": "twenty five",
+      "frames": 43520,
+      "sha256": "dd085a3d4e90d7ea5f837c0a1c674847366da8dbc43c606917fc2b2a4c1c2e89"
+    },
+    {
+      "id": "number-26",
+      "number": 26,
+      "text": "twenty six",
+      "frames": 48640,
+      "sha256": "bd92774576374bcd56ff5e6a472b6aa98725c6e45b32c0dbed0880c9fde59b2e"
+    },
+    {
+      "id": "number-27",
+      "number": 27,
+      "text": "twenty seven",
+      "frames": 44032,
+      "sha256": "52f9acc0048eb72ad99322c4eaa42eb9a5faa2caf33114c5dfcadc2bf6affde7"
+    },
+    {
+      "id": "number-28",
+      "number": 28,
+      "text": "twenty eight",
+      "frames": 46592,
+      "sha256": "6688e1bc8e618192e87c41596ab1a4a1c369abdeaabcaf3a7d937785351d498c"
+    },
+    {
+      "id": "number-29",
+      "number": 29,
+      "text": "twenty nine",
+      "frames": 44032,
+      "sha256": "944fbe554ec761336feeb7e66d56c2277e95053c905a7a8bc985df11350d7087"
+    },
+    {
+      "id": "number-30",
+      "number": 30,
+      "text": "thirty",
+      "frames": 23552,
+      "sha256": "75dfb5c4ec3e0f121cf78f1021300e3de589876281bd0c7539a90339db849fc0"
+    },
+    {
+      "id": "number-31",
+      "number": 31,
+      "text": "thirty one",
+      "frames": 38400,
+      "sha256": "b106994783f3326828515e73b741624df95e16d45d6d10267a0be557a7c6647e"
+    },
+    {
+      "id": "number-32",
+      "number": 32,
+      "text": "thirty two",
+      "frames": 42496,
+      "sha256": "e3df32f2ddd622fd0e747b4f438d779c2a8cd9f2bc93234821274213937a6fa1"
+    },
+    {
+      "id": "number-33",
+      "number": 33,
+      "text": "thirty three",
+      "frames": 36864,
+      "sha256": "a2a5f19ff80037767b2e9eaee47f481c369214ec471645c42bbd316981b4f924"
+    },
+    {
+      "id": "number-34",
+      "number": 34,
+      "text": "thirty four",
+      "frames": 44032,
+      "sha256": "9cfbc379b7f40225fca0c75d54f790c54dae8ce3de3bec83c065b5ccd6299671"
+    },
+    {
+      "id": "number-35",
+      "number": 35,
+      "text": "thirty five",
+      "frames": 44544,
+      "sha256": "150f9f97e5896e8d076131451ceddd2adc115575a254b19c871c1fc33bb9674f"
+    },
+    {
+      "id": "number-36",
+      "number": 36,
+      "text": "thirty six",
+      "frames": 46080,
+      "sha256": "812b904cf15854a90e8566236485da5b11f4a940657aad5d287db88b4b992a6b"
+    },
+    {
+      "id": "number-37",
+      "number": 37,
+      "text": "thirty seven",
+      "frames": 40448,
+      "sha256": "f32e01ee5a38c8b9ff92a95b92672b0e970eb6c3a96b55003db00661e81b4d50"
+    },
+    {
+      "id": "number-38",
+      "number": 38,
+      "text": "thirty eight",
+      "frames": 46592,
+      "sha256": "ba35f9ce1adf74953d7c4617ca770fa781cbeb0af0387a0b19519f9736643795"
+    },
+    {
+      "id": "number-39",
+      "number": 39,
+      "text": "thirty nine",
+      "frames": 44032,
+      "sha256": "2fd5c7afde5eac7e6ae85238fa6c2fef300a9213b0f7d7d9620c3648039b1be2"
+    },
+    {
+      "id": "number-40",
+      "number": 40,
+      "text": "forty",
+      "frames": 24064,
+      "sha256": "5c73b1f1abe4320b7fba193e57c92a2756741e28383772b52b7f959c1d0d38f0"
+    },
+    {
+      "id": "number-41",
+      "number": 41,
+      "text": "forty one",
+      "frames": 37888,
+      "sha256": "335e8e52ad7446bfdc6a4c67582ad680022eb130d03e8a773ff2c1b81a8bd0ad"
+    },
+    {
+      "id": "number-42",
+      "number": 42,
+      "text": "forty two",
+      "frames": 43008,
+      "sha256": "294fd9f81661346e9f36fce5824c7d3fc78a2d6c499b8a622b13688c834202b4"
+    },
+    {
+      "id": "number-43",
+      "number": 43,
+      "text": "forty three",
+      "frames": 42496,
+      "sha256": "de37656694cc949516bfb7f88d401157a205c2cace2f549a5fb8ef383ed7fdca"
+    },
+    {
+      "id": "number-44",
+      "number": 44,
+      "text": "forty four",
+      "frames": 45056,
+      "sha256": "2e2a8dea49dd046d8f237a5b7fd54c55f190ed6df6b61c51c3c07652cf426375"
+    },
+    {
+      "id": "number-45",
+      "number": 45,
+      "text": "forty five",
+      "frames": 46592,
+      "sha256": "239ffb84500a61d9412463fe8397aa6176ee540f1cf38c2c926c20f4bd2e4ab2"
+    },
+    {
+      "id": "number-46",
+      "number": 46,
+      "text": "forty six",
+      "frames": 47104,
+      "sha256": "eafe49faca7b667237f49bfefba67a63a20c25bc77342e610c12c155c24bf584"
+    },
+    {
+      "id": "number-47",
+      "number": 47,
+      "text": "forty seven",
+      "frames": 44544,
+      "sha256": "0f799890690cb3b978ddbb58fcf96ab25570d15ffa99b70926824a539e7231ba"
+    },
+    {
+      "id": "number-48",
+      "number": 48,
+      "text": "forty eight",
+      "frames": 44032,
+      "sha256": "9edb9fa4dab840fc1c265ba3e40f8cb7a11507e58a7a885067d3573d64ddae73"
+    },
+    {
+      "id": "number-49",
+      "number": 49,
+      "text": "forty nine",
+      "frames": 44544,
+      "sha256": "d522b3e0e31c8d05725500bbbbfecdc43f603a983d4891744c1b6fc52266ec7e"
+    },
+    {
+      "id": "number-50",
+      "number": 50,
+      "text": "fifty",
+      "frames": 25600,
+      "sha256": "d40401bdc8e052102e7f6e8f4e04de8052bfa1c04fa83b047178c2a5d88b6c1a"
+    },
+    {
+      "id": "number-51",
+      "number": 51,
+      "text": "fifty one",
+      "frames": 37888,
+      "sha256": "b9e025caa74e817118f86e81463f2e9381eebe1315208a57be64688cd2975a02"
+    },
+    {
+      "id": "number-52",
+      "number": 52,
+      "text": "fifty two",
+      "frames": 43520,
+      "sha256": "19faffd10e86991df9078d761e736cc83545a817f2fdeed77a02d5264d5be1e4"
+    },
+    {
+      "id": "number-53",
+      "number": 53,
+      "text": "fifty three",
+      "frames": 39424,
+      "sha256": "046a58034dc009cf8f5b293211d278fea906be98669bafd7747602e6fdb506d2"
+    },
+    {
+      "id": "number-54",
+      "number": 54,
+      "text": "fifty four",
+      "frames": 42496,
+      "sha256": "d8eca4386ea8b6fa2f5f47df9b74285803417457b9044162be30bf436759d2d6"
+    },
+    {
+      "id": "number-55",
+      "number": 55,
+      "text": "fifty five",
+      "frames": 47104,
+      "sha256": "abec54450bc12c725119ecd970831fd7442eedd7103056b7b62f441ccfd4ec4f"
+    },
+    {
+      "id": "number-56",
+      "number": 56,
+      "text": "fifty six",
+      "frames": 48128,
+      "sha256": "99ab122ecc822a2970ab12244f8267c757a57356eb95a67adbcc3854b286fe99"
+    },
+    {
+      "id": "number-57",
+      "number": 57,
+      "text": "fifty seven",
+      "frames": 43008,
+      "sha256": "a2d1b9dd2f5d4e7780be6e18b3b96d481138d72e9b48ac75eb420fa156732c7f"
+    },
+    {
+      "id": "number-58",
+      "number": 58,
+      "text": "fifty eight",
+      "frames": 44544,
+      "sha256": "3cd0a6f809c86f27aacc59910a9760bc5fd24b25825f48b235d0a3e0f6df51a2"
+    },
+    {
+      "id": "number-59",
+      "number": 59,
+      "text": "fifty nine",
+      "frames": 45568,
+      "sha256": "a8ebdc87a6135c5fda7f7967e8f696f20d9d6177ca2166a304ffa4de839adf44"
+    },
+    {
+      "id": "number-60",
+      "number": 60,
+      "text": "sixty",
+      "frames": 30720,
+      "sha256": "143fe747d51496629f6370f593c4217a6308da1705fdf4c5e52239c1eff32b84"
+    },
+    {
+      "id": "number-61",
+      "number": 61,
+      "text": "sixty one",
+      "frames": 40448,
+      "sha256": "b314e24c072abf7494a27482fbd8f5ecde71d1f077d1a542caa62867a152d8e0"
+    },
+    {
+      "id": "number-62",
+      "number": 62,
+      "text": "sixty two",
+      "frames": 44544,
+      "sha256": "6e93d5779233daf47b4c353b88a3ea8ad255581573417437b14dc01ad519d919"
+    },
+    {
+      "id": "number-63",
+      "number": 63,
+      "text": "sixty three",
+      "frames": 46080,
+      "sha256": "0b71a33b1b59ea1d7139242bb81ecfa766710490c8c2c5aa146418c702eae0d8"
+    },
+    {
+      "id": "number-64",
+      "number": 64,
+      "text": "sixty four",
+      "frames": 47104,
+      "sha256": "0f72859f470b35c0fa32feeb8f15dcd069193b8550dbe24cc635a0f8edddb232"
+    },
+    {
+      "id": "number-65",
+      "number": 65,
+      "text": "sixty five",
+      "frames": 51200,
+      "sha256": "5a5124616d715a091667d1c150143f2fa1348e913b6f14861a33346d18ba7126"
+    },
+    {
+      "id": "number-66",
+      "number": 66,
+      "text": "sixty six",
+      "frames": 52736,
+      "sha256": "df7a08484b021232171fac940666659d2d26e284c3d0b72847825d3e44e410b5"
+    },
+    {
+      "id": "number-67",
+      "number": 67,
+      "text": "sixty seven",
+      "frames": 50176,
+      "sha256": "9711cf1d2de067b8df2d7c232f1ebce1439083b1427ec8f52b65aed201f2b107"
+    },
+    {
+      "id": "number-68",
+      "number": 68,
+      "text": "sixty eight",
+      "frames": 50688,
+      "sha256": "ae83c9668be665876afb0d312e3d0e5a3650f537cf9f68720729fcf6d9993f19"
+    },
+    {
+      "id": "number-69",
+      "number": 69,
+      "text": "sixty nine",
+      "frames": 48128,
+      "sha256": "9f37401c323f244be1440ab0f95fd1409bd79c96436aaffde56cc01ad8bdb302"
+    },
+    {
+      "id": "number-70",
+      "number": 70,
+      "text": "seventy",
+      "frames": 32768,
+      "sha256": "5cf24fc75ad0a6fa2e64ad7b660715ea384400fb258cf9fb9e7c5b7850f4fefe"
+    },
+    {
+      "id": "number-71",
+      "number": 71,
+      "text": "seventy one",
+      "frames": 45056,
+      "sha256": "c0e456721845342ac49efabf9f227dbe23f4b05ba55aa1c75212c3e1dc78a507"
+    },
+    {
+      "id": "number-72",
+      "number": 72,
+      "text": "seventy two",
+      "frames": 49664,
+      "sha256": "bc6f7f6c01347e4271b0877323a91ddd9c58a0e4c92c6c2a6d893a00b3257c7a"
+    },
+    {
+      "id": "number-73",
+      "number": 73,
+      "text": "seventy three",
+      "frames": 49664,
+      "sha256": "0c0050ccda3a6c9d5c817d31af06b9c2c21b58def930402942116e44edbdc5b6"
+    },
+    {
+      "id": "number-74",
+      "number": 74,
+      "text": "seventy four",
+      "frames": 50176,
+      "sha256": "d3a22f7cd506ac48c4f492073257b96841e96e52ad63d82b92998702dd238c2f"
+    },
+    {
+      "id": "number-75",
+      "number": 75,
+      "text": "seventy five",
+      "frames": 53248,
+      "sha256": "8fe5af26d9eb544811ba4e1b962be4d534faf78d6f5fbb3b0a2b19cdd10e2a4d"
+    },
+    {
+      "id": "number-76",
+      "number": 76,
+      "text": "seventy six",
+      "frames": 57344,
+      "sha256": "ae2afdd26352aaf8c3d1e78294aa0380bcd44a06a3df1d259954980e7cfe7349"
+    },
+    {
+      "id": "number-77",
+      "number": 77,
+      "text": "seventy seven",
+      "frames": 52224,
+      "sha256": "ad305cbbb13f09246611bef703b974faa0a6534649b736229f4363219df6054e"
+    },
+    {
+      "id": "number-78",
+      "number": 78,
+      "text": "seventy eight",
+      "frames": 53248,
+      "sha256": "8f38292c8405da27e175c0fe8e743579755379c6800c8714586bb7d8b9577ffa"
+    },
+    {
+      "id": "number-79",
+      "number": 79,
+      "text": "seventy nine",
+      "frames": 51712,
+      "sha256": "b4c103701e03f4d94fd808c2f20a7a083bad80b9a09e936f81474bef28da7cac"
+    },
+    {
+      "id": "number-80",
+      "number": 80,
+      "text": "eighty",
+      "frames": 20480,
+      "sha256": "7bdc7d0d396ede9e89915019e5216c66c95ad303c6315dceab2ebbb6f349e5f1"
+    },
+    {
+      "id": "number-81",
+      "number": 81,
+      "text": "eighty one",
+      "frames": 36864,
+      "sha256": "aa849a021cfe251f7cecfda6f911b2f293758763ff02adc2add4171c5298a9f8"
+    },
+    {
+      "id": "number-82",
+      "number": 82,
+      "text": "eighty two",
+      "frames": 38912,
+      "sha256": "ec4546dd16a065e7fd98aac79e2b9b5fcbac70cef35a9c87e42449ce8e7fa914"
+    },
+    {
+      "id": "number-83",
+      "number": 83,
+      "text": "eighty three",
+      "frames": 37888,
+      "sha256": "6638e1835e855c7464859fd6f7b9005a2e5faac3517dee4825fadd4380dfc2b6"
+    },
+    {
+      "id": "number-84",
+      "number": 84,
+      "text": "eighty four",
+      "frames": 39424,
+      "sha256": "42512cf1faabfe868aab712ec6c1051cb594dccacd76f3371f47f82f9628b42d"
+    },
+    {
+      "id": "number-85",
+      "number": 85,
+      "text": "eighty five",
+      "frames": 41472,
+      "sha256": "57f2916f62aabdbecbbbf75fbb826276697249a2c24acce5f18478589d5c0c84"
+    },
+    {
+      "id": "number-86",
+      "number": 86,
+      "text": "eighty six",
+      "frames": 45568,
+      "sha256": "021d922693b71155a4df117435cd3af80a96d41a677c7e4dee3ca14bd47a9f66"
+    },
+    {
+      "id": "number-87",
+      "number": 87,
+      "text": "eighty seven",
+      "frames": 43520,
+      "sha256": "afc1b73d82344dd2b25b1a66cec84e86f1802208068a089f0c7288f8c5a81137"
+    },
+    {
+      "id": "number-88",
+      "number": 88,
+      "text": "eighty eight",
+      "frames": 41472,
+      "sha256": "7c1a14d75f0f3cfb35d1d054eb44b43d3754339e0efa6c1c099616ab2857036a"
+    },
+    {
+      "id": "number-89",
+      "number": 89,
+      "text": "eighty nine",
+      "frames": 40960,
+      "sha256": "f36611a33e65fd583dc073803b8915b69051dd3365ea2d7f62b17d17c2012110"
+    },
+    {
+      "id": "number-90",
+      "number": 90,
+      "text": "ninety",
+      "frames": 24576,
+      "sha256": "e78fbba2dc46d1c6245bd4a7a88dc8549dfb8361ace013399c4a509538ec3603"
+    },
+    {
+      "id": "number-91",
+      "number": 91,
+      "text": "ninety one",
+      "frames": 38400,
+      "sha256": "ed62753fb9862b8c8509e948e3b9dcf86aeee5d390bf10f26fe6ffedddb0bf44"
+    },
+    {
+      "id": "number-92",
+      "number": 92,
+      "text": "ninety two",
+      "frames": 38912,
+      "sha256": "4c6a288f8b2563974133f360b4a98e083d1829c033f0bcac3f562a0fca1ff71c"
+    },
+    {
+      "id": "number-93",
+      "number": 93,
+      "text": "ninety three",
+      "frames": 40448,
+      "sha256": "65b06fa1b469b2783f4012d4ba4eab5a366c941d7c4d4c8e46c7178bd36fdf21"
+    },
+    {
+      "id": "number-94",
+      "number": 94,
+      "text": "ninety four",
+      "frames": 40960,
+      "sha256": "6dbd171f1287d7e667779db2e4c457d0fc8f408122de68e29533284f03d5d2b8"
+    },
+    {
+      "id": "number-95",
+      "number": 95,
+      "text": "ninety five",
+      "frames": 43008,
+      "sha256": "aede48094694b663000ea79c9c43c7237aab56dda7e283efad47c4035b8f2a6c"
+    },
+    {
+      "id": "number-96",
+      "number": 96,
+      "text": "ninety six",
+      "frames": 48128,
+      "sha256": "bc9c856a1272f51cdda3d1a2a7b8904d0f31335022a63978416eb00eda01550f"
+    },
+    {
+      "id": "number-97",
+      "number": 97,
+      "text": "ninety seven",
+      "frames": 44032,
+      "sha256": "a33606d8dad4cf85775422c7b394e8bdcbba9c559aec0184cbe6835567303019"
+    },
+    {
+      "id": "number-98",
+      "number": 98,
+      "text": "ninety eight",
+      "frames": 45056,
+      "sha256": "90c68a0ad20d5bc8dd37015260240da4b01219faedbe99c7c912c7be5dc508de"
+    },
+    {
+      "id": "number-99",
+      "number": 99,
+      "text": "ninety nine",
+      "frames": 43008,
+      "sha256": "feae7161806b58b2e0948238faac29968bbd799846bbc1b141735b154e010d42"
+    },
+    {
+      "id": "number-100",
+      "number": 100,
+      "text": "one hundred",
+      "frames": 39936,
+      "sha256": "cfc0821f7bea2d04220cb09e3e053689ae339187de41e6e2301cb57032162b4b"
+    }
+  ]
+}

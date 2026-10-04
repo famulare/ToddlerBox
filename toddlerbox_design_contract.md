@@ -201,8 +201,9 @@ released 0.3.0/main/installer remain unchanged pending Mac user testing.
 
 ## 4c. Math App — application trial
 
-- Four modes: numeral first, objects first, addition, subtraction. Tap the large
-  question card to reveal the quantity or answer; object taps have no action.
+- Three modes: objects-first Numbers, addition, subtraction. Tap the large
+  question card to reveal the numeral or answer; object taps have no action.
+  Numbers keeps its pictures visible after revelation.
 - Full default range 0–100, including zero and crossing tens. Display numerals,
   not written number names. No answer entry, assessment, scoring or stored history.
 - Each integer 0–20 has weight 12; each integer 21–100 has weight 1. Addition
@@ -219,8 +220,9 @@ released 0.3.0/main/installer remain unchanged pending Mac user testing.
 - Home, Next and one mode control; no left rail. Existing single-pointer cleanup,
   frame supervision and authenticated screen-only receipt remain in use.
 - No child work is written; save-current uses the existing no-work acknowledgement.
-- Initial trial is silent; optional future speech must be deliberate and may not
-  control revelation or introduce runtime synthesis/network access.
+- A speaker button reads the disclosed number/answer on deliberate tap only.
+  No autoplay or speech-controlled revelation. Offline bounded 0–100 WAV clips
+  stop on Home, Next, mode/focus changes; no runtime synthesis/network access.
 - `MATH_DESIGN.md` records sampling details, configuration and Mac launch commands.
   Trial qualification stops at tests, independent review and a draft PR, before
   main integration, release signing, installers or VM release qualification.
