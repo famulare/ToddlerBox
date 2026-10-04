@@ -401,3 +401,7 @@ status reports the result. There are no automatic sync jobs. See
 [setup and operation](docs/drive-sync.md), the
 [private package format](docs/drive-sync-package.md), and the
 [privacy and Google permission explanation](docs/drive-sync-privacy.md).
+
+---
+
+For Rosemary.
