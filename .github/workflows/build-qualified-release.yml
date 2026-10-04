@@ -101,16 +101,20 @@ jobs:
           PYVERIFY
           test "$(gh api repos/$GITHUB_REPOSITORY/releases/tags/v0.4.0 --jq .target_commitish)" = "$(jq -r .git build/release-0.4/source.json)"
           candidate_git=$(jq -r .git build/release-0.4/source.json)
-          gh api repos/$GITHUB_REPOSITORY/git/ref/tags/v0.4.0 > /tmp/tag-ref.json
-          tag_type=$(jq -r .object.type /tmp/tag-ref.json)
-          tag_sha=$(jq -r .object.sha /tmp/tag-ref.json)
-          while test "$tag_type" = tag; do
-            gh api repos/$GITHUB_REPOSITORY/git/tags/$tag_sha > /tmp/tag-ref.json
+          if gh api repos/$GITHUB_REPOSITORY/git/ref/tags/v0.4.0 > /tmp/tag-ref.json 2> /tmp/tag-ref.json.err; then
             tag_type=$(jq -r .object.type /tmp/tag-ref.json)
             tag_sha=$(jq -r .object.sha /tmp/tag-ref.json)
-          done
-          test "$tag_type" = commit
-          test "$tag_sha" = "$candidate_git"
+            while test "$tag_type" = tag; do
+              gh api repos/$GITHUB_REPOSITORY/git/tags/$tag_sha > /tmp/tag-ref.json
+              tag_type=$(jq -r .object.type /tmp/tag-ref.json)
+              tag_sha=$(jq -r .object.sha /tmp/tag-ref.json)
+            done
+            test "$tag_type" = commit
+            test "$tag_sha" = "$candidate_git"
+          else
+            # GitHub may defer tag creation until a draft is published.
+            rg -q "HTTP 404" /tmp/tag-ref.json.err
+          fi
           source system/versions.env
           docker build --platform linux/amd64 --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt --build-arg "UBUNTU_IMAGE=$UBUNTU_IMAGE" --build-arg "UBUNTU_SNAPSHOT=$UBUNTU_SNAPSHOT" -f system/Dockerfile.tools -t toddlerbox-image-tools .
       - name: Qualify fresh installation without networking
