@@ -12,9 +12,9 @@ inspect)
     systemctl is-active toddlerbox-controller NetworkManager gdm3
     test "$(cat /run/toddlerbox-system/mode)" = parent
     dpkg-query -W gh wpasupplicant rclone python3-cryptography
-    systemctl is-enabled apt-daily.timer apt-daily-upgrade.timer | awk '{if ($0 != "masked") exit 1}'
+    test "$(systemctl is-enabled apt-daily.timer apt-daily-upgrade.timer 2>/dev/null || true)" = "$(printf 'masked\nmasked')"
     test -z "$(systemctl list-timers --all --no-legend | grep toddlerbox-sync || true)"
-    python3 -c 'from appliance import progress; print(progress()); from release_client import sequence_guard; sequence_guard(1, __import__("pathlib").Path("/"))'
+    python3 -c 'from appliance import progress; print(progress()); from pathlib import Path; from release_client import sequence_guard; sequence_guard(1, Path("/"), source=Path("/opt/toddlerbox/release-id").read_text().strip())'
     ;;
 fixtures)
     mkdir -p /root/appliance-qa

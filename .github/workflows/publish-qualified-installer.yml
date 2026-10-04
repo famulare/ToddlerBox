@@ -16,12 +16,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/a60a9ddeca41e3f6-transfer.json toddlerbox-installer.iso
-          printf '%s  %s\n' '33bf906226fa2db87d87d5e325c4951bbe94a93ca9c911d7822430824ef10066' toddlerbox-installer.iso > SHA256SUMS
+          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/5046c47496917dd3-transfer.json toddlerbox-installer.iso
+          printf '%s  %s\n' '9b26aa5452f511fffe92f711a22c5b390eac064bd0a89b1e09782801469b4199' toddlerbox-installer.iso > SHA256SUMS
+          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/5046c47496917dd3-update-transfer.json ToddlerBox-update.pyz
+          printf '%s  %s\n' '5e3f898d45b8788c1391a52113c1fcaa74d8de7dc404c30e1c91ecea198cc2c2' ToddlerBox-update.pyz >> SHA256SUMS
           sha256sum -c SHA256SUMS
-          cp docs/releases/installer-a60a9ddeca41e3f6.json source.json
+          cp docs/releases/installer-5046c47496917dd3.json source.json
       - name: Publish normal release assets after checksum verification
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload candidate-play-a60a9ddeca41e3f6 toddlerbox-installer.iso SHA256SUMS source.json --clobber
+          gh release upload toddlerbox-appliance-5046c47496917dd3 toddlerbox-installer.iso ToddlerBox-update.pyz SHA256SUMS source.json --clobber

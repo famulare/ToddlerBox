@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "source_id": "5046c47496917dd3",
+  "source_revision": "790e3bf806fb87f5048a29ee67b59aa8b2b4967f",
+  "filename": "ToddlerBox-update.pyz",
+  "size": 67629846,
+  "sha256": "5e3f898d45b8788c1391a52113c1fcaa74d8de7dc404c30e1c91ecea198cc2c2",
+  "chunk_bytes": 8388608,
+  "repository": "famulare/ToddlerBox",
+  "chunks": [
+    {
+      "index": 0,
+      "size": 8388608,
+      "git_sha": "c72ad1f937044c5e60b2055fc49b07046ccc20b8",
+      "sha256": "4432d9cf49839e2aa4ba77623e77a57648ca25b0afe3ec1ec322d3e647c9751c"
+    },
+    {
+      "index": 1,
+      "size": 8388608,
+      "git_sha": "60805fe113fd33e7cff2dcd72499b7e9a61afbe3",
+      "sha256": "fa4fbd9543d072fcaae7a386dcae60b1b7476be3f0d4e059664ecb44610d9d02"
+    },
+    {
+      "index": 2,
+      "size": 8388608,
+      "git_sha": "890615056902b06346039084f63ddf372be4fc3b",
+      "sha256": "b788b57615c26e406fe5589c056a67d8a1dbdc361355c5c8f53a19e6c3cdf0ab"
+    },
+    {
+      "index": 3,
+      "size": 8388608,
+      "git_sha": "71ad61acdd5c3df9b880d38483429ebdc63944e6",
+      "sha256": "b9f545030c8e3dd05344cfecd255b6747c384accd12cedee6df299a3b8ad1ef5"
+    },
+    {
+      "index": 4,
+      "size": 8388608,
+      "git_sha": "629f783c7cc5879eff9d4f00a68b17e7f22a4854",
+      "sha256": "c10a033a477ded27640b69554c14c790b1ce417986b45462d2cbdd4e874a7a5f"
+    },
+    {
+      "index": 5,
+      "size": 8388608,
+      "git_sha": "c3979b6718e8f2270bdf914ae7073dba9731b836",
+      "sha256": "a7eb3b77f44e626b68588222d6964fd1b7892efcc43a2f84be597910a62b2589"
+    },
+    {
+      "index": 6,
+      "size": 8388608,
+      "git_sha": "c66347851b8684b8fdc2a86fea2c34e54bb5a81b",
+      "sha256": "79ca879bb14f4dbd58d0eb04be1fde4eb89a6ffb4c563d1d3b174805489cf448"
+    },
+    {
+      "index": 7,
+      "size": 8388608,
+      "git_sha": "af14ced74fa337b35ad1dd59c85e526fa42a2e68",
+      "sha256": "24dfe2056caf99022e40f1f272d5ae5498cc70882c58b42f37b78481027781de"
+    },
+    {
+      "index": 8,
+      "size": 520982,
+      "git_sha": "8ff1636ccea715f6fd9a357295b49e04224b0952",
+      "sha256": "6aba9c013a333f7ff285d4c7c02e93a78ab2542f5121435b5a701de894a088da"
+    }
+  ]
+}
