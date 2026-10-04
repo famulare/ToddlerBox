@@ -159,33 +159,40 @@ Hardware qualification remains separate from application and VM tests.
 ## 4a. Music App
 
 - Six bundled short piano arrangements with scores, synchronized cues and source/license notices under `assets/music/`.
-- Fixed C3–C5 keyboard; falling bars encode pitch and held duration. Melody is blue, accompaniment gold. Piano touches do not play notes.
-- Song choices, Play/Pause, Autoplay and Home are the only child controls.
+- Fixed C3–C5 keyboard; falling bars encode pitch and held duration. Melody is blue, accompaniment gold.
+- Piano touches play independent sampled notes over a running song without interrupting its clock/stream.
+- Song choices, Free Play, Play/Pause, Autoplay, piano keys and Home are the child controls.
+- Free Play stops the song and leaves the same keyboard available; selecting a song returns to accompaniment.
 - Entry starts the first song; selection starts/restarts that song. Autoplay defaults on and wraps with a quiet gap. Turning it off finishes the current song once.
 - Pause freezes sound and visual time. One playback-position adapter drives the visualization, with configurable output-latency compensation.
 - Home/TERM/exceptions stop and unload audio. No audio plays on the launcher or automatically resumes after a crash.
 - Audio failure remains quiet, responsive and logged for the parent. Autoplay attempts each damaged track at most once until manual retry.
-- Shared pointer ownership ignores duplicate SDL mouse events from touch and secondary fingers. Focus/scene changes discard stale input.
+- Controls use shared single-pointer ownership; the piano admits up to eight independent raw fingers.
+  Duplicate SDL mouse events from touch are ignored. Key release glides/decays, focus/Home clears voices.
 
 ## 4b. Reading App
 
-- One word, letter or numeral; tap to hear its recording(s), then reveal its picture.
+- One word or letter; numbers/math belong to a future separate app.
 - Word units are explicit: `ship` is `sh/i/p`, `duck` is `d/u/ck`.
-- Word tap repeats the full sequence; picture tap repeats the whole word.
-  In letter and number decks both targets repeat the selected sound/name.
+- Each large sound-unit tap plays only that sound, without automatically advancing to another.
+- A separate whole-word button reads the word; picture tap replays the whole word.
+  Letter cards repeat the selected sound/name. Rapid sound taps interrupt without queuing voices.
+- A scrollable left rail switches between written-word selection and picture selection.
+  Picture selection deliberately exposes preview art; the default written rail keeps the main picture hidden.
 - Uniform random Next excludes the current card. Recent earlier cards may return.
   A singleton deck supports replay; empty content returns Home quietly.
 - No scores, time limits, rewards, automatic progression, spaced repetition or usage history.
-- Parent YAML selects mode, word sets, letter sounds/names and case, or a number range within 0–30.
-- Default: six short-a words, lowercase, software volume 0.35.
-- Bundled pack: 30 words, 26 letter-sound cards, 26 letter-name cards, numbers 0–30.
+- Parent YAML selects words/letters, word sets, letter sounds/names and case.
+- Default: all seven word sets, lowercase, software volume 0.35.
+- Bundled pack: 75 words, 26 letter-sound cards, 26 letter-name cards; no numerical content.
   In phonics mode `q` is presented as `qu`; a written unit can represent multiple sounds.
-- Pictures appear only after successful speech completion. No voices overlap or queue.
+- Main pictures appear after successful whole-word/name completion. Sound-unit completion alone does not reveal them.
+  No speech voices overlap or queue.
 - Next/Home and focus/resume reset stop speech. Corrupt content is isolated; an unavailable
   device leaves the UI responsive and can be retried by a later deliberate tap.
 - Asset paths, sizes, formats, cue bounds and durations are validated. Source recordings,
   source art, license terms and reproducible preparation records ship under `assets/reading/`.
-- Playback is offline PCM; number speech is generated at preparation time. No runtime
+- Playback is offline PCM. No runtime
   speech synthesis, new data schema or child-created Reading document is introduced.
 
 ## 5. Data layout
@@ -216,7 +223,7 @@ data_root/
 - `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
 - `music.volume`, `music.autoplay`, `music.latency_ms`
 - `reading.mode`, `reading.word_sets`, `reading.letter_case`, `reading.letter_audio`
-- `reading.number_min`, `reading.number_max`, `reading.volume`
+- `reading.volume`
 
 ## 7. Error handling
 

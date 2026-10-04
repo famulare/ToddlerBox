@@ -1,5 +1,4 @@
 """Prepare/verify the Reading pack from checked-in, hash-pinned sources.
-
 uv run python scripts/build-reading.py [--verify | --prepare-trims]
 Preparation uses ffmpeg; ordinary Ubuntu image builds only copy the outputs.
 """
@@ -81,10 +80,7 @@ def main():
     parser.add_argument("--output", type=Path, default=ASSETS)
     args = parser.parse_args()
     manifest = json.loads((ASSETS / "sources.json").read_text())
-    numbers = json.loads((ASSETS / "sources/numbers-provenance.json").read_text())
-    sources = manifest["sources"] + [dict(clip, path=f"sources/{clip['id']}.wav", license="MIT",
-                                              credit="ToddlerBox; generated with Piper / LJ Speech")
-                                     for clip in numbers["clips"]]
+    sources = manifest["sources"]
     for source in sources:
         if sha(ASSETS / source["path"]) != source["sha256"]:
             raise ValueError("Source hash changed: " + source["id"])
@@ -142,7 +138,7 @@ def main():
         name, units = word["word"], word["units"]
         data, cues, used = array.array("h"), [], []
         for index, unit in enumerate(units):
-            identity = "sound-" + {"ck": "c", "k": "c"}.get(unit, unit)
+            identity = "sound-" + {"ck": "c", "k": "c", "ll": "l", "ff": "f", "ss": "s", "gg": "g"}.get(unit, unit)
             segment, info = audio[identity]
             cue = info["cues"][0]
             cues.append({"start": len(data) + cue["start"], "end": len(data) + cue["end"], "unit": index})
@@ -170,16 +166,12 @@ def main():
             cards.append({"id": f"letter-{letter}-{variant}", "kind": "letters", "text": text,
                           "units": [text], "letter_audio": variant, "example": picture,
                           "image": images[picture], "sequence": info, "replay": info})
-    for number in range(31):
-        info = audio[f"number-{number}"][1]
-        cards.append({"id": f"number-{number}", "kind": "numbers", "text": str(number),
-                      "units": [str(number)], "number": number, "sequence": info, "replay": info})
     json_write(args.output / "catalog.json", {"schema_version": 1, "sample_rate": RATE, "cards": cards})
     files["catalog.json"] = sha(args.output / "catalog.json")
     json_write(args.output / "outputs.json", {"schema_version": 1, "generator": "build-reading.py v1",
                                              "sha256": dict(sorted(files.items())), "provenance": provenance})
     pygame.quit()
-    print(f"Prepared {len(cards)} Reading cards: 30 words, 26 letter sounds, 26 letter names, 31 numbers")
+    print(f"Prepared {len(cards)} Reading cards: {len(cards)-52} words, 26 letter sounds, 26 letter names")
 
 
 if __name__ == "__main__":

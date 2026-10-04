@@ -178,11 +178,37 @@ def build(output_dir: Path) -> None:
     write_json(output_dir / "build-manifest.json", provenance)
 
 
+def build_keys(output_dir: Path) -> None:
+    """The same CC0 piano, 25 bounded two-second notes for independent channels."""
+    output_dir.mkdir(parents=True, exist_ok=True)
+    instrument = json.loads((ASSETS / "instrument/manifest.json").read_text())
+    files = {}
+    for pitch in range(48, 73):
+        region = next(r for r in instrument["regions"] if r["lokey"] <= pitch <= r["hikey"])
+        path = ASSETS / "instrument" / region["filename"]
+        if digest(path) != region["sha256"]:
+            raise ValueError("Instrument hash changed")
+        with wave.open(str(path)) as source:
+            data = np.frombuffer(source.readframes(source.getnframes()), dtype="<i2").astype(np.float64)/32767
+        positions = np.arange(RATE*2, dtype=np.float64)*2**((pitch-region["pitch_keycenter"])/12)
+        tone = np.interp(positions, np.arange(len(data)), data, left=0, right=0)
+        tone[:22] *= np.linspace(0, 1, 22)
+        tone[-2205:] *= np.cos(np.linspace(0, math.pi/2, 2205))**2
+        tone *= min(10**(23/20), 0.5/max(0.001, np.max(np.abs(tone))))
+        path = output_dir / f"{pitch}.wav"
+        write_wave(path, tone)
+        files[path.name] = digest(path)
+    write_json(output_dir / "manifest.json", {"schema_version": 1, "license": "CC0-1.0",
+               "instrument_manifest_sha256": digest(ASSETS / "instrument/manifest.json"),
+               "sha256": files, "duration_seconds": 2})
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ASSETS)
     parser.add_argument("--prepare-samples", type=Path, metavar="PINNED_RAW_SAMPLE_DIRECTORY")
     parser.add_argument("--fetch-samples", action="store_true", help="download pinned inputs into --prepare-samples directory; requires network")
+    parser.add_argument("--keys-only", action="store_true", help="prepare the independent piano without changing song renders")
     args = parser.parse_args()
     if args.fetch_samples:
         if not args.prepare_samples:
@@ -190,4 +216,7 @@ if __name__ == "__main__":
         fetch_samples(args.prepare_samples)
     if args.prepare_samples:
         prepare_samples(args.prepare_samples)
-    build(args.output)
+    if args.keys_only:
+        build_keys(args.output)
+    else:
+        build(args.output)

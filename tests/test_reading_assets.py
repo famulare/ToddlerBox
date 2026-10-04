@@ -11,25 +11,24 @@ ROOT = Path(__file__).resolve().parents[1] / "assets/reading"
 
 def test_pack_has_all_configurable_decks_and_curated_sound_units():
     words = load_catalog(ROOT, Options(word_sets=tuple(sorted(WORD_SETS))), Mock())
-    assert len(words) == 30
+    assert len(words) == 75
     by_word = {card.text: card for card in words}
     assert by_word["ship"].units == ("sh", "i", "p")
     assert by_word["duck"].units == ("d", "u", "ck")
     assert by_word["frog"].units == ("f", "r", "o", "g")
-    assert len(load_catalog(ROOT, Options(), Mock())) == 6
+    assert len(load_catalog(ROOT, Options(), Mock())) == 75
+    assert len(load_catalog(ROOT, Options(word_sets=("short_a_cvc",)), Mock())) > 6
     for variant in ("sounds", "names"):
         letters = load_catalog(ROOT, Options(mode="letters", letter_audio=variant), Mock())
         assert len(letters) == 26
         assert next(c for c in letters if c.id == f"letter-q-{variant}").text == ("qu" if variant == "sounds" else "q")
-    numbers = load_catalog(ROOT, Options(mode="numbers", number_max=30), Mock())
-    assert [c.number for c in numbers] == list(range(31))
+    assert not any(card["kind"] == "numbers" for card in json.loads((ROOT / "catalog.json").read_text())["cards"])
 
 
 def test_prepared_audio_images_and_catalog_match_checked_hashes_and_have_sources():
     outputs = json.loads((ROOT / "outputs.json").read_text())
     source_manifest = json.loads((ROOT / "sources.json").read_text())
-    numbers = json.loads((ROOT / "sources/numbers-provenance.json").read_text())
-    source_ids = {s["id"] for s in source_manifest["sources"]} | {s["id"] for s in numbers["clips"]}
+    source_ids = {s["id"] for s in source_manifest["sources"]}
     for name, expected in outputs["sha256"].items():
         path = ROOT / name
         assert hashlib.sha256(path.read_bytes()).hexdigest() == expected

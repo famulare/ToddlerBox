@@ -701,3 +701,151 @@ to source history. [The manifest](docs/releases/child-controls-5e754c3b13e41fd8.
 and [download helper](scripts/download-child-update.py) provide checksum-verified
 delivery without root privileges or cloud credentials. Later documentation commits
 do not change the built payload source identity recorded above.
+
+## First HP Wi-Fi omission — offline repair
+
+The supplied HP kernel log identifies Intel AC 3165 with successfully loaded
+`iwlwifi` firmware; NetworkManager reports `wlo1` unavailable. Both original
+qualified package records (`build/packages.tsv` and the Drive qualification copy)
+lack `wpasupplicant`/`iwd`, libnl and libpcsclite. The build explicitly disables
+recommended packages and did not request the Wi-Fi backend. This confirms an
+image omission; whether it fully resolves the observed HP issue awaits the repair.
+
+`wpasupplicant` is now explicit in image packages and future parent updater package
+operations. The Mac-compatible offline helper downloads five Ubuntu 24.04 amd64
+packages (1,750,228 bytes) directly from the same snapshot `20260926T000000Z`.
+Package versions/hashes came from the existing authenticated Cage-builder apt
+metadata, not guessed URLs. All five actual downloads passed those SHA-256 checks;
+`dpkg-deb` checked their package identities/dependencies. All 15 dependency/version
+requirements are satisfied by the actual qualified package record plus these five
+packages. Bash syntax/diff checks passed; the unchanged full app/system suite
+passed **280 tests** (5.06s).
+
+Repeat downloader: `bash scripts/download-wifi-repair.sh` on a connected Mac/Linux
+machine; [offline HP instructions](docs/wifi-repair.md) do not need network access.
+No family data, credentials or releases are replaced. This is a package repair,
+not a rebuilt installer; preserve the original qualified USB. Physical scans and
+association remain the HP acceptance check. VM virtual Ethernet could not have
+validated Wi-Fi service completeness; the earlier qualification did not claim
+physical Wi-Fi acceptance.
+
+## HP feedback: child-paced Reading, playable piano and complete networking (2026-10-04)
+
+Actual baseline: `890f793e9a4082659cd877f29297674f9ee3a114` (main plus the
+missing Wi-Fi-backend repair), archived unmodified. Implementation:
+`003dda8c2f406f696df6060368652f3197598905`, plus compact-builder directory fix
+`9952ee142fd128aeec326161c01ddeb91166b155`; image source content ID
+`a60a9ddeca41e3f6`. Independent Sol reviews covered Wi-Fi, Music and Reading
+separately, then independently confirmed each targeted repair.
+
+Intended changes: 75 Reading words, seven default difficulty groups, explicit
+sound-unit taps and whole-word reveal, scrollable word/picture selector, removal
+of number cards/configuration/media; independent sampled piano voices over
+unchanged songs and Free Play. Image includes the child-controls repairs already
+merged on main, explicit `wpasupplicant`, and `iw`/`rfkill` parent diagnostics.
+Parent escape, watchdog, durable saves, Drive privacy and original icons remain
+invariants. Reviews caught and resolved fading-note cleanup, `egg` sound grouping,
+letter-tap premature reveal, ambiguous bun/gum art and wildcard offline installs.
+
+Same Linux toolchain/inputs: CPython 3.12.14, uv 0.12.19, pygame-ce 2.5.8 / SDL
+2.32.10, Pillow 12.3.0, pytest 9.1.1, PyYAML 6.0.3; ffmpeg 7.1.5 for preparation.
+Baseline full suite: **280 passed**. Final feature full suite: **290 passed**.
+Exact real-source comparison: **8 unaffected frames**, **8 saved outputs** and
+**289 existing media files** match. Music and Reading layouts intentionally
+change. Existing songs/cues and original word/letter media remain byte-identical.
+
+Repeatable commands (`UV_CACHE_DIR=/tmp/uv-cache` on this restricted builder):
+
+```bash
+PYTHONPATH=/path/to/baseline/src uv run --frozen --project /path/to/current pytest -q /path/to/baseline/tests
+uv run --frozen pytest -q
+uv run --frozen python scripts/build-reading.py --verify
+uv run --frozen python scripts/check-child-paced-baseline.py --baseline /path/to/baseline
+uv run --frozen python scripts/preview-reading-piano.py
+TODDLERBOX_PRUNE_BUILD_CACHE=1 ./system/build-compact.sh
+```
+
+The prepared pack verifies 214 source assets and 290 outputs. Synthetic UI
+screenshots are committed under `docs/images/reading-{word,picture}-rail.png` and
+`music-{play-along,free-play}.png`. Reviews inspected the full word gallery and
+small-screen layouts. Tests compare requested PCM slices exactly, exercise real
+SDL song/channel concurrency and release-before-cleanup, delayed reveal, bounded
+scroll selection, Free Play, source hashes and absence of numbers.
+
+The compact builder uses the same pinned Ubuntu snapshot, Cage source/patch,
+package lists, frozen dependencies and rootfs configuration. It avoids duplicated
+vfs filesystem layers; its Docker-save extraction and intermediate cleanup are
+part of the public recipe. Previous qualified ISO, VM bases and installed
+checkpoints are preserved. Fresh-install/image evidence is recorded
+below; unit/dummy SDL tests do not establish physical Wi-Fi scanning, touchpad
+behavior, pronunciation or HP speaker loudness.
+
+Completed image/VM evidence: compact recipe built from revision `9952ee1`,
+Ubuntu snapshot `20260926T000000Z`, content ID `a60a9ddeca41e3f6`. The first
+attempt stopped at a missing `/usr/local/libexec` directory; `install -D` fixes
+that build path. The successful image installs the same verified Cage binary
+SHA-256 `1f415b196c3502ac8e41f5785aa3f4c088fd3df10f53e5fd3dbf1712c2b0ffee`.
+Rootfs `e2fsck` passes; raw/qcow2 comparison reports **Images are identical**.
+Package comparison with the earlier image has exactly seven additions
+(`wpasupplicant`, four libraries, `iw`, `rfkill`), no removals/version changes.
+
+Actual packaged versions: wpasupplicant `2:2.10-21ubuntu0.4`, iw `6.7-1build1`,
+rfkill `2.39.3-9ubuntu6.6`, PipeWire/Pulse `1.0.5-1ubuntu3.3`, WirePlumber
+`0.4.17-1ubuntu4.1`, rclone `1.60.1+dfsg-3ubuntu0.24.04.6`. Guest Python is
+Ubuntu's CPython 3.12.3; pygame-ce/SDL are 2.5.8/2.32.10.
+
+The exact new ISO booted and installed to a separate blank 16 GiB VM disk,
+verified its compressed payload, required exact `/dev/vda` erase confirmation,
+expanded ext4 and powered off. Booting that installed disk without the ISO
+completed first-boot password setup and entered standalone Cage. No KVM or
+physical radio is available: QEMU x86-64 TCG/qemu64, two CPUs, 4 GiB RAM,
+virtio display, emulated Intel HDA and **no NIC**. Guest checks confirmed:
+
+- `/` on `/dev/vda2`, correct `/opt/toddlerbox/releases/a60a9ddeca41e3f6`,
+  absolute `/var/lib/toddlerbox` data root and root-owned executable compositor.
+- Healthy controller/GDM/NetworkManager, frame reports with zero initial retries,
+  75 default word cards and no numbers; child PipeWire sockets/WirePlumber active.
+- `fi.w1.wpa_supplicant1` D-Bus activation succeeds and service is active.
+  Zero wireless interfaces is expected in this VM and does not qualify HP radio.
+- Sync remains `never-run`/inactive with no credentials, including after reboot.
+- Real HDA output: sound tap peak 3979, whole word 4707, Music 1710, free-play
+  piano 1716 (signed 16-bit PCM). Picture pixels remain identical after a sound
+  tap and change after whole-word completion. Free-play idle and both Home exits
+  have exact zero audio peaks. These numbers describe VM output, not loudness.
+- Synthetic Linux uinput media events drive the actual independent controller
+  and child sink: 0.40 → 0.45 → muted → 0.40/unmuted. Completion is polled because
+  volume work is asynchronous; no production deadlines/guards are relaxed.
+- A SIGSTOP freeze produces a watchdog GDM restart and a changed launcher PID
+  with healthy frames. Two observed recoveries consume attempts 1 and 2.
+  Another frozen launcher reaches parent mode through a real QMP
+  `ctrl-alt-home` hold; journal reason confirms the two-second independent chord.
+  Parent password authentication starts a normal parent GNOME session; explicit
+  return restores child mode. Reboot returns to healthy child frames/retries zero.
+
+The repeatable QMP/pixel/HDA check is committed:
+
+```sh
+uv run --frozen python scripts/qualify-child-paced-vm.py
+# For the separately mounted qualification VM:
+TODDLERBOX_VM_DIR=/tmp/toddlerbox-new-vm uv run --frozen python scripts/qualify-child-paced-vm.py
+```
+
+Root console checks use `system/serial.py`: `toddlerbox-mode status`,
+`busctl call org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus StartServiceByName su fi.w1.wpa_supplicant1 0`,
+`systemctl is-active wpa_supplicant`, package queries and child `wpctl get-volume`.
+For a disposable VM only, freeze the exact child `.venv/bin/python -m toddlerbox.launcher`
+PID; observe the retry/PID/frame transition, or send
+`system/qmp.py human-monitor-command '{"command-line":"sendkey ctrl-alt-home 3000"}'`.
+The harness tolerates transient status-file reads while the controller rewrites
+its diagnostic JSON; authenticated IPC and health handling are unchanged.
+
+ISO **1,542,178,816 bytes**, SHA-256
+`33bf906226fa2db87d87d5e325c4951bbe94a93ca9c911d7822430824ef10066`.
+Raw SHA-256 `e47ad87f50940032597369c26ea0ab328d73f45f8dcb1fd46b4b9efd819a5c4a`;
+qcow2 `70a4aa78e8946271a2c90990b5536a60d853ac6c287efcfcce076fdc04fbe6a9`.
+Metadata/temporary verified transport are under `docs/releases` and `docs/builds`.
+No family photos, original private setup packages or real Google credentials are
+on this builder/in the PR/image. Earlier qualified ISO and VM bases/checkpoints
+remain preserved. Physical flashing, HP wireless scan/association/reconnection,
+trackpad/touchscreen acceptance, output routing/loudness and human listening
+remain outstanding. See `docs/reinstall.md` for private backup before erasure.

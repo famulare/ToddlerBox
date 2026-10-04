@@ -197,14 +197,14 @@ afterward. Next chooses another random card without an immediate repeat.
 
 ### Reading App
 
-- One large word, letter or numeral at a time; no automatic speech or advancement
-- Tap to hear; written sound groups highlight with the recordings
-- Reveal the picture after speech, with replay by tapping text or picture
+- One large word or letter at a time; no automatic speech or advancement
+- Tap each letter/sound group at your own pace; it plays only that sound
+- Tap the smaller whole-word button to hear the word and reveal its picture
+- A scrollable left rail switches between selecting written words and pictures
 - Random Next excludes the current card; no scores, rewards, tests or learning history
-- 30 words grouped by sound pattern, alphabet sounds/names, and numbers 0–30
-- Starts with six short-a words: cat, hat, mat, map, cap, pan
-- Parent configuration selects content; the child sees only the card, Next and Home
-- Numbers reveal organized groups of ten; letter cards replay the selected sound/name
+- 75 illustrated words across short vowels, digraphs and consonant blends, plus alphabet sounds/names
+- Defaults mix three-, four- and selected five-letter words; parent settings can narrow the deck
+- Numbers and math are reserved for a future separate app
 - Next, Home, focus changes and parent recovery stop speech
 - [Content credits and preparation](assets/reading/README.md); [design decisions](READING_DESIGN.md)
 
@@ -253,16 +253,16 @@ Runtime configuration is read from `config.yaml` (repo root for dev) or `/etc/to
 - `paint.palette`
 - `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
 - `music.volume` (0–1, default 0.25), `music.autoplay`, `music.latency_ms`
-- `reading.mode` (`words`, `letters`, `numbers`), `reading.word_sets`
+- `reading.mode` (`words`, `letters`), `reading.word_sets`
 - `reading.letter_case` (`lowercase`, `uppercase`), `reading.letter_audio` (`sounds`, `names`)
-- `reading.number_min`, `reading.number_max` (within 0–30), `reading.volume` (0–1)
+- `reading.volume` (0–1)
 
 Reading settings are applied on activity entry. Word sets are `short_a_cvc`,
 `short_e_cvc`, `short_i_cvc`, `short_o_cvc`, `short_u_cvc`, `digraphs`, and
 `adjacent_consonants`. List multiple sets to mix them with equal chance per word.
-For example, `reading: {mode: numbers, number_min: 0, number_max: 30}` selects
-the complete number deck. Change these YAML settings from parent mode; the child
-screen has no configuration controls.
+For example, `reading: {word_sets: [short_a_cvc]}` narrows the deck to short-a
+words. Change these YAML settings from parent mode; the child controls browse
+the selected deck without changing its difficulty settings.
 
 App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
 an older installation, add the Music and/or Reading launcher entries from this

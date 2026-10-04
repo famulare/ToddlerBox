@@ -1,0 +1,77 @@
+Upstream voices/LICENSE at 5cfd4e4a4236701ec5e9d04a1796b6837d945403
+
+ant.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+bag.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bed.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bell.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+bib.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+box.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+brush.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bud.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bug.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bun.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+bus.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+can.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+cap.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+cash.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+cat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+crab.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+desk.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+dish.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+dog.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+doll.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+drum.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+duck.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+egg.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+fan.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+fin.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+fish.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+flag.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+fox.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+frog.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+gum.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+ham.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+hand.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+hat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+hen.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+hill.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+hut.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+jam.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+lamp.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+leg.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+lid.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+lip.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+log.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+map.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+mask.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+mat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+milk.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+mud.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+mug.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+nest.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+net.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+nut.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pan.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pen.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pig.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+plant.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+plum.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+pond.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+pot.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+rag.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+rat.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+rug.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+sand.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+shed.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+shell.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+ship.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+sled.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+sock.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+stamp.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+sun.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+tent.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+tin.ogg  Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+
+top.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+van.ogg  http://www.art4apps.org/ Creative Common License BY-SA
+wig.ogg  http://www.art4apps.org/ Creative Common License BY-SA

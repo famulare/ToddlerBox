@@ -450,5 +450,185 @@
   "number-30": {
     "start": 0,
     "end": 23514
+  },
+  "word-bat": {
+    "start": 0,
+    "end": 40320
+  },
+  "word-rat": {
+    "start": 181,
+    "end": 38016
+  },
+  "word-fan": {
+    "start": 0,
+    "end": 49536
+  },
+  "word-bag": {
+    "start": 460,
+    "end": 35761
+  },
+  "word-jam": {
+    "start": 1793,
+    "end": 36976
+  },
+  "word-can": {
+    "start": 455,
+    "end": 44928
+  },
+  "word-van": {
+    "start": 0,
+    "end": 32348
+  },
+  "word-rag": {
+    "start": 2054,
+    "end": 35993
+  },
+  "word-ham": {
+    "start": 5234,
+    "end": 39624
+  },
+  "word-egg": {
+    "start": 0,
+    "end": 27416
+  },
+  "word-leg": {
+    "start": 7359,
+    "end": 41771
+  },
+  "word-fin": {
+    "start": 0,
+    "end": 42624
+  },
+  "word-tin": {
+    "start": 2575,
+    "end": 35245
+  },
+  "word-lid": {
+    "start": 644,
+    "end": 44928
+  },
+  "word-box": {
+    "start": 5742,
+    "end": 48008
+  },
+  "word-fox": {
+    "start": 496,
+    "end": 42624
+  },
+  "word-nut": {
+    "start": 1140,
+    "end": 36864
+  },
+  "word-hut": {
+    "start": 2832,
+    "end": 36882
+  },
+  "word-gum": {
+    "start": 0,
+    "end": 37711
+  },
+  "word-bun": {
+    "start": 0,
+    "end": 38016
+  },
+  "word-rug": {
+    "start": 359,
+    "end": 32256
+  },
+  "word-mud": {
+    "start": 0,
+    "end": 41472
+  },
+  "word-bud": {
+    "start": 0,
+    "end": 43776
+  },
+  "word-cash": {
+    "start": 0,
+    "end": 51840
+  },
+  "word-dish": {
+    "start": 0,
+    "end": 51840
+  },
+  "word-shed": {
+    "start": 1327,
+    "end": 35712
+  },
+  "word-shell": {
+    "start": 0,
+    "end": 33408
+  },
+  "word-bell": {
+    "start": 4328,
+    "end": 34467
+  },
+  "word-hill": {
+    "start": 0,
+    "end": 27647
+  },
+  "word-doll": {
+    "start": 74,
+    "end": 35895
+  },
+  "word-flag": {
+    "start": 0,
+    "end": 40320
+  },
+  "word-crab": {
+    "start": 947,
+    "end": 48384
+  },
+  "word-plum": {
+    "start": 185,
+    "end": 36864
+  },
+  "word-sled": {
+    "start": 0,
+    "end": 34560
+  },
+  "word-nest": {
+    "start": 9163,
+    "end": 49272
+  },
+  "word-lamp": {
+    "start": 0,
+    "end": 42624
+  },
+  "word-milk": {
+    "start": 1986,
+    "end": 33879
+  },
+  "word-mask": {
+    "start": 0,
+    "end": 47232
+  },
+  "word-desk": {
+    "start": 4766,
+    "end": 43776
+  },
+  "word-pond": {
+    "start": 7161,
+    "end": 43824
+  },
+  "word-sand": {
+    "start": 0,
+    "end": 36864
+  },
+  "word-ant": {
+    "start": 303,
+    "end": 34816
+  },
+  "word-stamp": {
+    "start": 0,
+    "end": 34560
+  },
+  "word-plant": {
+    "start": 0,
+    "end": 41472
+  },
+  "word-brush": {
+    "start": 858,
+    "end": 39168
   }
 }

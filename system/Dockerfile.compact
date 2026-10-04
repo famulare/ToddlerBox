@@ -1,0 +1,29 @@
+# Same pinned package lists/configuration, assembled in one filesystem layer.
+ARG UBUNTU_IMAGE
+ARG UV_IMAGE
+FROM ${UV_IMAGE} AS uv
+FROM toddlerbox-cage-builder AS cage
+FROM ${UBUNTU_IMAGE}
+ARG UBUNTU_SNAPSHOT
+ARG RELEASE_ID
+ENV DEBIAN_FRONTEND=noninteractive
+RUN --mount=type=secret,id=proxy_ca,required=true,mode=0444 \
+    --mount=type=bind,source=.,target=/source \
+    --mount=from=uv,source=/uv,target=/run/uv \
+    --mount=from=cage,source=/toddlerbox-cage,target=/run/toddlerbox-cage \
+    printf '#!/bin/sh\nexit 101\n' >/usr/sbin/policy-rc.d && chmod +x /usr/sbin/policy-rc.d && \
+    printf 'Types: deb\nURIs: https://snapshot.ubuntu.com/ubuntu/%s/\nSuites: noble noble-updates noble-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' "$UBUNTU_SNAPSHOT" >/etc/apt/sources.list.d/ubuntu.sources && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca update && \
+    apt-get -o Acquire::https::CaInfo=/run/secrets/proxy_ca install -y --no-install-recommends $(cat /source/system/packages.txt /source/system/desktop-extras.txt) && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* && \
+    sed -i 's/^# en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen && locale-gen && \
+    printf 'LANG=en_US.UTF-8\n' >/etc/default/locale && \
+    install -D -m 0755 /run/toddlerbox-cage /usr/local/libexec/toddlerbox-cage && \
+    cp /run/uv /usr/local/bin/uv && \
+    mkdir -p /opt/toddlerbox/releases/${RELEASE_ID} && \
+    cp -a /source/src /source/assets /source/pyproject.toml /source/uv.lock /source/README.md /source/LICENSE /source/config.yaml /source/data-schema.json /opt/toddlerbox/releases/${RELEASE_ID}/ && \
+    cp -a /source/system /usr/local/share/toddlerbox-build && \
+    cd /opt/toddlerbox/releases/${RELEASE_ID} && \
+    SSL_CERT_FILE=/run/secrets/proxy_ca UV_PYTHON_DOWNLOADS=never uv sync --frozen --no-dev --python /usr/bin/python3 && \
+    bash /usr/local/share/toddlerbox-build/configure-rootfs.sh "$RELEASE_ID" && \
+    rm -rf /root/.cache/uv /usr/local/share/toddlerbox-build

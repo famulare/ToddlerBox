@@ -1174,6 +1174,789 @@
       "credit": "ToddlerBox original illustration, 2026",
       "source_url": null,
       "revision": null
+    },
+    {
+      "id": "image-fan",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-fan.svg",
+      "sha256": "375e23eac5ead9d27b8c4e71f7562d55d759d174f04a545216652785d0a1ec12"
+    },
+    {
+      "id": "image-can",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-can.svg",
+      "sha256": "35253547d3ab8c6971e39e219a1ec32c0667accbd6ed18c8a4612ada28e7db06"
+    },
+    {
+      "id": "image-rag",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-rag.svg",
+      "sha256": "dac9787e399225e7f6a7f1862ec9004cbd432d18ad6b2ca3af79e4f236535c4d"
+    },
+    {
+      "id": "image-fin",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-fin.svg",
+      "sha256": "b0b1dfb7d8fea87ad012702501f189f6875d62701c0e0ee41be091d0a1ac0e49"
+    },
+    {
+      "id": "image-tin",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-tin.svg",
+      "sha256": "59e2c73cf4910a7ab71bb344770be13a31e7ceec6915e99ea0c26eb0dcc8c02a"
+    },
+    {
+      "id": "image-lid",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-lid.svg",
+      "sha256": "3666d2d76482036911840fb9baa8205cbc65f586c170a11e852fe5f07658b96c"
+    },
+    {
+      "id": "image-rug",
+      "path": "sources/image-mat.svg",
+      "sha256": "c26cd61efcb5eaaee759e3e39bfe792af2748b576166358dc963d826098cc1b6",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration, 2026",
+      "source_url": null,
+      "revision": null
+    },
+    {
+      "id": "image-mud",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-mud.svg",
+      "sha256": "0b28503544191797eccb83dedbe7613354c82e11339b31181713b3271663a13c"
+    },
+    {
+      "id": "image-bud",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-bud.svg",
+      "sha256": "44ced0d1820a5be69057d88369a31f5b3d3dde26124027d6f5722376fb62e6f1"
+    },
+    {
+      "id": "image-shed",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-shed.svg",
+      "sha256": "5d62c5aef03044cb30c6c95369d90599bbea2885a3aa81284b715db821c435b9"
+    },
+    {
+      "id": "image-hill",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-hill.svg",
+      "sha256": "4fcb10e051f4bc26fab730869a8cb7d6c07089bdb679bafa48f835f8c73a3c6d"
+    },
+    {
+      "id": "image-doll",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-doll.svg",
+      "sha256": "bd3738ad66302bb38e5981019811adb7581c059f0d5d14721bdfc1c9270b3f61"
+    },
+    {
+      "id": "image-plum",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-plum.svg",
+      "sha256": "1d2863db3ccd1f0fa9caed7edb9054fbcc1f8beef7920411833af803dc747081"
+    },
+    {
+      "id": "image-lamp",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-lamp.svg",
+      "sha256": "b05dd27d7fe9ada5be01df230847ab7c7ac1832e6f542924f13a69d120b6aeb3"
+    },
+    {
+      "id": "image-mask",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-mask.svg",
+      "sha256": "a0375a2421a57e7b8b7cfb14b9a6542df9a0ce7d7de3c0f10626c5b71e428b2e"
+    },
+    {
+      "id": "image-desk",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-desk.svg",
+      "sha256": "cbb53930d31acf80e2ff7ba491838ba9ee45c5efb709529719b50427306df03a"
+    },
+    {
+      "id": "image-pond",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-pond.svg",
+      "sha256": "bf6b09e2563c4e790c0c14621b6ade793323380aa090e047acd8c72685d296cb"
+    },
+    {
+      "id": "image-sand",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-sand.svg",
+      "sha256": "872f86b1e020d8ceb1ac7b446167ddf6b431a8076eace6b9d79236ce83be1bc7"
+    },
+    {
+      "id": "image-stamp",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-stamp.svg",
+      "sha256": "b6e0132b794b372276ccae266ec2993eb3f1849f87f6ef698256df648e895326"
+    },
+    {
+      "id": "word-bat",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bat.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-bat.ogg",
+      "sha256": "42f33f249155d45b6cf0489b08fc37cb586c21e61ad89b7f00b6812974fca481"
+    },
+    {
+      "id": "word-rat",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/rat.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-rat.ogg",
+      "sha256": "1be0052b734d0870d74dc94c86effe2dac85a27f1b501157fe0c9962bbf44ed0"
+    },
+    {
+      "id": "word-fan",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/fan.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-fan.ogg",
+      "sha256": "84426300b485cf8c1f08104a9fc07d72c10d3cc731f3e90646a46db6217e0a56"
+    },
+    {
+      "id": "word-bag",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bag.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-bag.ogg",
+      "sha256": "0d8995182f87c8cfbfa234d059365b841a315eb2300d16f15ca0c1608bd69a36"
+    },
+    {
+      "id": "word-jam",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/jam.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-jam.ogg",
+      "sha256": "eab4e8f4677287500dac3bb12347646a041a1eb96db2374e42d6b9e917bf4347"
+    },
+    {
+      "id": "word-can",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/can.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-can.ogg",
+      "sha256": "db02316a271191d99022c8fe3735411ce1d42c7a23e77470a2c7dd5069665f70"
+    },
+    {
+      "id": "word-van",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/van.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-van.ogg",
+      "sha256": "b55e9e7ebd2599c5b7d5bc8fbcdd1b870f847d7bda9a430c83dfdc53a2fc7c94"
+    },
+    {
+      "id": "word-rag",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/rag.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-rag.ogg",
+      "sha256": "b8a0f5fb2dff514e533e9b776e13616a45757ab6abc5e3529e8bbe48dad8ca92"
+    },
+    {
+      "id": "word-ham",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/ham.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-ham.ogg",
+      "sha256": "de5fdca81db8edc506fdff80081cb9af1f33464e70f1520bfacf5a3fece25b2d"
+    },
+    {
+      "id": "word-egg",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/egg.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-egg.ogg",
+      "sha256": "2e86f732463bedc7da857a19e7f011dadfb74fcdfe8c123d34a4db961e244a36"
+    },
+    {
+      "id": "word-leg",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/leg.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-leg.ogg",
+      "sha256": "13bee68f5b632f56fe7516c046ba729cd8c49a946795384645cf8153e305ee3b"
+    },
+    {
+      "id": "word-fin",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/fin.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-fin.ogg",
+      "sha256": "da099691bc9ef342c190b00760622dbcb7e997e7834d34ee9c4ba2b0064cedef"
+    },
+    {
+      "id": "word-tin",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/tin.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-tin.ogg",
+      "sha256": "fcf7df54ea63cdc97ab2ee91fe01f6d3fa22cfe03d0d941d25b86e1c20eb6909"
+    },
+    {
+      "id": "word-lid",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/lid.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-lid.ogg",
+      "sha256": "9c1850c618b6bb24c2b3ba7632052e883dcdd48eca0a06f5a64c7145a4bc7cbf"
+    },
+    {
+      "id": "word-box",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/box.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-box.ogg",
+      "sha256": "22cb5ee06112b8b4496b1a371273ecc53e8e3017960f1deb8f46b56272d2f626"
+    },
+    {
+      "id": "word-fox",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/fox.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-fox.ogg",
+      "sha256": "3832ee1ed9999b9df152fae38ff4d73fa87f4413ccebe714bfdf74410be65204"
+    },
+    {
+      "id": "word-nut",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/nut.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-nut.ogg",
+      "sha256": "578e923d9df3d003edd134d0c248c04168c087ee5315c6c8f2eb700c0af1790c"
+    },
+    {
+      "id": "word-hut",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/hut.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-hut.ogg",
+      "sha256": "d0e09ad52a6542906f67e3bb7c88e91dbc7f8382674bcb8967a0ccd777f3b3cd"
+    },
+    {
+      "id": "word-gum",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/gum.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-gum.ogg",
+      "sha256": "1ee98ba69f957d23eaab87982f7ece6ec077af4c9c4206071cf569bd2973ae37"
+    },
+    {
+      "id": "word-bun",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bun.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-bun.ogg",
+      "sha256": "08ad47867ba596a72525f1a4dc055ea41f7f6d09153639d750c3fc42f08039b0"
+    },
+    {
+      "id": "word-rug",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/rug.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-rug.ogg",
+      "sha256": "4ebb4b017e4ac07abcdcb4fadd0ff295804b7158cdf38a6fea3718230447547c"
+    },
+    {
+      "id": "word-mud",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/mud.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-mud.ogg",
+      "sha256": "cb6d75829d8bd50f1b6542da0f757b0c06483c5e5c8fa06c7a97cdd8de1b65e8"
+    },
+    {
+      "id": "word-bud",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bud.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-bud.ogg",
+      "sha256": "5e1b8baff4bf1bca3b56e0c5c791dd4667a72c63968e91963acd1e70cc7e62c5"
+    },
+    {
+      "id": "word-cash",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/cash.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-cash.ogg",
+      "sha256": "f4313d7b6e586a920b5fd3622bdba8feaabf306c4af327344f0b5aa875996cf6"
+    },
+    {
+      "id": "word-dish",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/dish.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-dish.ogg",
+      "sha256": "61ccf1d6ef18020ee2ecfcb6bc98518f3c9b8ef37f8af067fe23e5059ed2d3bf"
+    },
+    {
+      "id": "word-shed",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/shed.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-shed.ogg",
+      "sha256": "faf81c7f7f4f68dfe77124f4cae84b9965744c33ee4003cb068da34fc1617b98"
+    },
+    {
+      "id": "word-shell",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/shell.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-shell.ogg",
+      "sha256": "ae2b892054bf6d39795066b1ae8c193dffe31e9ba79fbe6f8eec97921960bc50"
+    },
+    {
+      "id": "word-bell",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/bell.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-bell.ogg",
+      "sha256": "34d386aecf2e97003ae64d74a44b50206d7b25c4755d0eda81d2efbd64b36445"
+    },
+    {
+      "id": "word-hill",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/hill.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-hill.ogg",
+      "sha256": "e3cc7cf2a5c79c7084790c9613cc5faa164a4f9c1d288df36c3c917bba947a44"
+    },
+    {
+      "id": "word-doll",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/doll.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-doll.ogg",
+      "sha256": "e76c610b0025ca751e2c6b429f00f7ee315c67ab48aa2c786e69ed5073b3d4e2"
+    },
+    {
+      "id": "word-flag",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/flag.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-flag.ogg",
+      "sha256": "4071b912a3bd48bf8dfb94175d52e017d9a4a4aa8fcb27bf9cbca1c7c84174ed"
+    },
+    {
+      "id": "word-crab",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/crab.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-crab.ogg",
+      "sha256": "c992543ad42b4e177fc89d89a88c02d95c30a47fc6b317e4b5caedca485a8351"
+    },
+    {
+      "id": "word-plum",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/plum.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-plum.ogg",
+      "sha256": "91c8fdf53d827fceb5e6fa215e0ab8920fe59395e95ae3421653bbf8454cf4a9"
+    },
+    {
+      "id": "word-sled",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/sled.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-sled.ogg",
+      "sha256": "47a5bbc8a026125089167c92c10080b97ee79a20042db75eaf93868de0d66a10"
+    },
+    {
+      "id": "word-nest",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/nest.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-nest.ogg",
+      "sha256": "79e063d1460fcb8d36cefc5207d6430815621ac7c073bbfa33290b00bfc6db7e"
+    },
+    {
+      "id": "word-lamp",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/lamp.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-lamp.ogg",
+      "sha256": "7a59127f81f4c98dafe35e8c1707c016b0f9c436a4b9d9989be3b1109b45c438"
+    },
+    {
+      "id": "word-milk",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/milk.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-milk.ogg",
+      "sha256": "b919022f4f84f1f7d4239a3a4d420bf6a4940efd8a3a9a73ada501ce7a321911"
+    },
+    {
+      "id": "word-mask",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/mask.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-mask.ogg",
+      "sha256": "61f0480038673b48865f870b7186f38f73eefe3aa66fc5bedc0aa6fa48f9cfaf"
+    },
+    {
+      "id": "word-desk",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/desk.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-desk.ogg",
+      "sha256": "7658d61dbf3329b90aca1af234d4f9a0fe9026c0ced9a6f606f5550dea7d1cea"
+    },
+    {
+      "id": "word-pond",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/pond.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-pond.ogg",
+      "sha256": "60e0172f2079e4eb77d0d4899e4342713a00247c93535473c6662563813040c0"
+    },
+    {
+      "id": "word-sand",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/sand.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-sand.ogg",
+      "sha256": "35e2003b22f9c86fc08079919a661ec3450bc2021d2a2eb5be5c09a215a7d443"
+    },
+    {
+      "id": "word-ant",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/ant.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "GPL-3.0-or-later",
+      "credit": " Joshua Shreve <j.a.shreve@gmail.com> 2019 / GPL V3+",
+      "path": "sources/word-ant.ogg",
+      "sha256": "264d4e9ca08ba34a56fd093d53fb0f1aac4bce487b4de562d75ea047df6d4ef2"
+    },
+    {
+      "id": "word-stamp",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/stamp.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-stamp.ogg",
+      "sha256": "da4b0cd9f4ebabd8e877f6d8eaa235f70e10a2b9db1ceaf2e177c6b6998af46c"
+    },
+    {
+      "id": "word-plant",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/plant.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-plant.ogg",
+      "sha256": "df912e7d6555f079344174164f7982a44e0066a4c87b0dad878ce323af13994b"
+    },
+    {
+      "id": "word-brush",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/brush.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-brush.ogg",
+      "sha256": "501ec4142c5e6f22a2d833171994f1b72f952fcc1b49cb837a8a49f49869d262"
+    },
+    {
+      "id": "image-bat",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F987.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-bat.svg",
+      "sha256": "4cf1fce0da84941e93a6a91ba30fc91c22bdea8381a1c5ffa517981750663884"
+    },
+    {
+      "id": "image-bag",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F6CD.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-bag.svg",
+      "sha256": "6eb2badbe0d5ddbce3335fd0f7c29bc7e6a6edebb271e03b5d738836bce365ab"
+    },
+    {
+      "id": "image-van",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F690.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-van.svg",
+      "sha256": "e1df622ef0b7bb17d1512cfbc916c80195fc83561cd7a2d9fdd655e52d446c64"
+    },
+    {
+      "id": "image-ham",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F356.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-ham.svg",
+      "sha256": "a1d4819ce6112b37303dabaed0a6cd01101d104f9655058631f7401ebb2098ed"
+    },
+    {
+      "id": "image-leg",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F9B5.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-leg.svg",
+      "sha256": "b38bf8e6c7468ca36470e828dca783623feeb14333f208052c7b4abc9926bca5"
+    },
+    {
+      "id": "image-fox",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F98A.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-fox.svg",
+      "sha256": "b7fe9b1dce87c5e931d7e58ab77bcde8cc6ee7804e41005f199c3097960e225b"
+    },
+    {
+      "id": "image-nut",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F95C.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-nut.svg",
+      "sha256": "0ed452e1c4551518ff20443265eb71ea16cfa3762f4b3ef7fa28ac65aee372d3"
+    },
+    {
+      "id": "image-hut",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F6D6.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-hut.svg",
+      "sha256": "2bffeb0e6577ba26c5bd0b1b3e4dea03ca8248fc38f12280d58e588c8907bbc8"
+    },
+    {
+      "id": "image-cash",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F4B5.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-cash.svg",
+      "sha256": "e78ef793a7acea1241d53017c828db74f14c7bf207a9067dd75021a5c4825e4c"
+    },
+    {
+      "id": "image-dish",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F37D.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-dish.svg",
+      "sha256": "53b8c687b492ea8386f40545d8e12faf31bc11bee78972b5c90f5a667481e851"
+    },
+    {
+      "id": "image-shell",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F41A.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-shell.svg",
+      "sha256": "058b5a5f5fab0a420cf2b929ba5d06f8682d8b5da0d7b9821438e8e6ba0db89d"
+    },
+    {
+      "id": "image-bell",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F514.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-bell.svg",
+      "sha256": "82ac2660a6f26e68c0bd85cab013cd1159d325c25cb6d1ff8598e0418872b7bc"
+    },
+    {
+      "id": "image-flag",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F3F3.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-flag.svg",
+      "sha256": "fe112f827ca867c7f77dd36da1c6f001327953ef7a3df59ae90ce51a2753ebd7"
+    },
+    {
+      "id": "image-crab",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F980.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-crab.svg",
+      "sha256": "be92f07c4f875dae9e8bd7e18bf5276af7901126f1c2077dd1c70660484e56f2"
+    },
+    {
+      "id": "image-sled",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F6F7.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-sled.svg",
+      "sha256": "bafedd29a3a969f6655bdc1d56a19c554cb635ab969f2f6777f6ac458b6e3f2c"
+    },
+    {
+      "id": "image-nest",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1FAB9.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-nest.svg",
+      "sha256": "819093ce76ed96eac732c0a5698ed63607407fdb661476a2f9f62cb35dcff755"
+    },
+    {
+      "id": "image-milk",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F95B.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-milk.svg",
+      "sha256": "d4d2d7d085dea7979510c84038303861c4480a930cbe1b52249315d3bc89e545"
+    },
+    {
+      "id": "image-ant",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F41C.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-ant.svg",
+      "sha256": "c480b290fe1f5eb30721f700e628e61e17aaef405985a69b84f27c25fae1ec9b"
+    },
+    {
+      "id": "image-plant",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1FAB4.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-plant.svg",
+      "sha256": "2d660eed78a83e62401a09f2964c11d14e4bd5cea3592de12d2016d8c5692812"
+    },
+    {
+      "id": "image-brush",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F58C.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-brush.svg",
+      "sha256": "57970e1777205461f0b3aecd6fd48e28e108221a82ecd345ce781bfca4869a83"
+    },
+    {
+      "id": "image-shack",
+      "source_url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/aeb8bb3a59e2de39c754ac79180c8131c906acea/color/svg/1F6D6.svg",
+      "revision": "aeb8bb3a59e2de39c754ac79180c8131c906acea",
+      "license": "CC-BY-SA-4.0",
+      "credit": "OpenMoji contributors",
+      "path": "sources/image-hut.svg",
+      "sha256": "2bffeb0e6577ba26c5bd0b1b3e4dea03ca8248fc38f12280d58e588c8907bbc8"
+    },
+    {
+      "id": "image-gum",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-gum.svg",
+      "sha256": "f4dd06c62fcb7c1943e2723eca0ed85afc59b7d82f7e66717ac6ba8eb0edcf9e"
+    },
+    {
+      "id": "image-bun",
+      "source_url": "ToddlerBox original SVG",
+      "revision": "2026-10-reading-expansion",
+      "license": "MIT",
+      "credit": "ToddlerBox original illustration",
+      "path": "sources/image-bun.svg",
+      "sha256": "efd1798389de3bea488b466b908e5d5111a1f64ddaa8c96c272276925a63cd1e"
     }
   ]
 }

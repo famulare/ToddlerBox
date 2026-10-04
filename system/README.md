@@ -12,6 +12,15 @@ On an x86-64 Linux host with Docker, `uv`, and at least 30 GB free:
 ./system/build.sh
 ```
 
+On constrained builders, `./system/build-compact.sh` uses the same pinned Ubuntu,
+Cage source, package lists, configuration and frozen Python dependencies in one
+filesystem layer. It extracts a trusted local Docker-save archive without the
+extra container copy made by Docker's vfs driver. Outputs default to
+`build/next-image`; intermediate archive storage defaults to `/tmp`.
+`TODDLERBOX_PRUNE_BUILD_CACHE=1` explicitly permits pruning unused Docker build
+cache before disk assembly. Earlier image files and VM checkpoints are preserved.
+The extracted rootfs is discarded only after boot, app and raw disk copies exist.
+
 Docker does not need privileged mode or loop devices. `system/versions.env`
 pins the Ubuntu container digest, Ubuntu archive snapshot, and uv image digest.
 `uv.lock` pins Python packages and their hashes; the setuptools build backend is

@@ -28,66 +28,80 @@
     "audio/name-x.wav": "8d2071485974cccd9002e79224739bce279ce37361005dffde421ebb2fd0edfc",
     "audio/name-y.wav": "1cd5e87aca7ba9a9526a3bf2effcf793300c043377427eb43d9cdedaca6d0558",
     "audio/name-z.wav": "78c75cd025e504143bdf0299c3ddf2d513af4d10c5bcc400d9198d52327d5d8d",
-    "audio/number-0.wav": "35cce9ccc78f0e1f367d738ff07b2de56cd07ee2668954e88cbb4236c168aa7e",
-    "audio/number-1.wav": "10dd15a80c5fa28757079a6955cdc24f722f04718c1af703827ab88994e88f38",
-    "audio/number-10.wav": "42095985514e08eb785b325da693fb40cb37581abfa4ca6515a4ccc71afcac2b",
-    "audio/number-11.wav": "eecc273f2b9e9eb9ce3078d4dd01cbc13efe2cca2596d5cefb19191f2db49b1f",
-    "audio/number-12.wav": "cd16c16b77083730b653c38f60aa263ba18f34fe2c754f40271852fa6014f97b",
-    "audio/number-13.wav": "1cc44cf8aca413d42df52050dcd3ce3bd5f57e956694211bb3d698c28fb55d52",
-    "audio/number-14.wav": "2b347f3f02426f95c3768c3922705a9a2113b007b5ac289ae56e8c368d8622fa",
-    "audio/number-15.wav": "a834827220a2ada96636f8f0bc4a2742c3ca632a54a560148421c63edca217ea",
-    "audio/number-16.wav": "1414c9572fd382af78ab7ebd62585e59fb42474583edb58624beb256b1d61022",
-    "audio/number-17.wav": "5fde5e5992e0ccce4f7ba0ec402dbba494a9d392bd175610ca1270e9824aa99d",
-    "audio/number-18.wav": "ebea8f66d2d0769e9ddf99f990df28182b029f0bc14dd0172dd687b5b2a433e2",
-    "audio/number-19.wav": "6aa75eadee29b01452526f98b50716bc8ed9a7f772b2dc84182e8201b717d454",
-    "audio/number-2.wav": "34dcaa02e8178a094382e998299f2b9f13e142af883a846e3a604d934670b960",
-    "audio/number-20.wav": "b7e19104b7d95c6569762b80b0abb27a6034cf921a16931212c11c0e5c2587ca",
-    "audio/number-21.wav": "d138e3671988ab6125b958579962f95227b4ebfb894237b4d1c192d6dffe51d6",
-    "audio/number-22.wav": "e3073bfe9c65c4470b24027fec81457179fbb8e49e687d53898442c2035a0d88",
-    "audio/number-23.wav": "802fb9f4a71b16ef963796010039a70a0f61fa1110db66f415cfc57bf7a61257",
-    "audio/number-24.wav": "b98f39e2d92765373169612c6f8becb2d3a02ec35dcc9f719d3726d6e1e0218a",
-    "audio/number-25.wav": "d5691fd743a503d65acbdc9d6925cf88d7a8a421c1e6edfb5b5cd9e6bd4f2fe4",
-    "audio/number-26.wav": "b11ec114b25b68f0a7bcf440ed747c810561061c88ee2b56812c133b953b93f3",
-    "audio/number-27.wav": "9f0b4a2ac0c0a28adede82a7cbc49f5f172e3a15632cbfd2718283fe3de9fbe9",
-    "audio/number-28.wav": "28ebffdf471b53d9c93ea6837570768e220a246d5ad265b611d786b23189f6fa",
-    "audio/number-29.wav": "1b4ede303ec49089ea087746da05658c84fded58fecf0e1776442d046a5de489",
-    "audio/number-3.wav": "d572e089d82601b11d6bc2b31a2d01907159d53d4668e44f73f272848d2ead10",
-    "audio/number-30.wav": "c5cba3421b0d53f3f0d214e5d932ab62b3d0974dc115d87a111a47926fcbcdf0",
-    "audio/number-4.wav": "9f1b71a126c64106a612b71245504959e58a49f9e2e5b19510a888bc53f83594",
-    "audio/number-5.wav": "008f1b3289ba8733036b63183f993be43cf29c15ddb85446745b38e834223980",
-    "audio/number-6.wav": "492247d9680e026a8304a5c29f9a315ba00e57e859798d13fce70ae7ddf0ee03",
-    "audio/number-7.wav": "0f3bd024051b5c0b5ce5a1c5728e7abe5c000a35913209276876ff027311d619",
-    "audio/number-8.wav": "5527559e042a541e3beec380df0ececd60b93ce05624ac18f1456a5c10edd50a",
-    "audio/number-9.wav": "a96fbb294c6b3be829f1c278576e448ee88d8f2d05608ff6a195ee3c54073aad",
+    "audio/sequence-ant.wav": "f178f35d5698b5c42038158cccc4698c415d55fb3edc1165ca476f855280304d",
+    "audio/sequence-bag.wav": "48c8bc9cac61214c114a29b39cc1438160e2598ae4eec0e351a2e9dbfa58213c",
+    "audio/sequence-bat.wav": "35c152ed5454519bfa0862cd5889c7aad36528e3526383250425ef9f1133a8e5",
     "audio/sequence-bed.wav": "0bd9148587beb1fb35034bfbf6398ab6ea50e6d2a5f91e1f7a832816609b84d3",
+    "audio/sequence-bell.wav": "a0482533f3bc0f6136593e4a3df05a8338d197ce5966dace1216cc87082343b4",
     "audio/sequence-bib.wav": "910f67a09fb0367dca5ca77d8459be5248ed877b84dc555f1f2d825d1744615c",
+    "audio/sequence-box.wav": "96800ebd14306d9403a4e4d65ee81b38d986aa0bddfe274bc18a142cb5d7726b",
+    "audio/sequence-brush.wav": "51bd241b20663f46fa81812ae2e13350a476cb5bf1aea3331947691b96820bcb",
+    "audio/sequence-bud.wav": "1f1a37077640195b2ec8cf994d40fcd8b75212bef95802339c359a5b7bc60fe5",
     "audio/sequence-bug.wav": "d720dfc801f2bf008bb79651685e50051dc0a0763a3ec2e830c0418c028edded",
+    "audio/sequence-bun.wav": "eaf23f789178be6503fb50a349990f2bdd30f6639ee6fc7a08475d7780d06efe",
     "audio/sequence-bus.wav": "cae9dfc53f5f65831cac0b3499620f488878b9a7ef921ed45db544d2ce90f744",
+    "audio/sequence-can.wav": "b15c266206031a31afd0954fdb630b6fcf5b2c2d830c34a3de4010b4d2cd09a7",
     "audio/sequence-cap.wav": "eb8d6e552ff14debd0a33cf4309015034e4ab0e9e5c0ca18d96f45f8ee59a4d1",
+    "audio/sequence-cash.wav": "d5bbe0171aad9181e9c5746ee6e1cf864c03e2e70e46af5e70abc737632caab2",
     "audio/sequence-cat.wav": "368bbbf714254f90eebf39796e5bd64864bfb5756b78e1cabb924622bdd28fcd",
+    "audio/sequence-crab.wav": "8287c720ee2cac450f17ffcf004a5b8463f5d72012d480b329bd4046f825d362",
+    "audio/sequence-desk.wav": "c143ff0d0c73e7dac21b2fc6fc39b5e48f6397eb51fa7e1c3edae2851a6c1717",
+    "audio/sequence-dish.wav": "df35dbae6c80f31d1a8cf66b0f7192c64de2abef6901db6852c737f8e2aa734f",
     "audio/sequence-dog.wav": "27ee7bfbe6edfc4bf31293ff46ea45054fdd4fb7f2d7a72cdfee7295f996509f",
+    "audio/sequence-doll.wav": "841be4af938a88542fe279db3275b83b3f15b148008cf81fc7e64b3daf0dc29f",
     "audio/sequence-drum.wav": "f7f140f8fedd4db691f13bfa728522f1cf0c4a6fef1bce6ce6ba091fddc99772",
     "audio/sequence-duck.wav": "b2984e8faea104859726f7440401ba0588bf1c489d9417b5b67a9acf3bc9e17a",
+    "audio/sequence-egg.wav": "e03525d7223d238b7ae87dc98eaedcfd979591ed32491fcb4ff3d4a7ea9e14b3",
+    "audio/sequence-fan.wav": "2b91939d6f87317206bef91b2167b1bee752d93c5e7d26bdff7a227e982bcec6",
+    "audio/sequence-fin.wav": "9fab6da3eddf40c883a0c779ac9d9ac256e5fc04b9cccb38960f519d2d7268ca",
     "audio/sequence-fish.wav": "235e56b8b0511534dd2ec844735eab81efeae27d55a6426f6a1ca6b80940496e",
+    "audio/sequence-flag.wav": "cdd23560e7be89cceb600b868fe727748d7873e9c42ed06e430dafd55effc5ed",
+    "audio/sequence-fox.wav": "1b8ee571dff68bd607d2d1ea80deeff6546628e1a4e8fc63e6cf19f9a1d6a34c",
     "audio/sequence-frog.wav": "440f5d43ac5ccad3aa676ec2c13ee32f55b1ef2ce46e673839d2653f88e47944",
+    "audio/sequence-gum.wav": "44e55d9b03c812688142fa6b63f0e8c189d8ead85fed35ca14a060042eed5e25",
+    "audio/sequence-ham.wav": "ce756377854a15459b6f82d72581e35ebc5f804c311ab8b893e4b13bcf490df5",
     "audio/sequence-hand.wav": "35ea4d5c0793f088d78408fbec2a1b0cc88686961a676fff9062d04d7596998c",
     "audio/sequence-hat.wav": "a1539e37f9108e4235754de5a358537db16c27891b6b47a7a1e675c783fc56cd",
     "audio/sequence-hen.wav": "0f96dbd513571ae66a2c2f0ec98e4b133c5ddff49478b892f1e1855572b83332",
+    "audio/sequence-hill.wav": "1381c8ca5ecb0f45a0a4753382250209c83e971b85c901a62ec6635d3b143775",
+    "audio/sequence-hut.wav": "5c47a82cd07c7970adf163a1e87b34cacf27db98d411482d87aab8eeb69b44ed",
+    "audio/sequence-jam.wav": "9d51a8e2528efdad5b706de6e9e2bd9a27d8a5a1e20045a412abb6934da5b374",
+    "audio/sequence-lamp.wav": "064e3985ebf3fe79c5ee7c6ce468bc5b25c63e30ba132e8ab8f24f4686208d59",
+    "audio/sequence-leg.wav": "e2b57dea4948b40a92fcea0031edd319bcb9359555f1a6b60ac574722c798549",
+    "audio/sequence-lid.wav": "80ac98ea2f639e278f02124135b84034657e54b4979839347f5cac1308c015ed",
     "audio/sequence-lip.wav": "7e6fe0d03383d2defbffe80046860a15b715c7d98e87fe525d909dcfd7d88274",
     "audio/sequence-log.wav": "19ebef22cca021f703e1e337bf993c02b0e307e87716b8ca8bc56c6dcd736108",
     "audio/sequence-map.wav": "672f2b7afd6b96f3516a92e81f3f577aec4624088d473f20d953fb518fb91af2",
+    "audio/sequence-mask.wav": "a57715e6e2522d5fced0ae342c9fe738fb31573a09d98100e6022fc96fbad005",
     "audio/sequence-mat.wav": "d7e44e0091485dbbd620cc4868c86120f501ad78298ee36d3855fa2f4fc18221",
+    "audio/sequence-milk.wav": "9fde360325c57f6983ea6d1ada280443972ae665f1b23f5ee2d5c623fb30b39f",
+    "audio/sequence-mud.wav": "ce9120b9cbc8b4ae919dae71b2e8d354b2cf98650fb1a9f110a889a6d2b6bd40",
     "audio/sequence-mug.wav": "8b18a2b41775740ed199829aa8907e95b4191cffcff71f84b5827bb0bfa7cfdc",
+    "audio/sequence-nest.wav": "8c2cb1f235034efee065d041f21649e5f7ff7b5e9116a7e13e166398553dcefd",
     "audio/sequence-net.wav": "45809122956d12f8286909086c3474f49e8429dedfb90c2151e31a5b80d57f1f",
+    "audio/sequence-nut.wav": "aa1726add4384922686887080c60478bd994313bd2656470323b150f7325ae67",
     "audio/sequence-pan.wav": "c0244d46faea64da51e1d61da181c18d3e6943105f7bd083b0a7e54df8d3e4a8",
     "audio/sequence-pen.wav": "c7c174efe623eb4fee30905de7651bcefe3daf650c790f08bd8252b305473267",
     "audio/sequence-pig.wav": "2705645788ba8294d306c7f9d1693f37c5afe1949161fcc5ed286a8e8e28c8dd",
+    "audio/sequence-plant.wav": "d7c68fb90e52d06ed4e7bf92b668b8171792eb27f59dd8d08ec98688cc3ab1bf",
+    "audio/sequence-plum.wav": "a8e568788e73eabaeac0573305fdbf66cfc6aba0338a0d39e526882c15709cca",
+    "audio/sequence-pond.wav": "671dbc49891a32f3a0bb4af3b2b45713c3e7c63aab7d216a27f8ad747a5c767f",
     "audio/sequence-pot.wav": "83b6a8e469072b8df10c333c5038ada232f9c6051a71a213b3dce65344516c0d",
+    "audio/sequence-rag.wav": "3190114d8fcce97f38289222369cea4104675c4622cb6c2536ce84a216da3ea0",
+    "audio/sequence-rat.wav": "8e5c528c01e7e8ddc2460ab8de47888c303535f7fa3174bcf46135bc8030a056",
+    "audio/sequence-rug.wav": "a0184fd3b6be7efc4279be9529b418d210f43c6da846303f78e61534741c7f65",
+    "audio/sequence-sand.wav": "d601ea03fb587a66a0e8de9f2d2c2cf79e81c3ef50e6f39bc50560025c14fdf2",
+    "audio/sequence-shed.wav": "2e951b0a966ee6694a93acc4db6f2feca4a6ad62d4a2dbdeff729fc3d0b6aaa2",
+    "audio/sequence-shell.wav": "e6e3a0272b0269ff5eba81cd96daba692490c8a346d3748ac8fa539e75ccd478",
     "audio/sequence-ship.wav": "83b2221c917299ee80f7c9b0ab4bec6c55db1123d5edd245a791e34e4453c650",
+    "audio/sequence-sled.wav": "8616a7b393fab70765294160823c8d493a9837c626fcfff742083e091768dc46",
     "audio/sequence-sock.wav": "e3e9af103855c466b31c146e3a0bb5b2fcfc0347676b0ad083469cf010670c1f",
+    "audio/sequence-stamp.wav": "ac72f13e4783fc9fe0d55002fa22a6e5f11e24b9b3951c18481caf01e215a299",
     "audio/sequence-sun.wav": "87ad74dbf08a92147fb4638cda5b82275a3a6118fa24f90e9ca8f4df51c999f0",
     "audio/sequence-tent.wav": "90f7f25d30c89ab57371653fde3ab49bae52e0d12a8b859893330f95638d5ecf",
+    "audio/sequence-tin.wav": "eb9a849c8c50d0140e1bfff6025d7e6c2ad5ac825f8573cef939874b8a6b52ce",
     "audio/sequence-top.wav": "38856d2271b38872b2eb87d560e72fc9dfad26ae96efa1377c21da96537a7652",
+    "audio/sequence-van.wav": "0ea442c20987c0608a4273347355c0a2b745d3a484eba9dcd38cb22657fec25c",
     "audio/sequence-wig.wav": "625d28c148bde29bd274507d03fd66dc7c248080499a493d95021e8f52ad51a0",
     "audio/sound-a.wav": "433498aae0363982c9ff4eac6de848f4911ad70d5876673da863f848c0b11a0a",
     "audio/sound-b.wav": "ab0d4a28c2a1c17ab88495c7b8e1baa0f599ff6764bc5ffe667a76d00b20c078",
@@ -115,77 +129,164 @@
     "audio/sound-x.wav": "2e3228a38835c60bc07b7e38669b2aa732aaf8e440712562a472cc58063fb8d9",
     "audio/sound-y.wav": "856cab17b8c93426f11d941d6424e2abc3d3c1786c33063e1553a61f49fd91ba",
     "audio/sound-z.wav": "46ad6abf0bde0417082c9fc999c93b94bb637889a8eaeb3863d4e3d9a9b5e183",
+    "audio/word-ant.wav": "2cacdb1640ea85e44d341eef942e3a28a82e37b2d685fdfcb7d513fc7db139f8",
+    "audio/word-bag.wav": "f67a39e29e0a1dd9d0e0d4ce432b763fcc598a041b67469930ade60b43f4e1dc",
+    "audio/word-bat.wav": "27a4cc77c36cdce0306fd39f6c7ec769d4a510b52971ac35deea210a88f9a217",
     "audio/word-bed.wav": "ad8df8c3d430095fd0ec4584f44269c6a7311cd7c94ada471c9b30abdf17dfa4",
+    "audio/word-bell.wav": "3868115fb0928f5a50579a0ed8fc711324b89f0835ff089fbfe0c81b1e4c6bb8",
     "audio/word-bib.wav": "57d8ce01ef8da3205f0535c5ed0dcd3ff5da88b0cf8624f5f79e60a583ecd759",
+    "audio/word-box.wav": "fa17a421083fcacc0ec4f75121488ee6e1001f2d51e76f104ed30237f276562e",
+    "audio/word-brush.wav": "7220a21633ca9fe8f0c1e7b82581a1f31b036813e09fbc556a3de0bc99b91c6b",
+    "audio/word-bud.wav": "f60e30ea77a2ccdaafdb4b1dc87a99c261d9b763c1453e7233105c3e1f6e6ad7",
     "audio/word-bug.wav": "7983a5e54776e0db1661bd3169848b1cbf534a76c13f25141d812b78418101de",
+    "audio/word-bun.wav": "1210d4df7c776a3c17aa1dd7a13d4ca30fbcf38ff40c1680af2d7bce348957c4",
     "audio/word-bus.wav": "8cdbe98538cffba5016e8061d47774f2d4ba7ae9484426b89a2ee1f3f71cd7fc",
+    "audio/word-can.wav": "cc4de9bf1196a2df3f285e5d74d39ddd09a5b1c1e965c20379a74c0326d13451",
     "audio/word-cap.wav": "52e2284b831021ab5e8160ccb4dc15ab8b0f3ce7b6f30abad4f199dc045588bf",
+    "audio/word-cash.wav": "9f6d531a876ef37e4e6e705c0452fbbe40c9a4618654bdea045225751898ebbf",
     "audio/word-cat.wav": "91696ec366753b96a8428712e1da8e2976c362d9bdd2ae75100c4aa9429d56e7",
+    "audio/word-crab.wav": "f7e1bdcef18d51cb98716f1617d8745688c2d4a4329f8dd805e66e171c7a5a05",
+    "audio/word-desk.wav": "a3c1966c1913bde6ca9395e8cea749a1901d1dc83e6f3b7a5a767e2b0033beea",
+    "audio/word-dish.wav": "b6c504efc9a1056fa12b308e021cf56bca0a2517b3ecfba20c1a74257054e884",
     "audio/word-dog.wav": "482eb6bd87ae6223885f4d1ba98e837570e6607691b19b59ecc21da9a394a4a9",
+    "audio/word-doll.wav": "bb209f93ff3d026f143ecf010a7a69ad0344182d7ab02e17e195520ceec60e90",
     "audio/word-drum.wav": "fd4160e3ae3c64f907eda45c5f4aa8a19bb373e132f723a3d2de6b853f44bd23",
     "audio/word-duck.wav": "24cd9fce96cbf4cd420da27a6ae9cfdacb94f9840049fe81057085a595edc4db",
+    "audio/word-egg.wav": "7819a6d2fbf1952e199ba812bf14f9f5d0d21bf506f2018a05fa14ee653ae471",
+    "audio/word-fan.wav": "6a6b97327a3775e38d648c8d5103875dd208f7e5e365e276729c2f9a746b2c77",
+    "audio/word-fin.wav": "81318acd5daf9774cead9a48610a3a79e664d916229806e5524e7fe200c855c1",
     "audio/word-fish.wav": "bc1b5ddc682e7544bfefb3efe736d74af94103aa011b1004ae8c3a6b950a4e85",
+    "audio/word-flag.wav": "1dc5d741b4e938f8707f8bafb3939c1bb982b483a4cec7c29ede6553b0635d15",
+    "audio/word-fox.wav": "0198879974fb61bd02b15aad70a47d0327004e8977d496fddd4998a61e4d0c1f",
     "audio/word-frog.wav": "da9bba032d182e9fa2bc7e8f84e4b21c673267087743699e01eb274a76adf8a6",
+    "audio/word-gum.wav": "3de9d264856cfe3b5fcd063b3c8abe375f2a688baa57a7cf8a4dda48bff58b04",
+    "audio/word-ham.wav": "3f1ee2ece15e514804e1f6af4610d7e03ea845ef231b63e11e656bed6a503677",
     "audio/word-hand.wav": "7816ec27934959efbbc12fb78f2aa373a7bad7f1d5210c98f8daaf57867065e9",
     "audio/word-hat.wav": "7229cb91c39ed43605b478d41eba770c96df305e060d381a4ec0b8e9d3078cd7",
     "audio/word-hen.wav": "84641510571a69fcd8af36acef3de4908f821501bbd0c7b9d6f5b28ec84db86f",
+    "audio/word-hill.wav": "fe12d3a4a402257dcebc6d81b2208fa5822db24ad603d33613a2ebe753c41624",
+    "audio/word-hut.wav": "5c50bc167b406a88c8f36746e05b9c3074b61539c2a3bd3721bcb4502105bc51",
+    "audio/word-jam.wav": "344267740fe064fdff73d40ac52221abf71a47502c2e622437a4a6d5a69eaae3",
+    "audio/word-lamp.wav": "626efddbeafb38655b0be0d850aadffecf7695c32e38cf60bf6377f3db3dcee4",
+    "audio/word-leg.wav": "688f7e732643e80ef9e557ef80b8f3f7f2e413044776d5424eeaef29d29d0f6d",
+    "audio/word-lid.wav": "3cfb6ba75530bbf8d44a2396c828c7731a9cad01607bb8beb64c30508b9ba6cf",
     "audio/word-lip.wav": "684cd8439ece935e854d7d9f5620d00ac174ab1c8c2f6786a2e57be648b65ed9",
     "audio/word-log.wav": "f89c9391c129f7a2f6a970c4c201334d6321017c1a1204f7576cb20b78c8fb59",
     "audio/word-map.wav": "86653e89f4bc346b07cf943af8b7a732287a6463f9d2655fb51e6ae060c55678",
+    "audio/word-mask.wav": "148bc2574896e12cf88bd1600e70da2e1547e69346561656775db85fd3c5bb15",
     "audio/word-mat.wav": "d117f962bdc194265dc0b5cc526c269208c5b887df5617757a308f6d56b87d83",
+    "audio/word-milk.wav": "0b572267173cd2a40b6b7678216d18fdad0bbdf4b6a0eba4b3a5db47e72294de",
+    "audio/word-mud.wav": "3dd0a9063f35c904762dedee873813182ee808e9c2305840ff05204418735c4e",
     "audio/word-mug.wav": "0a858b86fbc77329594eb68c8b4b75ccc8cc2b6b5b7d7f027f2f0b35f541791e",
+    "audio/word-nest.wav": "32789b8028312cee7e2df86427f2711ad38edc8bd468287d541bd7b0b7fd146c",
     "audio/word-net.wav": "c4ae0bdec05c97407207164e67a17d712ed62cb1020627bb49901e71eb45f092",
+    "audio/word-nut.wav": "85a73967127ca2299cdc3e2a9a3890037fd4a8bb1c041a3b77d17300cb11050a",
     "audio/word-pan.wav": "7a74285f367ca8e21685a68a3fac07cb6ef97e9600f48ef59dba72e1b3648d2d",
     "audio/word-pen.wav": "08a502b5a3d35ab7667d66ebaa072afba2e2d89a0d5626614df22630b0f624cf",
     "audio/word-pig.wav": "4f5cc4545fe747efa22807c0d9206a4085af1bd388b0dd89232cae54ddf365aa",
+    "audio/word-plant.wav": "3211d0cd5e7b142e2950595a7b119754015e5599e32a48fcd154a864b06f8748",
+    "audio/word-plum.wav": "e9d61d461031f6e498ee1d0de874b012d15cabf465722edfbaf68088cf1e2c38",
+    "audio/word-pond.wav": "d94b7fb5154072db73edb942ed8c6b3271fbc620e8c2d10bb7543b76ad853570",
     "audio/word-pot.wav": "6e38f272c5686d5db25d7ade4aa8bc0effd9a6ac0621e30196e86a8df7ea681f",
+    "audio/word-rag.wav": "56f0d698d6a92af11e002a7f88925b25783b9b1e2180078aa96812f9befecf13",
+    "audio/word-rat.wav": "405b17fd5f56a57700e592c646afb6eec2373c15f68f0bbda66a71738eb445d5",
+    "audio/word-rug.wav": "c38ca2535b2ae7a94a068052bbaa577d3e61ea0ea471e3f9ebf4d1d0365d7954",
+    "audio/word-sand.wav": "87fe3a5b40acc942b4ce75866108c6b20f27e06f67e1e0e3ae2b0504496e166d",
+    "audio/word-shed.wav": "32af7168ba790a6dc71d9ea802bd014b47e532dcfb15f8758e13f330355c47df",
+    "audio/word-shell.wav": "b94f5d3702e426aea44cf8fd9206589fb52fc33459731a6e8e9a6f66719b0887",
     "audio/word-ship.wav": "d44432bfaa951dbe9beee835f3f25a25d273fa55443502547d167504b6139af4",
+    "audio/word-sled.wav": "83a0f51505be41ecfcc5b82c259ec5f60cb579453b5a96069410a55c427511be",
     "audio/word-sock.wav": "7df9e506aa467f073074f0b334df78c3fd1b585371f489022078e62229387584",
+    "audio/word-stamp.wav": "8da09e53cd0ae7912e9ec21933fe8771f5905d3918a0d1c34640173ad1d61fca",
     "audio/word-sun.wav": "c57cd1cc0b3caec6bd3dd9b17e46a93da74f268651468bd41d7fbc3eb539e903",
     "audio/word-tent.wav": "ddc48bc871ae93ff09887be6880d2f309ba63c8d24ebd2f058ce34774f0832b4",
+    "audio/word-tin.wav": "989c0ebf45ea89a76c62bff51dfd530d95ea831078076836553b4438b3f440a1",
     "audio/word-top.wav": "c54abd9e09d5aa3c587208198bff09f23f6066f3346108bf67d0b40299f6fefb",
+    "audio/word-van.wav": "e800fdf980a201b014bf5fe28ee7232bbaf91bf7739f23901cf3f700503ab4ff",
     "audio/word-wig.wav": "b4aff8f42fce3d00902985f935fe6ad2e03d4c2f1f45633d7acdfbe190759388",
-    "catalog.json": "e3e91d4996a319805e3fe6457536f7394477cc61ec9bec4297fd7d70a2bc7dac",
+    "catalog.json": "f61c6191db39128c0c763272cd90364e7cd3d358c3701e07418f4e2946f0f4bf",
+    "images/ant.png": "f9d2c0db03691b71fd4cb746c59a0b8cd7744405d226b5c1051bd615a7adad6c",
     "images/apple.png": "f511c55542d55e0f58f8bd9ccf30bea778f4ed1f54c15b3392b0b9fecf27d1c6",
+    "images/bag.png": "ee67ae69819f3b10e3824c1d8210e18fe8d378dc22571455b98df4d1ef285a1a",
+    "images/bat.png": "ae8c57450236b234fb6a2dd4f2f1f7f0b45afb4b19cc5f49c02b7773f956ba7d",
     "images/bed.png": "31b09118550f9c93c6a2ccfb80a6137b0c170a21684d981734c51628fe9461f4",
+    "images/bell.png": "20fe8e68d2c7c3ca807eb6020bc00e6a862f413fbc0bf619f9ebefb500a1770b",
     "images/bib.png": "84fe4834e962defcc0ec895fb3c1ea48a213c99dcdeda15aab4166c7ff3c30c9",
     "images/box.png": "5661ceabcc2c7be3483735f16b5805fd612c2acfce1cd689f235c2de3068078e",
+    "images/brush.png": "4969e5213015dbbecfc0ecfe4148e3bf946d37e3b6bcd145c03798111e179322",
+    "images/bud.png": "b7612556c1aeb8683edbd263ee269c479ceb04d3a11b42eab38fdc34877c1986",
     "images/bug.png": "66ae103c7cf536fbef9dfddfa1ab4ddffa56de8d9bc948cc5d8d2635c94d149f",
+    "images/bun.png": "b8e1e3df68dda71c443d84eb4cba98ddacd0d4c08a9f5cfbe688d496d5c9c0a8",
     "images/bus.png": "9d8e02369d368b505e64231cb85d3decb0aa9251027ecb503f1ea792577460c0",
+    "images/can.png": "ebfc0264b839ce0fa17094e94da0e6fa85779a9eebfdfecbbde63024a217f855",
     "images/cap.png": "b36d6f84ff62bc5bb7f0664dd11721263b8d19aa566720d0c74d3f2af3d5e26b",
+    "images/cash.png": "73d3e433f19d0a040903dca3c3c715ea887483b6f8e46f5d965aa7a6970cb87a",
     "images/cat.png": "48e8b3c15642b28ff4dd69c7bea685dad70cb74ff077c9a930c3019e6eb2c529",
+    "images/crab.png": "f88b376d2a51225c45398f9501793893d3ad810dd418b7b55fdfde5f7c9188f5",
+    "images/desk.png": "64613a0cda70894a53c57453bcd57e28ed1f4ea2e6297daaa2eefb69f95fc5cc",
+    "images/dish.png": "91a0efd8f71bbbf8b31fc9f697aa07df5f79fb2b0069aab5e499dd39fd2e1473",
     "images/dog.png": "ba3a71e1f1afd33a8788fc9a03b2db528f317b2e670cfc565722d87667edc300",
+    "images/doll.png": "8ad8226060efed3c4126097c774bd1a1b0bf390c0e096271117bcfddcc025bf9",
     "images/drum.png": "8a90f18dda95ec7545d3dc039c3c20c589b2341b09bfb2f5d4101dcb552c76e6",
     "images/duck.png": "b12d0044bc9cc1639b0acec8101989d95c4d7fdb7f79369768f716ad56e754cb",
     "images/egg.png": "bdff54e00cc123a58de974389aa723f3424dd4aa61a87230674f49c6b896ba08",
+    "images/fan.png": "45be013bf6ce88bb75df6fa0f563086164cbd02e3463de7672e241e3328623ed",
+    "images/fin.png": "057afaa0df5428c30e9d3cfac2c58e760a9f2f52509acfa41fc9eeb96465de9c",
     "images/fish.png": "050f7d7c4185dec32423b7ec323550671932d5e4f8a02a6207382fddf84e1577",
+    "images/flag.png": "08b16c466fe984269540ba4361afb19bdeb753f3d309ffb51a153332888f4942",
+    "images/fox.png": "20bd25d480a83301eb9cf03a3249548f17be723ba9e8d2c6842ea3fc36a53d1e",
     "images/frog.png": "29c344d9c20d212be879eeef815b618a72f5fcd1be44abb254b27f5fbb8aa1c7",
     "images/goat.png": "8f78f6fa1c1b48a0791186bb8bdc56e01f5cc119a5d9d350be4901db04858308",
+    "images/gum.png": "ba111f42fc9d6847406c5bfbd430a63b9835f6f0ae286805ac0519323a4929b8",
+    "images/ham.png": "a55ab5de5fca5404c3f937315ea18a3254e108acbf1d37928441501ed7eed8cc",
     "images/hand.png": "e5bef67dd0b715b427ded7ed20c8c1ba29a47c049d5ef296072677d48c10adcb",
     "images/hat.png": "598f3bff0421432edccd6499365a85139ef57538207bc93443d6de5b283d95ab",
     "images/hen.png": "eb47e4da75f2e149b2f13bc6feca10050b08634b33b43df27f6bd4c8f6a69daa",
+    "images/hill.png": "8052fc99ae9cf8f86075ec67da5d2ed95fc23e2ef46d29a29a67ba671ede4115",
+    "images/hut.png": "dcb3d189c87ffd005bdae1d738e705b829d5b8d33bc298a6f5ed56540c2b5727",
     "images/ink.png": "c933a32895fa6d2df1b7ff3f01057a3aa7b31ce83166189850b4a7c1cab409f2",
     "images/jam.png": "c6e1c1e9228d5f395d867f48cda037959fc10a43edede763720acd16b95af915",
     "images/key.png": "699cab70be2330ae41221a58a49fe729374552d87a6a05d35acf1e424ecf1ccc",
+    "images/lamp.png": "ebe94104dfe161d26f493c113054abb782ffb0f9d5789b2adec016e6e1b4d5bc",
+    "images/leg.png": "3be4b3fd053b861ff7403d82a822d6a93c83b93806a6b106ee2b80c2474ad509",
+    "images/lid.png": "f73ebbe35b1931ffad385f8539e6d594af0131c104f1203e64625997040bfe4c",
     "images/lip.png": "ce55c8cdeb264fda730e7a875c9a02805419beb962ed274e5f561601d7f231ee",
     "images/log.png": "3db4154dc9418c0e0ec95961a0ddd1b7c4929f432fec91266fb28322593ace30",
     "images/map.png": "005a9d4c743d6f2dfb412f0cd75dfc19a2e4a1a1dc42848da1509bab541482c6",
+    "images/mask.png": "ec6341103a6e13037ccef0528ad15f76405a799512d32fe65867423b506133b1",
     "images/mat.png": "bc1e0dc683ede44066acab274150b32c05c9f6df391feff4d9afa090f58bc9d6",
+    "images/milk.png": "e3d737bd25ea423ee52b05b4fb615bf1786761a542009e0265c93d27613b659f",
+    "images/mud.png": "ff32a3df342b4db7651ee5961f7a6e7138f140fec446cf26db56461143165f82",
     "images/mug.png": "afc1dede36bb5debe8023ec2fb7285445d23f9523aca68b008bfce424cab48ac",
+    "images/nest.png": "62772de5525aab114bd04b4743d904cd6893d09a9e6a39a0929bd72391ce16da",
     "images/net.png": "f1a898dcd7bd925938a79fd088ad959de4f4a76b41deb57318be95bfe46dd2eb",
+    "images/nut.png": "14300b41d2ea2bb7dfddb2280b780262b58bc0725dd6fa6e2df84432d49aeab6",
     "images/octopus.png": "2d32e42193c315918170f3245181efc7a4ab590493a1ad547302f99a300c8528",
     "images/pan.png": "dd37124404c31befbfe7af30d26da6316f51aed2682147cf70769bfe60ffa7c2",
     "images/pen.png": "4c0dd9265eff6a09602a30f0668f90d8a129e98e7c90693c472005efa33738d6",
     "images/pig.png": "b61b4f6f691b426c4c1ab7ebed33246d89f85a89bfce43fa58c00bb627f7b5ee",
+    "images/plant.png": "86795715cfa23713c179319725bb00b0255242aceea63860b321a3d26562da0e",
+    "images/plum.png": "885e099cb121e07b348c02962d3aa42d1c12305f2a1609a4a1a209e43ee28e4a",
+    "images/pond.png": "9efbbe231bc60c374d9dbbd148fe2d51651fd71834557325e99e45ec064dfac2",
     "images/pot.png": "25f6110b092916f47ddfdeef075b8266a74b1bef1c5d822abe43f36d8c9ad870",
     "images/quilt.png": "545efa9bdf7d184cf4eb5b6e3bcd7a9443ff872b1cbc57fe992e16dd00877cf5",
+    "images/rag.png": "658383aa3b1f9aa0287901250d8808c1e9d60a52fc14cff8813af515d6b66f67",
     "images/rat.png": "d925667755fb4d8c43703cf8970a72d4d52198101dcd88412bdb575415f0b4e4",
+    "images/rug.png": "bc1e0dc683ede44066acab274150b32c05c9f6df391feff4d9afa090f58bc9d6",
+    "images/sand.png": "7f82d25019010549c387bb76eb4a96cb502e87b55c7824fc20b833ad56eb0ac6",
+    "images/shack.png": "dcb3d189c87ffd005bdae1d738e705b829d5b8d33bc298a6f5ed56540c2b5727",
+    "images/shed.png": "51075fe66213be63cee65a639f096043afeee93b9a11daa98312ef73d73958ce",
+    "images/shell.png": "be348d2d18e162f11c3dea0eac49dec03e7a53c99870a74356a392bd3df14c66",
     "images/ship.png": "741a8d3150a39fc17d3327869a00600c427ebab6e7dc50b6d55f00e5d42ebe92",
+    "images/sled.png": "4347b61ba1227be80f1c4cc7a66d7288f915ab26735b193719825444b2e62514",
     "images/sock.png": "053e07f040b3f2ec394190ccbafbf3701b2df210f8c5aa740cbdbf9071281739",
+    "images/stamp.png": "4dbe9962a838b32ea5f81153890001232f43cf419710940f1fac3361ed356ce9",
     "images/sun.png": "a0f54c6ed5b17e0ec40f754420a6e5b5636a8f1d81e37329055f964b9d06957f",
     "images/tent.png": "7f74819a6cedbdd15dfb1f43ff92af44d2c57ff6c02a6b096edbbffd270f9d57",
+    "images/tin.png": "4b544d4ba31d74165a853e2090bde9b7154cb4497f85cd8c5452d9ecea3efa0d",
     "images/top.png": "d6b439946c2516bb66af34c453d6cc5a95adbb4022e2985de759e913552def77",
     "images/umbrella.png": "18933c0265b0c86b655c68cbf58f1b1337d0bc61155a8b6b5a24c1312e0abfc2",
+    "images/van.png": "d5f0ce169cf004f46b6c17da4a44e9c5721b67236825f84c4b224af272c80a5e",
     "images/violin.png": "db67499ceeaf4af480c11f7f88f752567635dba9e95924f310c6c88fdbac2ab4",
     "images/web.png": "f6fc350817a8d0a6b8c7dfe01022f0e8eb4747a39b3db7d841beb017c9bb980e",
     "images/wig.png": "ef23e93bf87e6d7cb301c248b8b3cbd3ed2572ce1ea4448ef2d326dd185f8f8d",
@@ -955,190 +1056,526 @@
         "image-quilt"
       ]
     },
-    "audio/number-0.wav": {
+    "images/fan.png": {
       "license": "MIT",
       "sources": [
-        "number-0"
+        "image-fan"
       ]
     },
-    "audio/number-1.wav": {
+    "images/can.png": {
       "license": "MIT",
       "sources": [
-        "number-1"
+        "image-can"
       ]
     },
-    "audio/number-2.wav": {
+    "images/rag.png": {
       "license": "MIT",
       "sources": [
-        "number-2"
+        "image-rag"
       ]
     },
-    "audio/number-3.wav": {
+    "images/fin.png": {
       "license": "MIT",
       "sources": [
-        "number-3"
+        "image-fin"
       ]
     },
-    "audio/number-4.wav": {
+    "images/tin.png": {
       "license": "MIT",
       "sources": [
-        "number-4"
+        "image-tin"
       ]
     },
-    "audio/number-5.wav": {
+    "images/lid.png": {
       "license": "MIT",
       "sources": [
-        "number-5"
+        "image-lid"
       ]
     },
-    "audio/number-6.wav": {
+    "images/rug.png": {
       "license": "MIT",
       "sources": [
-        "number-6"
+        "image-rug"
       ]
     },
-    "audio/number-7.wav": {
+    "images/mud.png": {
       "license": "MIT",
       "sources": [
-        "number-7"
+        "image-mud"
       ]
     },
-    "audio/number-8.wav": {
+    "images/bud.png": {
       "license": "MIT",
       "sources": [
-        "number-8"
+        "image-bud"
       ]
     },
-    "audio/number-9.wav": {
+    "images/shed.png": {
       "license": "MIT",
       "sources": [
-        "number-9"
+        "image-shed"
       ]
     },
-    "audio/number-10.wav": {
+    "images/hill.png": {
       "license": "MIT",
       "sources": [
-        "number-10"
+        "image-hill"
       ]
     },
-    "audio/number-11.wav": {
+    "images/doll.png": {
       "license": "MIT",
       "sources": [
-        "number-11"
+        "image-doll"
       ]
     },
-    "audio/number-12.wav": {
+    "images/plum.png": {
       "license": "MIT",
       "sources": [
-        "number-12"
+        "image-plum"
       ]
     },
-    "audio/number-13.wav": {
+    "images/lamp.png": {
       "license": "MIT",
       "sources": [
-        "number-13"
+        "image-lamp"
       ]
     },
-    "audio/number-14.wav": {
+    "images/mask.png": {
       "license": "MIT",
       "sources": [
-        "number-14"
+        "image-mask"
       ]
     },
-    "audio/number-15.wav": {
+    "images/desk.png": {
       "license": "MIT",
       "sources": [
-        "number-15"
+        "image-desk"
       ]
     },
-    "audio/number-16.wav": {
+    "images/pond.png": {
       "license": "MIT",
       "sources": [
-        "number-16"
+        "image-pond"
       ]
     },
-    "audio/number-17.wav": {
+    "images/sand.png": {
       "license": "MIT",
       "sources": [
-        "number-17"
+        "image-sand"
       ]
     },
-    "audio/number-18.wav": {
+    "images/stamp.png": {
       "license": "MIT",
       "sources": [
-        "number-18"
+        "image-stamp"
       ]
     },
-    "audio/number-19.wav": {
-      "license": "MIT",
+    "audio/word-bat.wav": {
+      "license": "CC-BY-SA-3.0",
       "sources": [
-        "number-19"
+        "word-bat"
       ]
     },
-    "audio/number-20.wav": {
-      "license": "MIT",
+    "audio/word-rat.wav": {
+      "license": "CC-BY-SA-3.0",
       "sources": [
-        "number-20"
+        "word-rat"
       ]
     },
-    "audio/number-21.wav": {
-      "license": "MIT",
+    "audio/word-fan.wav": {
+      "license": "CC-BY-SA-3.0",
       "sources": [
-        "number-21"
+        "word-fan"
       ]
     },
-    "audio/number-22.wav": {
-      "license": "MIT",
+    "audio/word-bag.wav": {
+      "license": "CC-BY-SA-3.0",
       "sources": [
-        "number-22"
+        "word-bag"
       ]
     },
-    "audio/number-23.wav": {
-      "license": "MIT",
+    "audio/word-jam.wav": {
+      "license": "GPL-3.0-or-later",
       "sources": [
-        "number-23"
+        "word-jam"
       ]
     },
-    "audio/number-24.wav": {
-      "license": "MIT",
+    "audio/word-can.wav": {
+      "license": "CC-BY-SA-3.0",
       "sources": [
-        "number-24"
+        "word-can"
       ]
     },
-    "audio/number-25.wav": {
-      "license": "MIT",
+    "audio/word-van.wav": {
+      "license": "CC-BY-SA-3.0",
       "sources": [
-        "number-25"
+        "word-van"
       ]
     },
-    "audio/number-26.wav": {
-      "license": "MIT",
+    "audio/word-rag.wav": {
+      "license": "CC-BY-SA-3.0",
       "sources": [
-        "number-26"
+        "word-rag"
       ]
     },
-    "audio/number-27.wav": {
-      "license": "MIT",
+    "audio/word-ham.wav": {
+      "license": "GPL-3.0-or-later",
       "sources": [
-        "number-27"
+        "word-ham"
       ]
     },
-    "audio/number-28.wav": {
-      "license": "MIT",
+    "audio/word-egg.wav": {
+      "license": "GPL-3.0-or-later",
       "sources": [
-        "number-28"
+        "word-egg"
       ]
     },
-    "audio/number-29.wav": {
-      "license": "MIT",
+    "audio/word-leg.wav": {
+      "license": "GPL-3.0-or-later",
       "sources": [
-        "number-29"
+        "word-leg"
       ]
     },
-    "audio/number-30.wav": {
+    "audio/word-fin.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-fin"
+      ]
+    },
+    "audio/word-tin.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-tin"
+      ]
+    },
+    "audio/word-lid.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-lid"
+      ]
+    },
+    "audio/word-box.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-box"
+      ]
+    },
+    "audio/word-fox.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-fox"
+      ]
+    },
+    "audio/word-nut.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-nut"
+      ]
+    },
+    "audio/word-hut.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-hut"
+      ]
+    },
+    "audio/word-gum.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-gum"
+      ]
+    },
+    "audio/word-bun.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-bun"
+      ]
+    },
+    "audio/word-rug.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-rug"
+      ]
+    },
+    "audio/word-mud.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-mud"
+      ]
+    },
+    "audio/word-bud.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-bud"
+      ]
+    },
+    "audio/word-cash.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-cash"
+      ]
+    },
+    "audio/word-dish.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-dish"
+      ]
+    },
+    "audio/word-shed.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-shed"
+      ]
+    },
+    "audio/word-shell.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-shell"
+      ]
+    },
+    "audio/word-bell.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-bell"
+      ]
+    },
+    "audio/word-hill.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-hill"
+      ]
+    },
+    "audio/word-doll.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-doll"
+      ]
+    },
+    "audio/word-flag.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-flag"
+      ]
+    },
+    "audio/word-crab.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-crab"
+      ]
+    },
+    "audio/word-plum.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-plum"
+      ]
+    },
+    "audio/word-sled.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-sled"
+      ]
+    },
+    "audio/word-nest.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-nest"
+      ]
+    },
+    "audio/word-lamp.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-lamp"
+      ]
+    },
+    "audio/word-milk.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-milk"
+      ]
+    },
+    "audio/word-mask.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-mask"
+      ]
+    },
+    "audio/word-desk.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-desk"
+      ]
+    },
+    "audio/word-pond.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-pond"
+      ]
+    },
+    "audio/word-sand.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-sand"
+      ]
+    },
+    "audio/word-ant.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "word-ant"
+      ]
+    },
+    "audio/word-stamp.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-stamp"
+      ]
+    },
+    "audio/word-plant.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-plant"
+      ]
+    },
+    "audio/word-brush.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "word-brush"
+      ]
+    },
+    "images/bat.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-bat"
+      ]
+    },
+    "images/bag.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-bag"
+      ]
+    },
+    "images/van.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-van"
+      ]
+    },
+    "images/ham.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-ham"
+      ]
+    },
+    "images/leg.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-leg"
+      ]
+    },
+    "images/fox.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-fox"
+      ]
+    },
+    "images/nut.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-nut"
+      ]
+    },
+    "images/hut.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-hut"
+      ]
+    },
+    "images/cash.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-cash"
+      ]
+    },
+    "images/dish.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-dish"
+      ]
+    },
+    "images/shell.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-shell"
+      ]
+    },
+    "images/bell.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-bell"
+      ]
+    },
+    "images/flag.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-flag"
+      ]
+    },
+    "images/crab.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-crab"
+      ]
+    },
+    "images/sled.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-sled"
+      ]
+    },
+    "images/nest.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-nest"
+      ]
+    },
+    "images/milk.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-milk"
+      ]
+    },
+    "images/ant.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-ant"
+      ]
+    },
+    "images/plant.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-plant"
+      ]
+    },
+    "images/brush.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-brush"
+      ]
+    },
+    "images/shack.png": {
+      "license": "CC-BY-SA-4.0",
+      "sources": [
+        "image-shack"
+      ]
+    },
+    "images/gum.png": {
       "license": "MIT",
       "sources": [
-        "number-30"
+        "image-gum"
+      ]
+    },
+    "images/bun.png": {
+      "license": "MIT",
+      "sources": [
+        "image-bun"
       ]
     },
     "audio/sequence-cat.wav": {
@@ -1413,6 +1850,426 @@
         "sound-u",
         "sound-m",
         "word-drum"
+      ]
+    },
+    "audio/sequence-bat.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-b",
+        "sound-a",
+        "sound-t",
+        "word-bat"
+      ]
+    },
+    "audio/sequence-rat.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-r",
+        "sound-a",
+        "sound-t",
+        "word-rat"
+      ]
+    },
+    "audio/sequence-fan.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-f",
+        "sound-a",
+        "sound-n",
+        "word-fan"
+      ]
+    },
+    "audio/sequence-bag.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-b",
+        "sound-a",
+        "sound-g",
+        "word-bag"
+      ]
+    },
+    "audio/sequence-jam.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-j",
+        "sound-a",
+        "sound-m",
+        "word-jam"
+      ]
+    },
+    "audio/sequence-can.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-c",
+        "sound-a",
+        "sound-n",
+        "word-can"
+      ]
+    },
+    "audio/sequence-van.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-v",
+        "sound-a",
+        "sound-n",
+        "word-van"
+      ]
+    },
+    "audio/sequence-rag.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-r",
+        "sound-a",
+        "sound-g",
+        "word-rag"
+      ]
+    },
+    "audio/sequence-ham.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-h",
+        "sound-a",
+        "sound-m",
+        "word-ham"
+      ]
+    },
+    "audio/sequence-egg.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-e",
+        "sound-g",
+        "word-egg"
+      ]
+    },
+    "audio/sequence-leg.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-l",
+        "sound-e",
+        "sound-g",
+        "word-leg"
+      ]
+    },
+    "audio/sequence-fin.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-f",
+        "sound-i",
+        "sound-n",
+        "word-fin"
+      ]
+    },
+    "audio/sequence-tin.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-t",
+        "sound-i",
+        "sound-n",
+        "word-tin"
+      ]
+    },
+    "audio/sequence-lid.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-l",
+        "sound-i",
+        "sound-d",
+        "word-lid"
+      ]
+    },
+    "audio/sequence-box.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-b",
+        "sound-o",
+        "sound-x",
+        "word-box"
+      ]
+    },
+    "audio/sequence-fox.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-f",
+        "sound-o",
+        "sound-x",
+        "word-fox"
+      ]
+    },
+    "audio/sequence-nut.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-n",
+        "sound-u",
+        "sound-t",
+        "word-nut"
+      ]
+    },
+    "audio/sequence-hut.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-h",
+        "sound-u",
+        "sound-t",
+        "word-hut"
+      ]
+    },
+    "audio/sequence-gum.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-g",
+        "sound-u",
+        "sound-m",
+        "word-gum"
+      ]
+    },
+    "audio/sequence-bun.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-b",
+        "sound-u",
+        "sound-n",
+        "word-bun"
+      ]
+    },
+    "audio/sequence-rug.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-r",
+        "sound-u",
+        "sound-g",
+        "word-rug"
+      ]
+    },
+    "audio/sequence-mud.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-m",
+        "sound-u",
+        "sound-d",
+        "word-mud"
+      ]
+    },
+    "audio/sequence-bud.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-b",
+        "sound-u",
+        "sound-d",
+        "word-bud"
+      ]
+    },
+    "audio/sequence-cash.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-c",
+        "sound-a",
+        "sound-sh",
+        "word-cash"
+      ]
+    },
+    "audio/sequence-dish.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-d",
+        "sound-i",
+        "sound-sh",
+        "word-dish"
+      ]
+    },
+    "audio/sequence-shed.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-sh",
+        "sound-e",
+        "sound-d",
+        "word-shed"
+      ]
+    },
+    "audio/sequence-shell.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-sh",
+        "sound-e",
+        "sound-l",
+        "word-shell"
+      ]
+    },
+    "audio/sequence-bell.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-b",
+        "sound-e",
+        "sound-l",
+        "word-bell"
+      ]
+    },
+    "audio/sequence-hill.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-h",
+        "sound-i",
+        "sound-l",
+        "word-hill"
+      ]
+    },
+    "audio/sequence-doll.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-d",
+        "sound-o",
+        "sound-l",
+        "word-doll"
+      ]
+    },
+    "audio/sequence-flag.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-f",
+        "sound-l",
+        "sound-a",
+        "sound-g",
+        "word-flag"
+      ]
+    },
+    "audio/sequence-crab.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-c",
+        "sound-r",
+        "sound-a",
+        "sound-b",
+        "word-crab"
+      ]
+    },
+    "audio/sequence-plum.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-p",
+        "sound-l",
+        "sound-u",
+        "sound-m",
+        "word-plum"
+      ]
+    },
+    "audio/sequence-sled.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-s",
+        "sound-l",
+        "sound-e",
+        "sound-d",
+        "word-sled"
+      ]
+    },
+    "audio/sequence-nest.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-n",
+        "sound-e",
+        "sound-s",
+        "sound-t",
+        "word-nest"
+      ]
+    },
+    "audio/sequence-lamp.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-l",
+        "sound-a",
+        "sound-m",
+        "sound-p",
+        "word-lamp"
+      ]
+    },
+    "audio/sequence-milk.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-m",
+        "sound-i",
+        "sound-l",
+        "sound-c",
+        "word-milk"
+      ]
+    },
+    "audio/sequence-mask.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-m",
+        "sound-a",
+        "sound-s",
+        "sound-c",
+        "word-mask"
+      ]
+    },
+    "audio/sequence-desk.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-d",
+        "sound-e",
+        "sound-s",
+        "sound-c",
+        "word-desk"
+      ]
+    },
+    "audio/sequence-pond.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-p",
+        "sound-o",
+        "sound-n",
+        "sound-d",
+        "word-pond"
+      ]
+    },
+    "audio/sequence-sand.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-s",
+        "sound-a",
+        "sound-n",
+        "sound-d",
+        "word-sand"
+      ]
+    },
+    "audio/sequence-ant.wav": {
+      "license": "GPL-3.0-or-later",
+      "sources": [
+        "sound-a",
+        "sound-n",
+        "sound-t",
+        "word-ant"
+      ]
+    },
+    "audio/sequence-stamp.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-s",
+        "sound-t",
+        "sound-a",
+        "sound-m",
+        "sound-p",
+        "word-stamp"
+      ]
+    },
+    "audio/sequence-plant.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-p",
+        "sound-l",
+        "sound-a",
+        "sound-n",
+        "sound-t",
+        "word-plant"
+      ]
+    },
+    "audio/sequence-brush.wav": {
+      "license": "CC-BY-SA-3.0",
+      "sources": [
+        "sound-b",
+        "sound-r",
+        "sound-u",
+        "sound-sh",
+        "word-brush"
       ]
     }
   }

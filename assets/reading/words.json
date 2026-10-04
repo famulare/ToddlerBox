@@ -272,5 +272,425 @@
       "u",
       "m"
     ]
+  },
+  {
+    "word": "bat",
+    "set": "short_a_cvc",
+    "units": [
+      "b",
+      "a",
+      "t"
+    ]
+  },
+  {
+    "word": "rat",
+    "set": "short_a_cvc",
+    "units": [
+      "r",
+      "a",
+      "t"
+    ]
+  },
+  {
+    "word": "fan",
+    "set": "short_a_cvc",
+    "units": [
+      "f",
+      "a",
+      "n"
+    ]
+  },
+  {
+    "word": "bag",
+    "set": "short_a_cvc",
+    "units": [
+      "b",
+      "a",
+      "g"
+    ]
+  },
+  {
+    "word": "jam",
+    "set": "short_a_cvc",
+    "units": [
+      "j",
+      "a",
+      "m"
+    ]
+  },
+  {
+    "word": "can",
+    "set": "short_a_cvc",
+    "units": [
+      "c",
+      "a",
+      "n"
+    ]
+  },
+  {
+    "word": "van",
+    "set": "short_a_cvc",
+    "units": [
+      "v",
+      "a",
+      "n"
+    ]
+  },
+  {
+    "word": "rag",
+    "set": "short_a_cvc",
+    "units": [
+      "r",
+      "a",
+      "g"
+    ]
+  },
+  {
+    "word": "ham",
+    "set": "short_a_cvc",
+    "units": [
+      "h",
+      "a",
+      "m"
+    ]
+  },
+  {
+    "word": "egg",
+    "set": "short_e_cvc",
+    "units": [
+      "e",
+      "gg"
+    ]
+  },
+  {
+    "word": "leg",
+    "set": "short_e_cvc",
+    "units": [
+      "l",
+      "e",
+      "g"
+    ]
+  },
+  {
+    "word": "fin",
+    "set": "short_i_cvc",
+    "units": [
+      "f",
+      "i",
+      "n"
+    ]
+  },
+  {
+    "word": "tin",
+    "set": "short_i_cvc",
+    "units": [
+      "t",
+      "i",
+      "n"
+    ]
+  },
+  {
+    "word": "lid",
+    "set": "short_i_cvc",
+    "units": [
+      "l",
+      "i",
+      "d"
+    ]
+  },
+  {
+    "word": "box",
+    "set": "short_o_cvc",
+    "units": [
+      "b",
+      "o",
+      "x"
+    ]
+  },
+  {
+    "word": "fox",
+    "set": "short_o_cvc",
+    "units": [
+      "f",
+      "o",
+      "x"
+    ]
+  },
+  {
+    "word": "nut",
+    "set": "short_u_cvc",
+    "units": [
+      "n",
+      "u",
+      "t"
+    ]
+  },
+  {
+    "word": "hut",
+    "set": "short_u_cvc",
+    "units": [
+      "h",
+      "u",
+      "t"
+    ]
+  },
+  {
+    "word": "gum",
+    "set": "short_u_cvc",
+    "units": [
+      "g",
+      "u",
+      "m"
+    ]
+  },
+  {
+    "word": "bun",
+    "set": "short_u_cvc",
+    "units": [
+      "b",
+      "u",
+      "n"
+    ]
+  },
+  {
+    "word": "rug",
+    "set": "short_u_cvc",
+    "units": [
+      "r",
+      "u",
+      "g"
+    ]
+  },
+  {
+    "word": "mud",
+    "set": "short_u_cvc",
+    "units": [
+      "m",
+      "u",
+      "d"
+    ]
+  },
+  {
+    "word": "bud",
+    "set": "short_u_cvc",
+    "units": [
+      "b",
+      "u",
+      "d"
+    ]
+  },
+  {
+    "word": "cash",
+    "set": "digraphs",
+    "units": [
+      "c",
+      "a",
+      "sh"
+    ]
+  },
+  {
+    "word": "dish",
+    "set": "digraphs",
+    "units": [
+      "d",
+      "i",
+      "sh"
+    ]
+  },
+  {
+    "word": "shed",
+    "set": "digraphs",
+    "units": [
+      "sh",
+      "e",
+      "d"
+    ]
+  },
+  {
+    "word": "shell",
+    "set": "digraphs",
+    "units": [
+      "sh",
+      "e",
+      "ll"
+    ]
+  },
+  {
+    "word": "bell",
+    "set": "digraphs",
+    "units": [
+      "b",
+      "e",
+      "ll"
+    ]
+  },
+  {
+    "word": "hill",
+    "set": "digraphs",
+    "units": [
+      "h",
+      "i",
+      "ll"
+    ]
+  },
+  {
+    "word": "doll",
+    "set": "digraphs",
+    "units": [
+      "d",
+      "o",
+      "ll"
+    ]
+  },
+  {
+    "word": "flag",
+    "set": "adjacent_consonants",
+    "units": [
+      "f",
+      "l",
+      "a",
+      "g"
+    ]
+  },
+  {
+    "word": "crab",
+    "set": "adjacent_consonants",
+    "units": [
+      "c",
+      "r",
+      "a",
+      "b"
+    ]
+  },
+  {
+    "word": "plum",
+    "set": "adjacent_consonants",
+    "units": [
+      "p",
+      "l",
+      "u",
+      "m"
+    ]
+  },
+  {
+    "word": "sled",
+    "set": "adjacent_consonants",
+    "units": [
+      "s",
+      "l",
+      "e",
+      "d"
+    ]
+  },
+  {
+    "word": "nest",
+    "set": "adjacent_consonants",
+    "units": [
+      "n",
+      "e",
+      "s",
+      "t"
+    ]
+  },
+  {
+    "word": "lamp",
+    "set": "adjacent_consonants",
+    "units": [
+      "l",
+      "a",
+      "m",
+      "p"
+    ]
+  },
+  {
+    "word": "milk",
+    "set": "adjacent_consonants",
+    "units": [
+      "m",
+      "i",
+      "l",
+      "k"
+    ]
+  },
+  {
+    "word": "mask",
+    "set": "adjacent_consonants",
+    "units": [
+      "m",
+      "a",
+      "s",
+      "k"
+    ]
+  },
+  {
+    "word": "desk",
+    "set": "adjacent_consonants",
+    "units": [
+      "d",
+      "e",
+      "s",
+      "k"
+    ]
+  },
+  {
+    "word": "pond",
+    "set": "adjacent_consonants",
+    "units": [
+      "p",
+      "o",
+      "n",
+      "d"
+    ]
+  },
+  {
+    "word": "sand",
+    "set": "adjacent_consonants",
+    "units": [
+      "s",
+      "a",
+      "n",
+      "d"
+    ]
+  },
+  {
+    "word": "ant",
+    "set": "adjacent_consonants",
+    "units": [
+      "a",
+      "n",
+      "t"
+    ]
+  },
+  {
+    "word": "stamp",
+    "set": "adjacent_consonants",
+    "units": [
+      "s",
+      "t",
+      "a",
+      "m",
+      "p"
+    ]
+  },
+  {
+    "word": "plant",
+    "set": "adjacent_consonants",
+    "units": [
+      "p",
+      "l",
+      "a",
+      "n",
+      "t"
+    ]
+  },
+  {
+    "word": "brush",
+    "set": "adjacent_consonants",
+    "units": [
+      "b",
+      "r",
+      "u",
+      "sh"
+    ]
   }
 ]

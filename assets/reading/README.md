@@ -1,7 +1,7 @@
 # Reading content and preparation
 
-This pack is entirely offline: 30 illustrated words, 26 letter-sound cards,
-26 letter-name cards, and 31 number cards (0–30). Normal image builds copy the
+This pack is entirely offline: 75 illustrated words, 26 letter-sound cards,
+and 26 letter-name cards. Numbers/math are reserved for a future separate app. Normal image builds copy the
 prepared PNG/WAV files. The installed app never downloads or synthesizes speech.
 
 ## Credits and licenses
@@ -15,13 +15,10 @@ The application code is MIT licensed. Media retain their individual terms:
 | Additional whole words and letter names | Joshua Shreve, GCompris, 2019 | GPL 3.0 or later, as identified by upstream credits and OGG tags |
 | Outlined illustrations | [OpenMoji contributors](https://openmoji.org/) | CC BY-SA 4.0; rendered from the pinned original SVGs |
 | Additional illustrations | ToddlerBox, 2026 | MIT; original SVGs included |
-| Number recordings | Generated for ToddlerBox using Piper 1.4.2 and the LJ Speech medium voice | Generated audio under the project MIT license; voice repository declares MIT, training dataset is public domain |
 
 Full source URLs, immutable revisions, SHA-256 hashes, credits and per-file
 licenses are in `sources.json`. Original recordings and vector drawings are in
-`sources/`. License texts and source declarations are in `licenses/`. The number
-voice's pinned model identity, settings and generated source hashes are in
-`sources/numbers-provenance.json`; the large model is not bundled.
+`sources/`. License texts and source declarations are in `licenses/`.
 
 `outputs.json` maps each prepared file to its source IDs, hash and license.
 Word sequences combine the whole-word recording with MIT phoneme clips and
@@ -61,20 +58,12 @@ speech; silence detection is not a substitute for listening. The originals are
 preserved. `--prepare-trims` is a maintainer action to refresh those explicit
 bounds after changing content, not a step in ordinary builds.
 
-To regenerate the optional number source recordings, obtain the hash-checked
-model/config named in `scripts/prepare-reading-numbers.py`, then run:
-
-```bash
-uv run --locked scripts/prepare-reading-numbers.py --model-dir /path/to/pinned/model
-```
-
-This separate Python 3.12 preparation environment is locked by
-`scripts/prepare-reading-numbers.py.lock`. Its CPU inference uses zero noise.
-Whole names such as “twenty one” are synthesized in one utterance. The script
-does not download anything itself. The checked-in number WAVs let every normal
-build work without the voice model or inference libraries. Piper's engine is
-GPL licensed; it is used only as a preparation tool and is not shipped in the
-ToddlerBox runtime.
+The expansion fetch script uses the same immutable GCompris/OpenMoji revisions,
+retains per-file credits and includes editable original drawings. Rebuilding the
+prepared pack works offline once these checked-in sources are present. Grouped
+letters such as `sh`, `ck` and `ll` are one tapped sound; each tap extracts the
+exact bounded PCM cue from its checked-in sequence. The UI does not autoplay the
+sequence. Only a deliberate whole-word/name playback reveals the main picture.
 
 The app validates the versioned catalog, cue bounds, image sizes and PCM headers,
 and skips damaged entries. It retains no learning history or scores.
