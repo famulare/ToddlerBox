@@ -1,0 +1,42 @@
+name: Retain public release evidence
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: toddlerbox-v0.4.0-candidate
+  cancel-in-progress: false
+jobs:
+  retain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Copy selected public evidence to the same draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir candidate evidence
+          gh release download v0.4.0 --dir candidate --pattern source.json
+          test "$(jq -r .qualification_status candidate/source.json)" = passed
+          run=$(jq -r .qualification_run candidate/source.json)
+          gh api repos/$GITHUB_REPOSITORY/actions/runs/$run > candidate/run.json
+          test "$(jq -r .conclusion candidate/run.json)" = success
+          test "$(jq -r .head_sha candidate/run.json)" = "$(jq -r .qualification_revision candidate/source.json)"
+          gh run download "$run" --name release-0.4-public-evidence --dir evidence
+          python3 - <<'PY'
+          from pathlib import Path
+          import zipfile
+          names={'installer.png','first-boot-password.png','six-activity-launcher.png','music-first-song.png','music-scrolled.png','music-largo.png','music-free-play.png','math-objects-first.png','math-revealed.png','math-speaking.png','paint.png','photos.png','typing.png','reading.png','frozen-app-parent-recovery.png','watchdog-recovered-launcher.png','rebooted-launcher.png','authenticated-parent-greeter.png','results.json','source.json','packages.tsv'}
+          found=set()
+          with zipfile.ZipFile('qualification-evidence.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in sorted(Path('evidence').rglob('*')):
+                  if p.is_file() and p.name in names:
+                      assert not p.is_symlink() and p.name not in found
+                      assert p.stat().st_size < 16*1024*1024
+                      z.write(p,p.name);found.add(p.name)
+          assert names<=found, names-found
+          PY
+          test "$(gh release view v0.4.0 --json isDraft --jq .isDraft)" = true
+          gh release upload v0.4.0 qualification-evidence.zip --clobber
