@@ -164,7 +164,9 @@ class Qualification:
             conn.sendall((f"bash -c \"$(printf %s {encoded} | base64 -d)\"; printf '\\n{done}%s\\n' \"$?\"\n").encode())
             reply=self.until(conn,re.escape(done.encode())+rb'\d+\r?\n',timeout)
             status=int(re.search(re.escape(done.encode())+rb'(\d+)',reply)[1])
-            if status: raise RuntimeError(f'VM diagnostic failed, exit {status}; output withheld')
+            if status:
+                print(reply.decode(errors='replace').replace(self.password,'[redacted]'),flush=True)
+                raise RuntimeError(f'VM diagnostic failed, exit {status}')
             return reply.decode(errors='replace').replace(self.password,'[redacted]')
 
     def mode(self,expected):
@@ -270,15 +272,15 @@ INNER
         toddlerbox-mode child
         ''')
         self.wait_text('Paint','Math','Reading');self.wait_health()
-        self.serial("pid=$(pgrep -u toddlerbox -f '^/opt/toddlerbox/.* -m toddlerbox.launcher$'); test -n \"$pid\"; kill -STOP $pid")
+        self.serial("pid=$(pgrep -u toddlerbox -f '^([^ ]*/)?python[0-9.]* -m toddlerbox[.]launcher$'); test -n \"$pid\"; kill -STOP $pid")
         self.key('ctrl-alt-home',2500);time.sleep(6);self.mode('parent')
         self.shot('frozen-app-parent-recovery')
         self.serial('toddlerbox-mode child');self.wait_text('Paint','Math','Reading');self.wait_health()
-        self.serial("pid=$(pgrep -u toddlerbox -f '^/opt/toddlerbox/.* -m toddlerbox.launcher$'); test -n \"$pid\"; printf %s $pid >/root/qa-old-pid; python3 -c 'import json; open(\"/root/qa-old-restarts\",\"w\").write(str(json.load(open(\"/run/toddlerbox-system/status.json\"))[\"restarts\"]))'; kill -STOP $pid")
+        self.serial("pid=$(pgrep -u toddlerbox -f '^([^ ]*/)?python[0-9.]* -m toddlerbox[.]launcher$'); test -n \"$pid\"; printf %s $pid >/root/qa-old-pid; python3 -c 'import json; open(\"/root/qa-old-restarts\",\"w\").write(str(json.load(open(\"/run/toddlerbox-system/status.json\"))[\"restarts\"]))'; kill -STOP $pid")
         self.serial("""
         old=$(cat /root/qa-old-pid)
         for i in $(seq 1 90); do
-            new=$(pgrep -u toddlerbox -f '^/opt/toddlerbox/.* -m toddlerbox.launcher$' || true)
+            new=$(pgrep -u toddlerbox -f '^([^ ]*/)?python[0-9.]* -m toddlerbox[.]launcher$' || true)
             if test -n "$new" && test "$new" != "$old" && test ! -e "/proc/$old"; then
                 if python3 -c 'import json; s=json.load(open("/run/toddlerbox-system/status.json")); assert s["restarts"] > int(open("/root/qa-old-restarts").read()) and s["seen_frame"]'; then exit 0; fi
             fi

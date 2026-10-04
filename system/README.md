@@ -272,7 +272,9 @@ for actual evidence rather than treating these requirements as completed tests.
 `Build and qualify release candidate` is an explicit GitHub workflow, never a
 child-device background job. It builds pinned x86-64 Ubuntu images, installs a
 fresh disposable Q35/UEFI VM, tests without a NIC using synthetic fixtures, and
-uploads a draft release only after passing. VM disks and ephemeral test passwords
+retains the candidate in an unpublished draft before qualification so retries
+can verify the same ISO without rebuilding. Publication requires passing VM
+checks and maintainer signing. VM disks and ephemeral test passwords
 are never published. Selected screenshots/results are review evidence; physical
 HP radio, touch gestures, audio and sleep still need hardware acceptance.
 Maintainers verify evidence and sign the update manifest before publication.
