@@ -72,6 +72,7 @@ class Qualification:
     def type(self,text):
         for char in text:
             self.key(char)
+            time.sleep(.15)  # Let a software-emulated console consume each key.
         self.key('ret')
 
     def shot(self,name):
@@ -142,7 +143,10 @@ class Qualification:
         self.wait_text('new password')
         self.shot('first-boot-password')
         self.type(self.password)
-        self.wait_text('retype new password')
+        # Console font OCR is unreliable for the confirmation prompt.
+        # The next stage must authenticate with this password on ttyS0 and
+        # verify the durable password-created marker, rather than infer success.
+        time.sleep(3)
         self.type(self.password)
         time.sleep(8)
 
