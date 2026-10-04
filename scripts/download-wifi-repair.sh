@@ -32,7 +32,7 @@ In the HP parent terminal, cd into this folder and run:
 
 sha256sum -c SHA256SUMS
 # All five must report OK before continuing.
-sudo dpkg -i ./libnl-*.deb ./libpcsclite1_*.deb ./wpasupplicant_*.deb
+sudo dpkg -i ./libnl-3-200_3.7.0-0.3build1.1_amd64.deb ./libnl-genl-3-200_3.7.0-0.3build1.1_amd64.deb ./libnl-route-3-200_3.7.0-0.3build1.1_amd64.deb ./libpcsclite1_2.0.3-1build1_amd64.deb ./wpasupplicant_2.10-21ubuntu0.4_amd64.deb
 # Continue only if dpkg finished successfully (no missing dependencies).
 sudo systemctl restart NetworkManager
 nmcli radio wifi on

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import time
+import io
+import wave
 
 import pygame
 
@@ -26,8 +28,22 @@ class SDLSpeech:
         except pygame.error as exc:
             raise SpeechDeviceError from exc
         try:
-            pygame.mixer.music.load(str(speech.path))
-        except (pygame.error, OSError) as exc:
+            self._clip = None
+            if speech.start_frame or (len(speech.cues) == 1 and speech.cues[0].unit >= 0):
+                with wave.open(str(speech.path), "rb") as source:
+                    source.setpos(speech.start_frame)
+                    data = source.readframes(speech.frames)
+                    if len(data) != speech.frames * 2:
+                        raise OSError("Truncated sound unit")
+                self._clip = io.BytesIO()
+                with wave.open(self._clip, "wb") as target:
+                    target.setparams((1, 2, RATE, 0, "NONE", "not compressed"))
+                    target.writeframes(data)
+                self._clip.seek(0)
+                pygame.mixer.music.load(self._clip, "wav")
+            else:
+                pygame.mixer.music.load(str(speech.path))
+        except (pygame.error, OSError, wave.Error, EOFError) as exc:
             raise SpeechAssetError from exc
         try:
             pygame.mixer.music.set_volume(volume)
@@ -60,6 +76,7 @@ class SpeechPlayer:
         self.failed: set[str] = set()
         self.position_ms = 0.0
         self._started = 0.0
+        self._reveal_when_finished = True
 
     def _stop(self) -> None:
         try:
@@ -80,10 +97,9 @@ class SpeechPlayer:
     def play(self, *, whole_word=False) -> None:
         if self.card is None or self.card.id in self.failed or self.state == "playing":
             return
-        if whole_word and not self.revealed:
-            return
         self._stop()
         self.speech = self.card.replay if whole_word else self.card.sequence
+        self._reveal_when_finished = True
         self.position_ms = 0
         try:
             self.audio.play(self.speech, self.volume)
@@ -95,6 +111,38 @@ class SpeechPlayer:
         except (SpeechDeviceError, pygame.error, OSError):
             self.logger.exception("Reading sound device unavailable")
             self._unavailable()
+            return
+        self._started = self.clock()
+        self.state = "playing"
+
+    def play_unit(self, index: int) -> None:
+        """One sound per tap, interrupting the previous sound without queuing."""
+        if self.card is None or self.card.id in self.failed or type(index) is not int or not 0 <= index < len(self.card.units):
+            return
+        cue = next((cue for cue in self.card.sequence.cues if cue.unit == index), None)
+        if cue is None and self.card.kind == "letters":
+            self.cancel()
+            self.play(whole_word=True)
+            self._reveal_when_finished = False
+            return
+        if cue is None:
+            self.logger.info("Reading card is missing this sound unit")
+            return
+        self.cancel()
+        from toddlerbox.reading.catalog import Cue
+        self.speech = Speech(self.card.sequence.path, cue.end - cue.start,
+                             (Cue(0, cue.end - cue.start, index),), cue.start)
+        self._reveal_when_finished = False
+        try:
+            self.audio.play(self.speech, self.volume)
+        except SpeechAssetError:
+            self.failed.add(self.card.id)
+            self._unavailable()
+            self.logger.exception("Reading sound unavailable")
+            return
+        except (SpeechDeviceError, pygame.error, OSError):
+            self._unavailable()
+            self.logger.exception("Reading sound device unavailable")
             return
         self._started = self.clock()
         self.state = "playing"
@@ -141,8 +189,8 @@ class SpeechPlayer:
             self.speech = None
             self.position_ms = 0
             return
-        self.state = "revealed"
-        self.revealed = True
+        self.revealed = self.revealed or self._reveal_when_finished
+        self.state = "revealed" if self.revealed else "idle"
         self.speech = None
         self.position_ms = 0
 

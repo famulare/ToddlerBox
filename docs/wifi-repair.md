@@ -7,7 +7,7 @@ and `iwd` are absent. The image used `--no-install-recommends` and omitted its
 Wi-Fi connection backend; driver/firmware are present. This is a confirmed image
 omission and a likely cause of the symptom, pending the actual HP repair result.
 
-No OS reinstall is necessary. On the internet-connected Mac, run without sudo:
+This omission can be repaired without reinstalling. On the internet-connected Mac, run without sudo:
 
 ```sh
 curl -fL https://raw.githubusercontent.com/famulare/ToddlerBox/codex/wifi-backend-repair/scripts/download-wifi-repair.sh -o download-wifi-repair.sh
@@ -21,7 +21,7 @@ right-click and choose Open in Terminal. Run:
 ```sh
 sha256sum -c SHA256SUMS
 # Check all five say OK before installing.
-sudo dpkg -i ./libnl-*.deb ./libpcsclite1_*.deb ./wpasupplicant_*.deb
+sudo dpkg -i ./libnl-3-200_3.7.0-0.3build1.1_amd64.deb ./libnl-genl-3-200_3.7.0-0.3build1.1_amd64.deb ./libnl-route-3-200_3.7.0-0.3build1.1_amd64.deb ./libpcsclite1_2.0.3-1build1_amd64.deb ./wpasupplicant_2.10-21ubuntu0.4_amd64.deb
 # Stop and report errors if dpkg fails; otherwise:
 sudo systemctl restart NetworkManager
 nmcli radio wifi on

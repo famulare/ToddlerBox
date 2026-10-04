@@ -66,3 +66,18 @@ intro and tail. Natural sampled-piano release may sound for up to 600 ms after
 the note-off cue; this is distinct from the held-key duration. The catalog's
 `duration_ms` equals the cue file's duration exactly, which is generated from
 the integer WAV frame count.
+
+## Playable keyboard
+
+`keys/` contains 25 independently prepared C3–C5 two-second PCM notes from the
+same CC0 sampled piano. Eight owned SDL channels mix key touches alongside the
+unchanged music stream. No synthesis/dependency download occurs during play.
+Key release fades for 100ms; focus/Home stops owned voices. Free Play stops the
+song; its keyboard and samples are identical. Preparation:
+
+```sh
+uv run --locked scripts/build-music.py --keys-only --output assets/music/keys
+```
+
+The key manifest pins instrument/output hashes. This command does not regenerate
+or change the six song WAVs/cues.

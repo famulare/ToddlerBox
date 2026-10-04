@@ -8,6 +8,7 @@ import pygame
 from toddlerbox.config import load_config
 from toddlerbox.music.library import load_library
 from toddlerbox.music.playback import MusicPlayer
+from toddlerbox.music.piano import Piano
 from toddlerbox.music.visuals import HARMONY, INK, MELODY, SONG_COLORS, draw_song_icon, piano_keys
 from toddlerbox.paths import get_data_root
 from toddlerbox.runtime import get_runtime_logger, health, control
@@ -39,6 +40,8 @@ class MusicApp:
         self.heading = theme.ui_font(max(24, min(34, screen_rect.h//19)), bold=True)
         self.title = theme.ui_font(24, bold=True)
         self._layout()
+        self.piano = Piano(self.keys, self.logger)
+        self.free_play = False
         self._static = self._background()
         self._scan_index = 0
         self._scan_track = -1
@@ -56,10 +59,12 @@ class MusicApp:
         self.keys = piano_keys(self.keyboard_rect, self.low, self.high)
         self.pause_rect = pygame.Rect(self.rail_rect.x,self.rail_rect.bottom-100,self.rail_rect.w,48)
         self.auto_rect = pygame.Rect(self.rail_rect.x,self.rail_rect.bottom-44,self.rail_rect.w,44)
-        count = max(1, len(self.player.tracks))
+        count = max(1, len(self.player.tracks) + 1)
         card_height = min(58, (self.pause_rect.top-self.rail_rect.top-16-(count-1)*7)//count)
         self.song_rects = [pygame.Rect(self.rail_rect.x,self.rail_rect.y+i*(card_height+7),
                                       self.rail_rect.w,card_height) for i in range(len(self.player.tracks))]
+        self.free_rect = pygame.Rect(self.rail_rect.x, self.rail_rect.y + len(self.player.tracks)*(card_height+7),
+                                     self.rail_rect.w, card_height)
         self.song_labels = []
         self.song_kinds = []
         ids = ["mary", "twinkle", "ode", "frere", "row", "minuet"]
@@ -90,12 +95,25 @@ class MusicApp:
 
     def _draw_controls(self) -> None:
         for i,rect in enumerate(self.song_rects):
-            selected = i == self.player.index
+            selected = i == self.player.index and not self.free_play
             theme.card(self.screen, rect, selected=selected)
             icon_rect = pygame.Rect(rect.x+7,rect.y+4,46,rect.h-8)
             kind = self.song_kinds[i]
             draw_song_icon(self.screen,icon_rect,kind,SONG_COLORS[kind])
             self.screen.blit(self.song_labels[i],(rect.x+59,rect.centery-self.song_labels[i].get_height()//2))
+        theme.card(self.screen, self.free_rect, selected=self.free_play)
+        piano = pygame.Rect(self.free_rect.x + 10, self.free_rect.centery - 13, 39, 26)
+        pygame.draw.rect(self.screen, PAPER, piano)
+        pygame.draw.rect(self.screen, INK, piano, 2, border_radius=2)
+        for i in (1, 2, 3):
+            x = piano.x + i*10
+            pygame.draw.line(self.screen, INK, (x, piano.top), (x, piano.bottom), 1)
+            pygame.draw.rect(self.screen, INK, (x-2, piano.y, 4, 14))
+        label = self.font.render("Free Play", True, INK)
+        self.screen.blit(label, (self.free_rect.x+59, self.free_rect.centery-label.get_height()//2))
+        if self.free_play:
+            draw_home_button(self.screen, self.home_rect)
+            return
         playing = self.player.state in {"playing", "gap"}
         pygame.draw.rect(self.screen,INK,self.pause_rect,border_radius=14)
         x,y = self.pause_rect.x+27,self.pause_rect.centery
@@ -116,7 +134,7 @@ class MusicApp:
 
     def _visible_notes(self):
         track = self.player.track
-        if track is None or self.player.state in {"stopped", "unavailable"}:
+        if self.free_play or track is None or self.player.state in {"stopped", "unavailable"}:
             return ()
         position = self.player.position_ms
         # Keep a bounded window without walking the entire score on each frame.
@@ -136,7 +154,7 @@ class MusicApp:
 
     def render(self) -> None:
         self.screen.blit(self._static,(0,0))
-        track = self.player.track
+        track = None if self.free_play else self.player.track
         if track:
             title = self.title.render(track.title,True,INK)
             max_width = self.home_rect.left-self.field_rect.x-20
@@ -167,6 +185,7 @@ class MusicApp:
             if note.start_ms <= position < note.end_ms:
                 active[note.pitch] = color if note.pitch not in active or note.voice == "melody" else active[note.pitch]
         self.screen.set_clip(old_clip)
+        active.update({pitch: MELODY for pitch in self.piano.active})
         pygame.draw.rect(self.screen,INK,self.keyboard_rect.inflate(4,4),border_radius=8)
         for black in [False,True]:
             for pitch,key in self.keys.items():
@@ -186,6 +205,9 @@ class MusicApp:
             return False
         if event.type in FOCUS_EVENTS:
             self.pointer.reset()
+            self.piano.close()
+            return True
+        if self.piano.event(event, self.rect):
             return True
         if not self.pointer.accept(event):
             return True
@@ -195,13 +217,18 @@ class MusicApp:
                 return True
             if self.home_rect.collidepoint(pos):
                 return False
-            if self.pause_rect.collidepoint(pos):
+            if self.free_rect.collidepoint(pos):
+                self.free_play = True
+                self.player.close()
+                self.piano.close()
+            elif self.pause_rect.collidepoint(pos) and not self.free_play:
                 self.player.toggle_pause()
-            elif self.auto_rect.collidepoint(pos):
+            elif self.auto_rect.collidepoint(pos) and not self.free_play:
                 self.player.toggle_autoplay()
             else:
                 for i,rect in enumerate(self.song_rects):
                     if rect.collidepoint(pos):
+                        self.free_play = False
                         self.player.select(i)
                         break
         return True
@@ -230,6 +257,7 @@ class MusicApp:
                 self.clock.tick(60)
         finally:
             self.player.close()
+            self.piano.close()
             self.pointer.reset()
 
 

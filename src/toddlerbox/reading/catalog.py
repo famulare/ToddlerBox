@@ -16,11 +16,10 @@ WORD_SETS = frozenset({"short_a_cvc", "short_e_cvc", "short_i_cvc", "short_o_cvc
 @dataclass(frozen=True)
 class Options:
     mode: str = "words"
-    word_sets: tuple[str, ...] = ("short_a_cvc",)
+    word_sets: tuple[str, ...] = ("short_a_cvc", "short_e_cvc", "short_i_cvc", "short_o_cvc",
+                                  "short_u_cvc", "digraphs", "adjacent_consonants")
     letter_case: str = "lowercase"
     letter_audio: str = "sounds"
-    number_min: int = 0
-    number_max: int = 20
     volume: float = 0.35
 
 
@@ -31,7 +30,7 @@ def options_from_config(config: dict, logger) -> Options:
         return Options()
     defaults = Options()
     result = {}
-    for key, allowed in {"mode": {"words", "letters", "numbers"},
+    for key, allowed in {"mode": {"words", "letters"},
                          "letter_case": {"lowercase", "uppercase"},
                          "letter_audio": {"sounds", "names"}}.items():
         value = raw.get(key, getattr(defaults, key))
@@ -40,14 +39,9 @@ def options_from_config(config: dict, logger) -> Options:
             logger.info(f"Invalid Reading {key}; using default")
     tags = raw.get("word_sets", list(defaults.word_sets))
     if not isinstance(tags, list) or not tags or any(not isinstance(t, str) or t not in WORD_SETS for t in tags):
-        logger.info("Invalid Reading word sets; using short-a words")
+        logger.info("Invalid Reading word sets; using default word sets")
         tags = defaults.word_sets
     result["word_sets"] = tuple(dict.fromkeys(tags))
-    low, high = raw.get("number_min", 0), raw.get("number_max", 20)
-    if type(low) is not int or type(high) is not int or not 0 <= low <= high <= 30:
-        logger.info("Invalid Reading number range; using 0–20")
-        low, high = 0, 20
-    result.update(number_min=low, number_max=high)
     volume = raw.get("volume", defaults.volume)
     if type(volume) not in (int, float) or not math.isfinite(volume):
         logger.info("Invalid Reading volume; using default")
@@ -68,6 +62,7 @@ class Speech:
     path: Path
     frames: int
     cues: tuple[Cue, ...]
+    start_frame: int = 0  # A bounded slice of validated PCM for a deliberate sound tap.
 
     @property
     def duration_ms(self) -> float:
@@ -85,7 +80,6 @@ class Card:
     replay: Speech
     tags: tuple[str, ...] = ()
     letter_audio: str = ""
-    number: int | None = None
 
 
 def _integer(value, low, high) -> int:
@@ -149,7 +143,7 @@ def load_catalog(root: Path, options: Options, logger) -> list[Card]:
             if not isinstance(identity, str) or not 1 <= len(identity) <= 80 or identity in seen:
                 raise ValueError("Duplicate or invalid Reading identity")
             seen.add(identity)
-            if kind not in {"words", "letters", "numbers"} or not isinstance(text, str) or not 1 <= len(text) <= 12:
+            if kind not in {"words", "letters"} or not isinstance(text, str) or not 1 <= len(text) <= 12:
                 raise ValueError("Invalid Reading card")
             units = entry["units"]
             if not isinstance(units, list) or not 1 <= len(units) <= 8 or any(not isinstance(u, str) or not u for u in units) or "".join(units) != text:
@@ -158,9 +152,6 @@ def load_catalog(root: Path, options: Options, logger) -> list[Card]:
             if not isinstance(tags, list) or any(not isinstance(t, str) or t not in WORD_SETS for t in tags):
                 raise ValueError("Invalid Reading word sets")
             variant = entry.get("letter_audio", "")
-            number = _integer(entry["number"], 0, 30) if kind == "numbers" else None
-            if kind == "numbers" and str(number) != text:
-                raise ValueError("Reading numeral mismatch")
             if kind == "letters" and variant not in {"sounds", "names"}:
                 raise ValueError("Invalid Reading letter audio")
             if kind != options.mode:
@@ -169,18 +160,14 @@ def load_catalog(root: Path, options: Options, logger) -> list[Card]:
                 continue
             if kind == "letters" and variant != options.letter_audio:
                 continue
-            if kind == "numbers" and not options.number_min <= number <= options.number_max:
-                continue
-            image = None
-            if kind != "numbers":
-                image = _asset(root, entry["image"], 2_000_000)
-                with Image.open(image) as art:
-                    if art.format != "PNG" or not (1 <= art.width <= 1024 and 1 <= art.height <= 1024):
-                        raise ValueError("Oversized Reading illustration")
-                    art.verify()
+            image = _asset(root, entry["image"], 2_000_000)
+            with Image.open(image) as art:
+                if art.format != "PNG" or not (1 <= art.width <= 1024 and 1 <= art.height <= 1024):
+                    raise ValueError("Oversized Reading illustration")
+                art.verify()
             cards.append(Card(identity, kind, text, tuple(units), image,
                               _speech(root, entry["sequence"], len(units)),
-                              _speech(root, entry["replay"], len(units)), tuple(tags), variant, number))
+                              _speech(root, entry["replay"], len(units)), tuple(tags), variant))
         except (OSError, ValueError, TypeError, KeyError, wave.Error, EOFError, Image.DecompressionBombError):
             logger.exception("Skipping damaged Reading card")
     return cards

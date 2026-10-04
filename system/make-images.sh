@@ -60,11 +60,19 @@ sgdisk --clear --new=1:2048:+256M --typecode=1:ef00 --change-name=1:EFI \
 dd if=esp.img of=toddlerbox.img bs=1M seek=1 conv=notrunc,sparse status=none
 dd if=root.img of=toddlerbox.img bs=1M seek=257 conv=notrunc,sparse status=none
 rm -f root.img esp.img
-qemu-img convert -f raw -O qcow2 -c toddlerbox.img toddlerbox.qcow2
-qemu-img compare -f raw -F qcow2 toddlerbox.img toddlerbox.qcow2
 mkdir -p iso/boot/grub
 cp "rootfs/boot/$kernel" iso/boot/vmlinuz
 cp "rootfs/boot/initrd.img-$kernel_version" iso/boot/initrd
+cp rootfs/opt/toddlerbox/packages.tsv packages.tsv
+cp rootfs/opt/toddlerbox/release-id release-id
+release_id=$(cat release-id)
+tar -czf "toddlerbox-app-$release_id.tar.gz" -C rootfs/opt/toddlerbox/releases "$release_id"
+sha256sum "toddlerbox-app-$release_id.tar.gz" >APP-SHA256SUMS
+if [[ ${TODDLERBOX_DISCARD_ROOTFS:-0} == 1 ]]; then
+    rm -rf rootfs  # Only this build's intermediate, after disk/app/boot copies exist.
+fi
+qemu-img convert -f raw -O qcow2 -c toddlerbox.img toddlerbox.qcow2
+qemu-img compare -f raw -F qcow2 toddlerbox.img toddlerbox.qcow2
 zstd -T2 -3 -f toddlerbox.img -o iso/toddlerbox.img.zst
 (cd iso && sha256sum toddlerbox.img.zst >toddlerbox.img.zst.sha256)
 printf '%s\n' "$disk_bytes" >iso/image-bytes
@@ -81,11 +89,6 @@ menuentry 'Install ToddlerBox — VM serial console' {
 menuentry 'Power off' { halt }
 EOF
 grub-mkrescue -o toddlerbox-installer.iso -volid TODDLERBOX iso
-cp rootfs/opt/toddlerbox/packages.tsv packages.tsv
-cp rootfs/opt/toddlerbox/release-id release-id
-release_id=$(cat release-id)
-tar -czf "toddlerbox-app-$release_id.tar.gz" -C rootfs/opt/toddlerbox/releases "$release_id"
-sha256sum "toddlerbox-app-$release_id.tar.gz" >APP-SHA256SUMS
 sha256sum toddlerbox.img toddlerbox.qcow2 toddlerbox-installer.iso >SHA256SUMS
 chmod a+r toddlerbox.img toddlerbox.qcow2 toddlerbox-installer.iso SHA256SUMS APP-SHA256SUMS packages.tsv release-id
 echo 'Created toddlerbox.qcow2, toddlerbox.img, and toddlerbox-installer.iso'

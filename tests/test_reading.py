@@ -59,7 +59,9 @@ def test_picture_waits_for_completion_and_taps_do_not_queue(card):
     player = SpeechPlayer(Mock(), audio=audio, clock=lambda: now[0])
     player.select(card)
     player.play(whole_word=True)
-    assert not audio.started
+    assert audio.started == ["whole.wav"]  # Whole word is now a deliberate independent action.
+    player.cancel()
+    audio.started.clear()
     player.play()
     player.play()
     assert audio.started == ["sequence.wav"] and not player.revealed
@@ -242,9 +244,16 @@ def test_five_launcher_icons_and_reading_controls_fit(scene, size):
 def test_singleton_deck_and_empty_library_are_quiet(scene, tmp_path):
     from toddlerbox.reading.app import ReadingApp
     old, _ = scene
-    config = dict(old.config, reading={"mode": "numbers", "number_min": 0, "number_max": 0})
-    app = ReadingApp(old.screen, old.rect, old.clock, config=config, audio=Audio(), previous_id="number-0")
-    assert app.card.number == 0 and not app.can_next
+    catalog = json.loads((ASSETS / "catalog.json").read_text())
+    card = catalog["cards"][0]
+    for relative in [card["image"], card["sequence"]["path"], card["replay"]["path"]]:
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(ASSETS / relative, path)
+    catalog["cards"] = [card]
+    (tmp_path / "catalog.json").write_text(json.dumps(catalog))
+    app = ReadingApp(old.screen, old.rect, old.clock, config=old.config, audio=Audio(), library=tmp_path, previous_id=card["id"])
+    assert app.card.id == card["id"] and not app.can_next
     app.player.revealed = True
     app.render()
     empty = ReadingApp(old.screen, old.rect, old.clock, config=old.config, audio=Audio(), library=tmp_path / "missing")

@@ -12,6 +12,8 @@ gnome-terminal
 nautilus
 network-manager-gnome
 wpasupplicant
+rfkill
+iw
 gnome-keyring
 dbus-user-session
 policykit-1

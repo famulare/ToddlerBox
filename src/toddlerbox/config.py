@@ -59,8 +59,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         ],
     },
     "music": {"volume": 0.25, "autoplay": True, "latency_ms": 0},
-    "reading": {"mode": "words", "word_sets": ["short_a_cvc"], "letter_case": "lowercase",
-                "letter_audio": "sounds", "number_min": 0, "number_max": 20, "volume": 0.35},
+    "reading": {"mode": "words", "word_sets": ["short_a_cvc", "short_e_cvc", "short_i_cvc", "short_o_cvc",
+                                               "short_u_cvc", "digraphs", "adjacent_consonants"], "letter_case": "lowercase",
+                "letter_audio": "sounds", "volume": 0.35},
 }
 
 
