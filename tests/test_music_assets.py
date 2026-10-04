@@ -21,9 +21,11 @@ def sha256(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_collection_has_six_complete_bounded_arrangements():
+def test_collection_has_eighteen_complete_bounded_arrangements():
     catalog = read_json(ASSETS / "catalog.json")
-    assert [t["id"] for t in catalog["tracks"]] == ["mary", "twinkle", "ode", "frere", "row", "minuet"]
+    assert [t["id"] for t in catalog["tracks"]] == ["mary", "twinkle", "ode", "frere", "row", "minuet",
+        "buns", "bridge", "spider", "farm", "oldman", "clock", "weasel",
+        "bingo", "mulberry", "lullaby", "morning", "largo"]
     assert (catalog["keyboard_low"], catalog["keyboard_high"]) == (48, 72)
     for track in catalog["tracks"]:
         score = read_json(ASSETS / "scores" / (track["id"] + ".json"))
@@ -44,7 +46,7 @@ def test_collection_has_six_complete_bounded_arrangements():
         assert active == 0
 
 
-@pytest.mark.parametrize("piece_id", ["mary", "twinkle", "ode", "frere", "row", "minuet"])
+@pytest.mark.parametrize("piece_id", [t["id"] for t in read_json(ASSETS / "catalog.json")["tracks"]])
 def test_cues_use_exact_score_timing_and_decoded_wav_duration(piece_id):
     cues = read_json(ASSETS / (piece_id + ".json"))
     score = read_json(ASSETS / "scores" / (piece_id + ".json"))
@@ -117,7 +119,7 @@ def test_every_playback_and_instrument_asset_matches_the_pinned_hashes():
     sources = read_json(ASSETS / "sources/manifest.json")
     for source in sources["files"]:
         assert source["sha256"] == sha256(ASSETS / source["file"])
-        assert source["license"] in {"CC0-1.0", "Public Domain", "MIT"}
+        assert source["license"] in {"CC0-1.0", "Public Domain", "MIT", "BSD-3-Clause"}
 
 
 def test_selected_instrument_zones_match_the_preserved_soft_sfz_layer():
@@ -134,3 +136,22 @@ def test_selected_instrument_zones_match_the_preserved_soft_sfz_layer():
         assert int(upstream["volume"]) == 23
         for key in ("lokey", "hikey", "pitch_keycenter"):
             assert selected[key] == int(upstream[key])
+
+
+def test_new_classical_and_jig_reference_rhythms():
+    lullaby = read_json(ASSETS / "scores/lullaby.json")
+    assert lullaby["meter"] == [3,4]
+    assert 'mutopiacopyright = "Public Domain"' in (ASSETS / "sources/lullaby.ly").read_text()
+    notes = [n for n in lullaby["notes"] if n["voice"] == "melody"]
+    # Mutopia's g8 g | bes4. g8 g4 | bes4 r4 g8 bes8, transposed Eb→C.
+    assert [n["pitch"] for n in notes[:8]] == [64,64,67,64,64,67,64,67]
+    assert [n["duration_tick"] for n in notes[:8]] == [216,216,648,216,432,432,216,216]
+    assert [n["start_tick"] for n in notes[:8]] == [0,240,480,1200,1440,1920,2880,3120]
+    weasel = read_json(ASSETS / "scores/weasel.json")
+    assert weasel["meter"] == [6,8]
+    assert 'G2G A2A|BdB G2z' in (ASSETS / "sources/weasel.abc").read_text()
+    notes = [n for n in weasel["notes"] if n["voice"] == "melody"]
+    # Quarter/eighth jig pairs and the eighth rest at each phrase ending.
+    assert [n["pitch"] for n in notes[:8]] == [60,60,62,62,64,67,64,60]
+    assert [n["start_tick"] for n in notes[:9]] == [0,480,720,1200,1440,1680,1920,2160,2880]
+    assert read_json(ASSETS / "scores/morning.json")["meter"] == [6,8]

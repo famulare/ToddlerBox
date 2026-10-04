@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "id": "largo",
+  "title": "New World Largo",
+  "tempo_bpm": 88,
+  "ticks_per_beat": 480,
+  "meter": [
+    4,
+    4
+  ],
+  "intro_ms": 1500,
+  "tail_ms": 1500,
+  "arrangement": "Anton\u00edn Dvo\u0159\u00e1k, Symphony No.9 Op.95 (1893), movement II; opening theme transposed to C, not the later song arrangement. New ToddlerBox compact melody and sparse roots, gentle dynamics, regularized timing; no third-party arrangement copied.",
+  "notes": [
+    {
+      "pitch": 48,
+      "start_tick": 0,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 64,
+      "start_tick": 0,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 67,
+      "start_tick": 960,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 1920,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 67,
+      "start_tick": 1920,
+      "duration_tick": 1728,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 55,
+      "start_tick": 3840,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 64,
+      "start_tick": 3840,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 62,
+      "start_tick": 4800,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 5760,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 60,
+      "start_tick": 5760,
+      "duration_tick": 1728,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 7680,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 62,
+      "start_tick": 7680,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 64,
+      "start_tick": 8640,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 9600,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 67,
+      "start_tick": 9600,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 64,
+      "start_tick": 10560,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 55,
+      "start_tick": 11520,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 62,
+      "start_tick": 11520,
+      "duration_tick": 2592,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 13440,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 64,
+      "start_tick": 14400,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 15360,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 67,
+      "start_tick": 15360,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 67,
+      "start_tick": 16320,
+      "duration_tick": 1728,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 17280,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 64,
+      "start_tick": 18240,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 55,
+      "start_tick": 19200,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 62,
+      "start_tick": 19200,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 60,
+      "start_tick": 20160,
+      "duration_tick": 1728,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 21120,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 62,
+      "start_tick": 22080,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 23040,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 64,
+      "start_tick": 23040,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 62,
+      "start_tick": 24000,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 48,
+      "start_tick": 24960,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    },
+    {
+      "pitch": 60,
+      "start_tick": 24960,
+      "duration_tick": 864,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 60,
+      "start_tick": 25920,
+      "duration_tick": 2592,
+      "velocity": 50,
+      "voice": "melody"
+    },
+    {
+      "pitch": 55,
+      "start_tick": 26880,
+      "duration_tick": 1440,
+      "velocity": 25,
+      "voice": "accompaniment"
+    }
+  ]
+}

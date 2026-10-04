@@ -129,7 +129,7 @@ journalctl -b -u toddlerbox-controller -u gdm3
 sudo journalctl -b _UID="$(id -u toddlerbox)"
 ```
 
-The launcher, Paint, Photos, Typing, Music and Reading report health only after processing and
+The launcher, Paint, Photos, Typing, Music, Reading and Math report health only after processing and
 rendering a frame. The controller allows 90 seconds for startup and 20 seconds
 without a frame once running. It restarts the graphical session at most three
 times per child-mode entry. Successful frames do not reset that budget. Exhaustion
@@ -266,3 +266,13 @@ parent escape and watchdog recovery during stalled transfers. No real Drive or
 family data is permitted on the image builder; local private acceptance checks
 and physical HP/USB qualification remain separate gates. Consult VALIDATION.md
 for actual evidence rather than treating these requirements as completed tests.
+
+## Hosted release qualification
+
+`Build and qualify release candidate` is an explicit GitHub workflow, never a
+child-device background job. It builds pinned x86-64 Ubuntu images, installs a
+fresh disposable Q35/UEFI VM, tests without a NIC using synthetic fixtures, and
+uploads a draft release only after passing. VM disks and ephemeral test passwords
+are never published. Selected screenshots/results are review evidence; physical
+HP radio, touch gestures, audio and sleep still need hardware acceptance.
+Maintainers verify evidence and sign the update manifest before publication.

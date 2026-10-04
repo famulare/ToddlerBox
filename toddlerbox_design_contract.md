@@ -3,8 +3,8 @@
 This document is the source of truth for the ToddlerBox application and system contract.
 The bootable system recipe and its qualification gates are documented in `system/README.md`.
 Hardware qualification remains separate from application and VM tests.
-On `codex/math-app`, Math and the six-tile launcher are application-only trials;
-released 0.3.0/main/installer remain unchanged pending Mac user testing.
+Math and the six-tile launcher were approved after Mac user testing and are
+included in ToddlerBox 0.4.
 
 ## 0. Global invariants
 
@@ -30,7 +30,7 @@ released 0.3.0/main/installer remain unchanged pending Mac user testing.
   - Music
   - Typing
   - Reading
-  - Math (application trial)
+  - Math
 - Top row: Paint/Photos/Music; bottom row: Typing/Reading/Math. Custom launcher lists retain their own entries/order.
 - Icon hit targets are computed from screen size (minimum 120px)
 - Function keys `F1`-`F12` are ignored
@@ -162,7 +162,7 @@ released 0.3.0/main/installer remain unchanged pending Mac user testing.
 
 ## 4a. Music App
 
-- Six bundled short piano arrangements with scores, synchronized cues and source/license notices under `assets/music/`.
+- Eighteen bundled short piano arrangements with scores, synchronized cues and source/license notices under `assets/music/`.
 - Fixed C3–C5 keyboard; falling bars encode pitch and held duration. Melody is blue, accompaniment gold.
 - Piano touches play independent sampled notes over a running song without interrupting its clock/stream.
 - Song choices, Free Play, Play/Pause, Autoplay, piano keys and Home are the child controls.
@@ -199,7 +199,7 @@ released 0.3.0/main/installer remain unchanged pending Mac user testing.
 - Playback is offline PCM. No runtime
   speech synthesis, new data schema or child-created Reading document is introduced.
 
-## 4c. Math App — application trial
+## 4c. Math App
 
 - Three modes: objects-first Numbers, addition, subtraction. Tap the large
   question card to reveal the numeral or answer; object taps have no action.
@@ -224,8 +224,8 @@ released 0.3.0/main/installer remain unchanged pending Mac user testing.
   No autoplay or speech-controlled revelation. Offline bounded 0–100 WAV clips
   stop on Home, Next, mode/focus changes; no runtime synthesis/network access.
 - `MATH_DESIGN.md` records sampling details, configuration and Mac launch commands.
-  Trial qualification stops at tests, independent review and a draft PR, before
-  main integration, release signing, installers or VM release qualification.
+  Mac user testing and integration approval preceded inclusion in release 0.4.
+  Ubuntu images require fresh-install/session/recovery qualification.
 
 ## 5. Data layout
 
@@ -256,7 +256,7 @@ data_root/
 - `music.volume`, `music.autoplay`, `music.latency_ms`
 - `reading.mode`, `reading.word_sets`, `reading.letter_case`, `reading.letter_audio`
 - `reading.volume`
-- `math.mode`, `math.max_number`, `math.low_number_weight`
+- `math.mode`, `math.max_number`, `math.low_number_weight`, `math.volume`
 
 ## 7. Error handling
 

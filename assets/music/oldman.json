@@ -1,0 +1,458 @@
+{
+  "schema_version": 1,
+  "id": "oldman",
+  "title": "This Old Man",
+  "intro_ms": 1500,
+  "tail_ms": 1500,
+  "notes": [
+    {
+      "pitch": 48,
+      "start_ms": 1500.0,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 67,
+      "start_ms": 1500.0,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 2035.7142857142858,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 67,
+      "start_ms": 2571.4285714285716,
+      "duration_ms": 964.2857142857143,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 3642.857142857143,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 67,
+      "start_ms": 3642.857142857143,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 4178.571428571428,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 67,
+      "start_ms": 4714.285714285714,
+      "duration_ms": 964.2857142857143,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 55,
+      "start_ms": 5785.714285714286,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 69,
+      "start_ms": 5785.714285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 67,
+      "start_ms": 6321.428571428572,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 65,
+      "start_ms": 6857.142857142857,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 7392.857142857143,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 7928.571428571428,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 62,
+      "start_ms": 7928.571428571428,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 8464.285714285714,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 65,
+      "start_ms": 9000.0,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 9535.714285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 10071.428571428572,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 62,
+      "start_ms": 10071.428571428572,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 60,
+      "start_ms": 10607.142857142857,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 62,
+      "start_ms": 11142.857142857143,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 11678.57142857143,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 12214.285714285714,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 60,
+      "start_ms": 12214.285714285714,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 12750.0,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 62,
+      "start_ms": 13285.714285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 65,
+      "start_ms": 13821.428571428572,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 55,
+      "start_ms": 14357.142857142857,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 64,
+      "start_ms": 14357.142857142857,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 62,
+      "start_ms": 14892.857142857143,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 60,
+      "start_ms": 15428.57142857143,
+      "duration_ms": 964.2857142857143,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 16500.0,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 67,
+      "start_ms": 16500.0,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 17035.714285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 67,
+      "start_ms": 17571.428571428572,
+      "duration_ms": 964.2857142857143,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 18642.857142857145,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 67,
+      "start_ms": 18642.857142857145,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 19178.571428571428,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 67,
+      "start_ms": 19714.285714285714,
+      "duration_ms": 964.2857142857143,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 20785.714285714286,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 69,
+      "start_ms": 20785.714285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 67,
+      "start_ms": 21321.428571428572,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 65,
+      "start_ms": 21857.14285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 22392.857142857145,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 55,
+      "start_ms": 22928.571428571428,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 62,
+      "start_ms": 22928.571428571428,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 23464.285714285714,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 65,
+      "start_ms": 24000.0,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 24535.714285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 25071.428571428572,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 62,
+      "start_ms": 25071.428571428572,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 60,
+      "start_ms": 25607.14285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 62,
+      "start_ms": 26142.857142857145,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 26678.571428571428,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 27214.285714285714,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 60,
+      "start_ms": 27214.285714285714,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 64,
+      "start_ms": 27750.0,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 62,
+      "start_ms": 28285.714285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 65,
+      "start_ms": 28821.428571428572,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 48,
+      "start_ms": 29357.14285714286,
+      "duration_ms": 1607.142857142857,
+      "voice": "accompaniment",
+      "velocity": 25
+    },
+    {
+      "pitch": 64,
+      "start_ms": 29357.14285714286,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 62,
+      "start_ms": 29892.857142857145,
+      "duration_ms": 482.14285714285717,
+      "voice": "melody",
+      "velocity": 50
+    },
+    {
+      "pitch": 60,
+      "start_ms": 30428.57142857143,
+      "duration_ms": 964.2857142857143,
+      "voice": "melody",
+      "velocity": 50
+    }
+  ],
+  "duration_ms": 32892.879818594105
+}

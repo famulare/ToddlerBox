@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("build/reading-piano-qa/comparison"))
     parser.add_argument("--all-activities", action="store_true", help="Compare Music and Reading too when their behavior is unchanged")
     parser.add_argument("--exclude-launcher", action="store_true", help="Explicitly omit intentional launcher changes; keep all activity/save comparisons")
+    parser.add_argument("--expanded-music", action="store_true", help="Explicitly omit intentional Music UI/catalog changes; still compare all original music audio/cues/instrument")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     old, output = args.baseline.resolve(), args.output.resolve()
@@ -27,6 +28,8 @@ def main():
     frames = {"launcher", "paint", "photos", "typing"}
     if args.all_activities:
         frames.update({"music", "reading"})
+    if args.expanded_music:
+        frames.discard("music")
     if args.exclude_launcher:
         frames.discard("launcher")
     for size in ("1024x600", "1366x768"):
@@ -41,6 +44,9 @@ def main():
                 continue
             if original.name.startswith("number-") or original.name == "numbers-provenance.json":
                 continue  # Intentionally removed, with number cards/configuration.
+            if args.expanded_music and (original.parent == old/"assets/music" and original.name in {"catalog.json", "build-manifest.json"}
+                                           or original == old/"assets/music/sources/manifest.json"):
+                continue
             candidate = root/original.relative_to(old)
             assert hashlib.sha256(original.read_bytes()).digest() == hashlib.sha256(candidate.read_bytes()).digest(), original
             counts["unchanged_media"] += 1

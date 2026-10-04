@@ -44,6 +44,90 @@
       "audio": "minuet.wav",
       "cues": "minuet.json",
       "duration_ms": 29666.666666666668
+    },
+    {
+      "id": "buns",
+      "title": "Hot Cross Buns",
+      "audio": "buns.wav",
+      "cues": "buns.json",
+      "duration_ms": 24681.85941043084
+    },
+    {
+      "id": "bridge",
+      "title": "London Bridge",
+      "audio": "bridge.wav",
+      "cues": "bridge.json",
+      "duration_ms": 21375.01133786848
+    },
+    {
+      "id": "spider",
+      "title": "Itsy Bitsy Spider",
+      "audio": "spider.wav",
+      "cues": "spider.json",
+      "duration_ms": 27593.786848072563
+    },
+    {
+      "id": "farm",
+      "title": "Old MacDonald",
+      "audio": "farm.wav",
+      "cues": "farm.json",
+      "duration_ms": 38192.33560090703
+    },
+    {
+      "id": "oldman",
+      "title": "This Old Man",
+      "audio": "oldman.wav",
+      "cues": "oldman.json",
+      "duration_ms": 32892.879818594105
+    },
+    {
+      "id": "clock",
+      "title": "Hickory Dickory Dock",
+      "audio": "clock.wav",
+      "cues": "clock.json",
+      "duration_ms": 24923.083900226757
+    },
+    {
+      "id": "weasel",
+      "title": "Pop Goes the Weasel",
+      "audio": "weasel.wav",
+      "cues": "weasel.json",
+      "duration_ms": 29333.333333333332
+    },
+    {
+      "id": "bingo",
+      "title": "Bingo",
+      "audio": "bingo.wav",
+      "cues": "bingo.json",
+      "duration_ms": 27333.333333333332
+    },
+    {
+      "id": "mulberry",
+      "title": "Here We Go Round the Mulberry Bush",
+      "audio": "mulberry.wav",
+      "cues": "mulberry.json",
+      "duration_ms": 34071.42857142857
+    },
+    {
+      "id": "lullaby",
+      "title": "Brahms Lullaby",
+      "audio": "lullaby.wav",
+      "cues": "lullaby.json",
+      "duration_ms": 37090.92970521542
+    },
+    {
+      "id": "morning",
+      "title": "Morning Mood",
+      "audio": "morning.wav",
+      "cues": "morning.json",
+      "duration_ms": 31620.0
+    },
+    {
+      "id": "largo",
+      "title": "New World Largo",
+      "audio": "largo.wav",
+      "cues": "largo.json",
+      "duration_ms": 43500.0
     }
   ]
 }

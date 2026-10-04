@@ -44,7 +44,7 @@ def load_library(root: Path, logger) -> tuple[list[Track], int, int]:
         if not (24 <= low < high <= 96 and 12 <= high - low <= 36):
             raise ValueError("Invalid keyboard range")
         entries = catalog["tracks"]
-        if not isinstance(entries, list) or len(entries) > 12:
+        if not isinstance(entries, list) or len(entries) > 32:
             raise ValueError("Invalid music collection size")
     except (OSError, ValueError, KeyError, TypeError):
         logger.exception("Music catalog is unavailable")

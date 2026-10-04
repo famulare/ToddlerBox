@@ -172,8 +172,8 @@ def test_music_layout_touch_and_cleanup(tmp_path,monkeypatch,size):
     screen = pygame.display.set_mode(size)
     audio = Audio()
     app = MusicApp(screen,screen.get_rect(),pygame.time.Clock(),config={"data_root":str(tmp_path)},audio=audio)
-    assert len(app.player.tracks) == 6
-    controls = app.song_rects+[app.pause_rect,app.auto_rect,app.home_rect]
+    assert len(app.player.tracks) == 18
+    controls = [r.clip(app.song_list_rect) for r in app.song_rects if r.colliderect(app.song_list_rect)] + [app.free_rect,app.pause_rect,app.auto_rect,app.home_rect]
     for i,rect in enumerate(controls):
         assert screen.get_rect().contains(rect)
         assert all(not rect.colliderect(other) for other in controls[i+1:])
@@ -183,6 +183,7 @@ def test_music_layout_touch_and_cleanup(tmp_path,monkeypatch,size):
     mouse = pygame.event.Event(pygame.MOUSEBUTTONDOWN,pos=center,button=1,touch=True)
     app.handle_event(finger)
     app.handle_event(mouse)
+    app.handle_event(pygame.event.Event(pygame.FINGERUP,x=center[0]/size[0],y=center[1]/size[1],finger_id=1,touch_id=1))
     assert len(audio.started) == 1
     app.render()
     # A Home event exits run and the finally path releases the stream.
