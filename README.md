@@ -358,7 +358,11 @@ USB installation media from the same assembled filesystem.
 GDM starts a standalone Cage child session. Hold `Ctrl+Alt+Home` for two seconds
 to reach the separate parent account's GNOME login. An independent controller
 handles that chord and bounded crash/hang recovery. The boot menu also provides
-parent recovery. First boot asks you to create the parent password.
+parent recovery. First boot asks you to create the parent password, then opens
+authenticated parent setup for network, audio, input and recovery checks.
+Use **ToddlerBox Setup & Maintenance** for public signed updates, rollback,
+Ubuntu maintenance and reviewed support reports. No Git credentials or manual
+release-hash checks are needed. See [parent maintenance](docs/parent-maintenance.md).
 
 See the system guide for prerequisites, graphical VM inspection, installation,
 release rollback, and qualification limits. The former tty-autologin, GDM-masking,

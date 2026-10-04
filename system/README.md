@@ -20,6 +20,10 @@ extra container copy made by Docker's vfs driver. Outputs default to
 `TODDLERBOX_PRUNE_BUILD_CACHE=1` explicitly permits pruning unused Docker build
 cache before disk assembly. Earlier image files and VM checkpoints are preserved.
 The extracted rootfs is discarded only after boot, app and raw disk copies exist.
+`TODDLERBOX_ROOTFS_SCRATCH` can name a new temporary directory on another filesystem
+when vfs storage is constrained; it is removed only after full image assembly.
+`TODDLERBOX_DISCARD_CAGE_BUILDER=1` drops the completed compiler image before disk
+assembly; compiled Cage in the rootfs/output is retained.
 
 Docker does not need privileged mode or loop devices. `system/versions.env`
 pins the Ubuntu container digest, Ubuntu archive snapshot, and uv image digest.
@@ -29,8 +33,9 @@ content ID that includes uncommitted code, and SHA-256 checksums.
 
 This is a repeatable, versioned recipe, not a claim of bit-for-bit identical disk
 images: filesystem timestamps, image metadata, and compression can differ.
-Update the snapshot deliberately and requalify; installed systems retain the
-snapshot source, so ongoing security updates require an explicit snapshot refresh.
+Update the snapshot deliberately and requalify. The installed appliance retains
+snapshot provenance but uses normal signed Noble repositories for explicit parent
+maintenance; apt timers/unattended package installation are disabled.
 
 For a TLS-inspecting build proxy, set `TODDLERBOX_BUILD_CA` to a trusted combined
 CA bundle. It is mounted only during build, never installed in the product image.
@@ -75,8 +80,9 @@ before ordinary playback/inspection; a new VM start overwrites that capture.
 Verify output during Music and Reading, and silence after Home or parent recovery. Physical
 speaker volume and latency still need HP testing.
 
-The first boot asks for the `parent` password on tty1. There are no default
-passwords or built-in SSH keys. This is the same first-boot flow on hardware.
+The first boot asks for the `parent` password on tty1, then routes to authenticated
+parent GNOME setup until its supervised input/recovery checks are complete.
+There are no default passwords or built-in SSH keys. This is the same first-boot flow on hardware.
 Use a disposable password for VM tests. Keep independent serial console access
 open while testing the graphical session. `parent` can log in there and use sudo.
 

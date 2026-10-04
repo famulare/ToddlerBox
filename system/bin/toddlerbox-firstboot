@@ -4,8 +4,12 @@ set -euo pipefail
 echo 'Welcome to ToddlerBox. Create the parent account password.'
 echo 'This password unlocks the ordinary Ubuntu GNOME desktop and administration.'
 echo 'The parent account name is: parent'
-passwd parent
+# Power may have failed after passwd succeeded but before our completion write.
+# Inspect password status only, never read/print its hash or reset an existing one.
+if [[ $(passwd -S parent | awk '{print $2}') != P ]]; then
+    passwd parent
+fi
 install -d -m 0700 /var/lib/toddlerbox-system
-touch /var/lib/toddlerbox-system/setup-complete
+touch /var/lib/toddlerbox-system/password-created
 sync
-echo 'Setup complete. Starting ToddlerBox.'
+echo 'Password ready. Log into the parent desktop to finish ToddlerBox setup.'

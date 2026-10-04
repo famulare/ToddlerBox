@@ -1,0 +1,228 @@
+#!/usr/bin/python3
+"""One parent terminal interface; root actions accept only fixed operations."""
+import argparse
+import datetime
+import json
+import os
+from pathlib import Path
+import pwd
+import subprocess
+import sys
+import urllib.parse
+
+sys.path.insert(0, "/usr/local/lib/toddlerbox-system")
+from appliance import STEPS, accept, check, command, finish, guard, maintenance_lock, mode, progress
+from boot_recovery import STATE, atomic, latest, record, safe
+
+
+def report(root=Path("/")):
+    value = {"format": 1, "platform": "Ubuntu 24.04 x86-64"}
+    source = root / "opt/toddlerbox/release-id"
+    value["image"] = source.read_text().strip() if source.exists() else "unknown"
+    import re
+    if not re.fullmatch(r"[0-9a-f]{16}", value["image"]):
+        value["image"] = "unknown"
+    value["free_mib"] = __import__("shutil").disk_usage(root / STATE).free // 1024 ** 2
+    value["maintenance"] = {name: (root / STATE / name).exists() for name in ("maintenance", "apt-maintenance", "recovery-error")}
+    for service in ("NetworkManager", "wpasupplicant", "gdm3", "toddlerbox-controller", "toddlerbox-sync"):
+        result = subprocess.run(["systemctl", "is-active", service], capture_output=True, text=True, timeout=5)
+        state = result.stdout.strip()
+        value[service] = state if state in {"active", "inactive", "failed", "activating", "deactivating"} else "unknown"
+    try:
+        value["setup"] = progress(root)["checks"]
+        item = latest(root)
+        state = item[1]["status"] if item else "never-run"
+        value["update"] = state if state in {"applying", "restoring", "pending", "accepted", "rolled-back", "never-run"} else "unknown"
+    except (OSError, ValueError, KeyError, TypeError):
+        value["state"] = "needs-parent-repair"
+    runtime = root / "run/toddlerbox-system/status.json"
+    try:
+        status = json.loads(runtime.read_text())
+        value["mode"] = status["mode"] if status.get("mode") in {"parent", "child"} else "unknown"
+        value["seen_frame"] = status.get("seen_frame") is True
+        value["restarts"] = status.get("restarts") if type(status.get("restarts")) is int and 0 <= status["restarts"] <= 3 else "unknown"
+    except (OSError, ValueError, KeyError, TypeError):
+        value["mode"] = "unknown"
+    value["last_save"] = "unavailable; sync save acknowledgement is separate"
+    try:
+        from tbx_sync.cli import status as sync_status
+        from tbx_sync.state import Paths
+        sync = sync_status(Paths(config=root / "etc/toddlerbox-sync", state=root / "var/lib/toddlerbox-sync", data=root / "var/lib/toddlerbox"))
+        value["drive"] = sync.get("state") if sync.get("state") in {"never-run", "unconfigured", "running", "success", "partial", "failed", "timed_out", "interrupted"} else "unknown"
+        at = (sync.get("last_success") or {}).get("at")
+        value["last_drive_success"] = at if isinstance(at, str) and re.fullmatch(r"[0-9TZ:+.\-]{10,32}", at) else "never-run"
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        value["drive"] = "unavailable"
+    value["ubuntu_reboot_required"] = (root / "var/run/reboot-required").exists()
+    # Deliberately no journal, filenames, identifiers, config, network names or logs.
+    return value
+
+
+def ubuntu_updates(root=Path("/")):
+    with maintenance_lock(root):
+        guard(root, allow_apt=True)
+        state = root / STATE
+        atomic(state / "parent-mode", b"Ubuntu maintenance\n")
+        atomic(state / "apt-maintenance", b"in progress\n")
+        try:
+            environment = dict(os.environ, DEBIAN_FRONTEND="noninteractive")
+            def run(args, timeout):
+                subprocess.run(args, check=True, timeout=timeout, stdin=subprocess.DEVNULL, env=environment)
+            # Stream output to the parent terminal; preserve appliance conffiles.
+            run(["dpkg", "--force-confdef", "--force-confold", "--configure", "-a"], 900)
+            run(["apt-get", "update"], 300)
+            run(["apt-get", "-o", "Dpkg::Options::=--force-confdef", "-o", "Dpkg::Options::=--force-confold", "upgrade", "-y"], 1800)
+            record(state / "ubuntu-maintenance.json", {"last_success": datetime.datetime.now(datetime.timezone.utc).isoformat()})
+        finally:
+            audit = subprocess.run(["dpkg", "--audit"], capture_output=True, text=True, timeout=30)
+            if audit.returncode == 0 and not audit.stdout.strip():
+                (state / "apt-maintenance").unlink(missing_ok=True)
+                from boot_recovery import fsync_dir
+                fsync_dir(state)
+            print("Reboot required." if (root / "var/run/reboot-required").exists() else "Check status before returning to child mode.")
+
+
+def root_action(action, arguments):
+    guard(readonly=action == "status", allow_apt=action == "ubuntu", allow_recovery=action == "recover")
+    if action == "check" and len(arguments) == 2:
+        check(*arguments)
+    elif action == "finish" and not arguments:
+        finish()
+    elif action == "test" and not arguments:
+        mode("test-child")
+    elif action == "accept" and not arguments:
+        accept()
+    elif action == "updates" and not arguments:
+        from release_client import catalog
+        print(json.dumps(catalog(), indent=2))
+    elif action == "install" and not arguments:
+        from release_client import install
+        print(install())
+    elif action == "rollback" and not arguments:
+        from update_bundle import run
+        print(run(rollback=True))
+    elif action == "ubuntu" and not arguments:
+        ubuntu_updates()
+    elif action == "status" and not arguments:
+        print(json.dumps(report(), indent=2))
+    elif action == "recover" and not arguments:
+        command(["systemctl", "start", "toddlerbox-candidate-recover.service"], timeout=120)
+    else:
+        raise ValueError("Unknown parent operation")
+
+
+def privileged(action, *arguments):
+    subprocess.run(["sudo", "/usr/local/sbin/toddlerbox-maintenance", "--action", action, *arguments], check=True)
+
+
+def setup():
+    print("ToddlerBox setup. Progress survives reboot. Leave optional checks skipped for offline/local use.")
+    print("Use Ctrl+Alt+Home held two seconds to reach authenticated parent login.")
+    result = subprocess.run(["sudo", "/usr/local/sbin/toddlerbox-maintenance", "--action", "status"], capture_output=True, text=True, check=True)
+    previous = json.loads(result.stdout).get("setup", {})
+    descriptions = {
+        "network": "Open Ubuntu Wi-Fi settings and connect, or choose offline use.",
+        "audio": "Open Sound settings; test speakers/output and volume. Test volume keys during the child test.",
+        "input": "During the child test, try touch edges/multiple fingers, trackpad taps/clicks and dragging.",
+        "recovery": "Run supervised child test for at least ten seconds, then hold Ctrl+Alt+Home and log in again. Reopen setup.",
+        "drive": "Optional: import your private Drive setup package using toddlerbox-sync import, or skip.",
+    }
+    for step in STEPS:
+        print(f"\n{step}: {descriptions[step]}")
+        if step in previous and (step != "recovery" or previous[step] == "passed"):
+            if input(f"Recorded {previous[step]}. Redo this check? [y/N] ").lower() != "y":
+                continue
+        if step in {"network", "audio"} and input("Open settings? [y/N] ").lower() == "y":
+            panel = "wifi" if step == "network" else "sound"
+            subprocess.Popen(["gnome-control-center", panel], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if step == "recovery" and input("Start child test now? [y/N] ").lower() == "y":
+            privileged("test")
+            return
+        if step == "drive" and input("Import a private setup package now? [y/N] ").lower() == "y":
+            drive_import()
+        result = input("Result: passed / failed / skipped [skipped]: ").strip().lower() or "skipped"
+        if result not in {"passed", "failed", "skipped"}:
+            print("Unknown result; no change saved.")
+            return
+        privileged("check", step, result)
+    if input("Finish setup, accepting the recorded limitations? [y/N] ").lower() == "y":
+        privileged("finish")
+        print("Setup complete. Select Start ToddlerBox from the parent applications menu.")
+
+
+def drive_import():
+    import hashlib
+    package = Path(input("Private setup package path: ").strip()).expanduser().absolute()
+    # The parent chooses their local package. Verify its unchanged bytes and let
+    # the existing importer validate every member/manifest; no manual hash typing.
+    with package.open("rb") as handle:
+        digest = hashlib.file_digest(handle, "sha256").hexdigest()
+    subprocess.run(["sudo", "toddlerbox-sync", "import", str(package), "--sha256", digest], check=True)
+
+
+def ui(first_run=False):
+    if os.getuid() != pwd.getpwnam("parent").pw_uid:
+        raise ValueError("Open this program from the parent desktop")
+    if first_run and (Path("/") / STATE / "setup-complete").exists():
+        return
+    if first_run:
+        setup()
+    while True:
+        print("\nToddlerBox: 1 Setup  2 Status  3 Check updates  4 Install update  5 Accept tested update\n"
+              "6 Rollback  7 Ubuntu updates  8 Drive  9 Report problem  10 Retry recovery  0 Exit")
+        choice = input("> ").strip()
+        if choice == "0":
+            return
+        if choice == "1":
+            setup()
+        elif choice in {"2", "3", "4", "5", "6", "7", "10"}:
+            action = {"2": "status", "3": "updates", "4": "install", "5": "accept", "6": "rollback", "7": "ubuntu", "10": "recover"}[choice]
+            if action in {"install", "rollback", "ubuntu", "recover"}:
+                if input("Save parent work first. Proceed? [y/N] ").lower() != "y":
+                    continue
+            try:
+                privileged(action)
+            except subprocess.CalledProcessError:
+                print("Operation stopped. The installed system/work remains available; inspect Status.")
+        elif choice == "8":
+            action = input("Drive: setup / import / run / status / reconnect: ").strip()
+            if action == "import":
+                drive_import()
+            if action in {"setup", "run", "status", "reconnect"}:
+                subprocess.run(["sudo", "toddlerbox-sync", action], check=False)
+        elif choice == "9":
+            result = subprocess.run(["sudo", "/usr/local/sbin/toddlerbox-maintenance", "--action", "status"], capture_output=True, text=True)
+            if result.returncode:
+                print("Report unavailable. Try Status.")
+                continue
+            # Parse and format only the allowlisted root report, never sudo stderr.
+            data = json.loads(result.stdout)
+            text = json.dumps(data, indent=2)
+            target = Path.home() / "ToddlerBox-support.json"
+            fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW, 0o600)
+            with os.fdopen(fd, "w") as handle:
+                handle.write(text + "\n")
+            print(text)
+            print(f"Saved local report to {target}. Review before posting publicly; attach it manually if needed.")
+            if input("Open a public GitHub issue with this report? [y/N] ").lower() == "y":
+                url = "https://github.com/famulare/ToddlerBox/issues/new?" + urllib.parse.urlencode({"title": "ToddlerBox hardware/support report", "body": "Describe what happened:\n\n```json\n" + text + "\n```"})
+                subprocess.Popen(["xdg-open", url if len(url) <= 7000 else "https://github.com/famulare/ToddlerBox/issues/new"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--first-run", action="store_true")
+    parser.add_argument("--action", choices=("check", "finish", "test", "accept", "updates", "install", "rollback", "ubuntu", "status", "recover"))
+    parser.add_argument("arguments", nargs="*")
+    args = parser.parse_args()
+    try:
+        if args.action:
+            root_action(args.action, args.arguments)
+        else:
+            ui(args.first_run)
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, EOFError) as error:
+        raise SystemExit(f"Parent operation stopped ({type(error).__name__}). Use Status or the boot recovery option.")
+
+
+if __name__ == "__main__":
+    main()

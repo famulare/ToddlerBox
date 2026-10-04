@@ -21,6 +21,9 @@ def build(root, cage, output, app=None):
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=root, text=True).strip()
     paths = {"controller.py": root / "system/controller.py",
              "update_bundle.py": root / "system/update_bundle.py",
+             "appliance.py": root / "system/appliance.py",
+             "release_client.py": root / "system/release_client.py",
+             "release-public-key.pem": root / "system/release-public-key.pem",
              "toddlerbox-cage": cage}
     for name in FILES.keys() - paths.keys():
         paths[name] = root / "system/bin" / name

@@ -26,6 +26,10 @@ FILES = {
     "toddlerbox-cage": ("usr/local/libexec/toddlerbox-cage", 0o755),
     "update_bundle.py": ("usr/local/lib/toddlerbox-system/update_bundle.py", 0o644),
     "toddlerbox-update": ("usr/local/sbin/toddlerbox-update", 0o755),
+    "appliance.py": ("usr/local/lib/toddlerbox-system/appliance.py", 0o644),
+    "release_client.py": ("usr/local/lib/toddlerbox-system/release_client.py", 0o644),
+    "toddlerbox-maintenance": ("usr/local/sbin/toddlerbox-maintenance", 0o755),
+    "release-public-key.pem": ("etc/toddlerbox/release-public-key.pem", 0o644),
 }
 PACKAGES = ["pipewire", "pipewire-pulse", "wireplumber", "wpasupplicant"]
 STATE = "var/lib/toddlerbox-system/updates"
@@ -96,6 +100,8 @@ def guard(root):
         raise ValueError("Run with sudo from the parent account.")
     if (root / "run/toddlerbox-system/mode").read_text().strip() != "parent":
         raise ValueError("Enter parent mode and save parent desktop work first.")
+    if (root / "var/lib/toddlerbox-system/apt-maintenance").exists():
+        raise ValueError("Complete Ubuntu repair/maintenance first")
     info = dict(line.split("=", 1) for line in (root / "etc/os-release").read_text().splitlines()
                 if "=" in line)
     if info.get("ID", "").strip('"') != "ubuntu" or info.get("VERSION_ID", "").strip('"') != "24.04" or platform.machine() != "x86_64":
@@ -113,13 +119,15 @@ def stage_bundle(bundle, digest, stage):
         with zipfile.ZipFile(handle) as archive:
             entries = archive.infolist()
             names = [item.filename for item in entries]
-            if len(names) != len(set(names)) or len(names) > 12:
+            if len(names) != len(set(names)) or len(names) > len(FILES) + 4:
                 raise ValueError("Duplicate or excessive bundle entries")
             for item in entries:
                 if item.is_dir() or stat.S_IFMT(item.external_attr >> 16) not in (0, stat.S_IFREG):
                     raise ValueError("Bundle entries must be regular files")
                 if item.file_size > 1024 ** 3:
                     raise ValueError("Bundle entry too large")
+                if item.filename.startswith("payload/") and item.file_size > 16 * 1024 ** 2:
+                    raise ValueError("System payload too large")
             if archive.getinfo("manifest.json").file_size > 16384:
                 raise ValueError("Manifest too large")
             manifest = json.loads(archive.read("manifest.json"))
@@ -218,28 +226,47 @@ def latest(state):
     return job, json.loads((job / "state.json").read_text())
 
 
-def run(bundle=None, digest=None, *, rollback=False, root=Path("/")):
+def run(bundle=None, digest=None, *, rollback=False, root=Path("/"), release_sequence=None, release_source=None):
     guard(root)
     directory = safe_path(root, STATE)
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     with lock(directory):
+        guard(root)
+        if release_sequence is not None:
+            from release_client import sequence_guard
+            sequence_guard(release_sequence, root, source=release_source, digest=digest)
+        appliance = (root / "var/lib/toddlerbox-system/appliance-v1").exists()
         previous = latest(directory)
         if rollback:
             if not previous or previous[1]["status"] == "rolled-back":
                 raise ValueError("No pending or applied update to roll back.")
             command(["systemctl", "stop", SERVICE])
             try:
-                restore(root, *previous)
+                if appliance:
+                    from boot_recovery import restore as resident_restore, atomic
+                    atomic(root / "var/lib/toddlerbox-system/maintenance", b"rollback\n")
+                    atomic(root / "var/lib/toddlerbox-system/parent-mode", b"rollback\n")
+                    resident_restore(root, *previous)
+                    (root / "var/lib/toddlerbox-system/maintenance").unlink()
+                else:
+                    restore(root, *previous)
             finally:
                 restart()
             return "Previous controls/app restored; audio packages retained. Return to parent login."
-        if previous and previous[1]["status"] == "applying":
+        if previous and previous[1]["status"] in {"applying", "restoring", "pending"}:
             raise ValueError("Interrupted update: run toddlerbox-update --rollback first.")
         with tempfile.TemporaryDirectory(dir=directory, prefix=".stage-") as temporary:
             stage = Path(temporary)
             manifest = stage_bundle(Path(bundle), digest, stage)
-            if previous and previous[1]["status"] == "applied" and previous[1]["bundle"] == digest:
+            if release_sequence is not None and manifest["source"].get("content") != release_source:
+                raise ValueError("Signed source identity differs from bundle")
+            if previous and previous[1]["status"] in {"applied", "accepted"} and previous[1]["bundle"] == digest:
                 return "This update is already installed; rollback remains available."
+            if appliance and manifest["source"].get("content") == app_links(root)["current"] and all(
+                (root / FILES[name][0]).is_file() and sha(root / FILES[name][0]) == expected
+                for name, expected in manifest["files"].items()
+            ):
+                return "This release is already installed; nothing changed."
             for name in manifest["files"]:
                 target = safe_path(root, FILES[name][0])
                 if target.exists() and not target.is_file():
@@ -248,8 +275,11 @@ def run(bundle=None, digest=None, *, rollback=False, root=Path("/")):
                     raise ValueError("Required system directory is missing")
             # Package operations precede file replacement. A network/apt failure
             # does not change controller/app files or discard the last rollback.
-            command(["apt-get", "update"])
-            command(["apt-get", "install", "-y", "--no-install-recommends", *PACKAGES])
+            installed = subprocess.run(["dpkg-query", "-W", "-f=${db:Status-Status}\n", *PACKAGES],
+                                       capture_output=True, text=True, timeout=10)
+            if not appliance or installed.returncode or installed.stdout.splitlines() != ["installed"] * len(PACKAGES):
+                command(["apt-get", "update"])
+                command(["apt-get", "install", "-y", "--no-install-recommends", *PACKAGES])
             if "toddlerbox-cage" in manifest["files"]:
                 libraries = subprocess.run(["ldd", str(stage / "toddlerbox-cage")], check=True,
                                            capture_output=True, text=True, timeout=10).stdout
@@ -262,6 +292,8 @@ def run(bundle=None, digest=None, *, rollback=False, root=Path("/")):
             state = {"bundle": digest, "source": manifest["source"], "status": "applying",
                      "old_files": {}, "old_links": app_links(root),
                      "app_changed": manifest["app"] is not None}
+            if appliance:
+                state.update(protocol=1, attempts=0, observed=False)
             for name in manifest["files"]:
                 target = root / FILES[name][0]
                 if target.exists():
@@ -271,6 +303,10 @@ def run(bundle=None, digest=None, *, rollback=False, root=Path("/")):
                     state["old_files"][name] = None
             record(job / "state.json", state)
             record(directory / "latest.json", {"job": job.name})
+            if appliance:
+                from boot_recovery import atomic
+                atomic(root / "var/lib/toddlerbox-system/parent-mode", b"update maintenance\n")
+                atomic(root / "var/lib/toddlerbox-system/maintenance", b"installation\n")
             command(["systemctl", "stop", SERVICE])
             try:
                 for name in manifest["files"]:
@@ -279,12 +315,22 @@ def run(bundle=None, digest=None, *, rollback=False, root=Path("/")):
                 if manifest["app"] is not None:
                     command([str(root / "usr/local/sbin/toddlerbox-install-release"),
                              str(stage / "app.tar.gz"), manifest["app"]])
-                state["status"] = "applied"
+                state["status"] = "pending" if appliance else "applied"
                 record(job / "state.json", state)
             except BaseException:
-                restore(root, job, state)
+                if appliance:
+                    from boot_recovery import restore as resident_restore
+                    resident_restore(root, job, state)
+                else:
+                    restore(root, job, state)
                 raise
             finally:
+                if appliance and state["status"] in {"pending", "rolled-back"}:
+                    (root / "var/lib/toddlerbox-system/maintenance").unlink(missing_ok=True)
+                    sync_dir(root / "var/lib/toddlerbox-system")
+                    if state["status"] == "pending":
+                        from boot_recovery import atomic
+                        atomic(root / "run/toddlerbox-system/maintenance-restart", b"intentional\n")
                 restart()
     return "Update installed; backups retained. Return to parent login, then Start ToddlerBox."
 

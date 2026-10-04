@@ -70,6 +70,27 @@ class Watchdog:
         return "restart"
 
 
+class ObservationWindow:
+    """Ten seconds of processed frames within one uninterrupted session."""
+    def __init__(self):
+        self.reset()
+
+    def reset(self):
+        self.first = self.last = None
+        self.confirmed = False
+
+    def frame(self, now):
+        if self.confirmed:
+            return False
+        if self.first is None or self.last is None or now - self.last > 2:
+            self.first = now
+        self.last = now
+        if now - self.first >= 10:
+            self.confirmed = True
+            return True
+        return False
+
+
 class EscapeChord:
     def __init__(self) -> None:
         self.keys: dict[int, set[int]] = {}
@@ -434,6 +455,8 @@ def startup_mode() -> tuple[str, bool]:
     cmdline = Path("/proc/cmdline").read_text().split()
     recovered = (RUNTIME / "controller-started").exists()
     mode = "parent" if recovered or (STATE / "parent-mode").exists() or "toddlerbox.parent=1" in cmdline else "child"
+    if (STATE / "appliance-v1").exists() and not (STATE / "setup-complete").exists():
+        mode = "parent"
     if recovered:
         try:
             durable_text(STATE / "parent-mode", "controller restarted\n")
@@ -448,6 +471,8 @@ def main() -> None:
     STATE.mkdir(mode=0o700, exist_ok=True)
     RUNTIME.mkdir(mode=0o755, exist_ok=True)
     child_uid = pwd.getpwnam("toddlerbox").pw_uid
+    intentional_restart = (RUNTIME / "maintenance-restart").exists()
+    (RUNTIME / "maintenance-restart").unlink(missing_ok=True)
     mode, recovered = startup_mode()
     selector = selectors.DefaultSelector()
     health = bind_socket(HEALTH, 0o600, child_uid)
@@ -460,6 +485,7 @@ def main() -> None:
     volume_keys = VolumeKeys(child_uid)
     devices: dict[str, int] = {}
     watchdog = Watchdog(time.monotonic())
+    observation = ObservationWindow()
     next_scan = 0.0
     next_notify = 0.0
     print(f"ToddlerBox controller ready: {mode}", flush=True)
@@ -471,13 +497,41 @@ def main() -> None:
     if recovered:
         # READY first avoids ordering deadlock with GDM's After=controller.
         # Merely changing autologin does not end an already-running child seat.
+        recover_candidate = False
+        if (STATE / "appliance-v1").exists():
+            from appliance import needs_candidate_recovery, invalidate_observation
+            if needs_candidate_recovery(recovered, intentional_restart):
+                from boot_recovery import atomic
+                invalidate_observation()
+                atomic(STATE / "maintenance", b"candidate controller failed\n")
+                recover_candidate = True
         restart_gdm(health, child_uid)
+        if recover_candidate:
+            subprocess.Popen(["systemctl", "start", "--no-block", "toddlerbox-candidate-recover.service"])
 
     def transition(target: str, reason: str) -> None:
+        if target == "child" and (STATE / "appliance-v1").exists():
+            from appliance import maintenance_lock
+            with maintenance_lock():
+                perform_transition(target, reason)
+        else:
+            perform_transition(target, reason)
+
+    def perform_transition(target: str, reason: str) -> None:
         nonlocal mode, watchdog
+        if target == "child" and (STATE / "appliance-v1").exists():
+            if any((STATE / name).exists() for name in ("maintenance", "recovery-error", "apt-maintenance")):
+                raise ValueError("Parent maintenance/recovery must finish first")
+            if not (STATE / "setup-complete").exists() and not (RUNTIME / "setup-test").exists():
+                raise ValueError("Finish parent setup or use its supervised test")
+            from appliance import _candidate_entry
+            _candidate_entry(Path("/"))
         print(f"ToddlerBox mode={target} reason={reason}", flush=True)
         sync_bridge.clear_peer()
         if target == "parent":
+            if reason.startswith("Ctrl+Alt+Home") and (RUNTIME / "setup-test").exists() and (RUNTIME / "setup-test-observed").exists():
+                durable_text(RUNTIME / "setup-recovery-observed", "supervised child test returned\n")
+            (RUNTIME / "setup-test").unlink(missing_ok=True)
             # Remain recoverable across reboot, even if runtime remains broken.
             try:
                 durable_text(STATE / "parent-mode", reason + "\n")
@@ -492,6 +546,7 @@ def main() -> None:
             configure_gdm(target)
         mode = target
         watchdog = Watchdog(time.monotonic())
+        observation.reset()
         restart_gdm(health, child_uid)
 
     while True:
@@ -526,6 +581,9 @@ def main() -> None:
                 if key.data == "health" and uid == child_uid and mode == "child":
                     if message == b"frame":
                         watchdog.frame(time.monotonic())
+                        if (STATE / "appliance-v1").exists() and observation.frame(time.monotonic()):
+                            from appliance import observed
+                            observed()
                     elif message == b"app-frame":
                         sync_bridge.frame(credentials, _address, time.monotonic())
                     elif message.startswith(b"save-result:"):
@@ -535,10 +593,16 @@ def main() -> None:
                         sync_bridge.request(message, _address, time.monotonic())
                         continue
                     reply = b"OK"
-                    if message in {b"parent", b"child"}:
+                    if message in {b"parent", b"child", b"test-child"}:
                         try:
-                            transition(message.decode(), "parent command")
-                        except BlockingIOError as error:
+                            if message == b"test-child":
+                                (RUNTIME / "setup-test-observed").unlink(missing_ok=True)
+                                (RUNTIME / "setup-recovery-observed").unlink(missing_ok=True)
+                                (RUNTIME / "setup-test").touch()
+                                transition("child", "parent setup test")
+                            else:
+                                transition(message.decode(), "parent command")
+                        except (OSError, ValueError) as error:
                             reply = f"ERROR: {error}".encode()
                     elif message == b"sync":
                         sync_bridge.start(time.monotonic())
@@ -587,8 +651,24 @@ def main() -> None:
                 sync_bridge.start(time.monotonic())
             action = watchdog.check(time.monotonic())
             if action == "parent":
+                if (STATE / "appliance-v1").exists():
+                    from appliance import invalidate_observation
+                    invalidate_observation()
+                    from boot_recovery import latest, atomic
+                    item = latest(Path("/"))
+                    if item and item[1]["status"] == "pending":
+                        atomic(STATE / "maintenance", b"candidate app failed\n")
                 transition("parent", "watchdog restart budget exhausted")
+                if (STATE / "appliance-v1").exists():
+                    from boot_recovery import latest
+                    item = latest(Path("/"))
+                    if item and item[1]["status"] == "pending":
+                        subprocess.Popen(["systemctl", "start", "--no-block", "toddlerbox-candidate-recover.service"])
             elif action == "restart":
+                observation.reset()
+                if (STATE / "appliance-v1").exists():
+                    from appliance import invalidate_observation
+                    invalidate_observation()
                 print(f"Watchdog restarting GDM, attempt {watchdog.restarts}/{watchdog.max_restarts}", flush=True)
                 restart_gdm(health, child_uid)
         status = {"mode": mode, "restarts": watchdog.restarts,
