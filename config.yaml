@@ -8,15 +8,18 @@ launcher:
     - name: Photos
       icon_path: assets/icons/photos/photos_512.png
       command: "python -m toddlerbox.photos"
-    - name: Typing
-      icon_path: assets/icons/typing/typing_512.png
-      command: "python -m toddlerbox.typing"
     - name: Music
       icon_path: assets/icons/music/music.png
       command: "python -m toddlerbox.music"
+    - name: Typing
+      icon_path: assets/icons/typing/typing_512.png
+      command: "python -m toddlerbox.typing"
     - name: Reading
       icon_path: assets/icons/reading/reading.png
       command: "python -m toddlerbox.reading"
+    - name: Math
+      icon_path: assets/icons/math/math.png
+      command: "python -m toddlerbox.math"
 
 paint:
   autosave_seconds: 10
@@ -54,3 +57,8 @@ reading:
   letter_case: lowercase
   letter_audio: sounds
   volume: 0.35
+
+math:
+  mode: numerals
+  max_number: 100
+  low_number_weight: 12

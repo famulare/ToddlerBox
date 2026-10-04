@@ -1,19 +1,24 @@
 # ToddlerBox
 
-**ToddlerBox 0.3.0** is a minimalist, offline-first Linux "kid mode" designed for very young children.
-By default it boots into a fullscreen launcher with five large buttons:
+**Math application trial:** this branch adds Math and a two-row launcher for Mac
+user testing. [Trial design and exact Mac instructions](MATH_DESIGN.md#mac-trial).
+Released **0.3.0**, its main branch and installer remain unchanged.
+
+ToddlerBox is a minimalist, offline-first Linux "kid mode" designed for very young children.
+This trial's fullscreen launcher has six large buttons in two rows:
 
 - **Paint**
 - **Photos**
-- **Typing**
 - **Music**
+- **Typing**
 - **Reading**
+- **Math**
 
-All five activities share a cream-and-sage interface and the same Home button.
-The original illustrated icons are preserved; Music and Reading have matching icons.
+All six activities share a cream-and-sage interface and the same Home button.
+The original illustrated icons are preserved; newer activities have matching icons.
 Shared pygame styling lives in `src/toddlerbox/ui/theme.py`.
 
-![ToddlerBox shared interface](assets/screenshots/overview.png)
+![Math trial launcher and activities](docs/images/math-trial.png)
 
 There is no desktop environment visible, no file browser, no login/logout flow, and no network dependency during normal use. The system is intentionally constrained, predictable, and robust against accidental input, while remaining easy for a parent to administer and extend.
 
@@ -64,9 +69,8 @@ The old global keyd setup is retired. See [system/README.md](system/README.md).
 │        ToddlerBox          │
 │  (Fullscreen Launcher)     │
 │                            │
-│  [ Paint ] [ Photos ]      │
-│  [ Typing ] [ Music ]      │
-│        [ Reading ]        │
+│ [Paint] [Photos] [Music]   │
+│ [Typing] [Reading] [Math]  │
 │                            │
 └─────────────┬──────────────┘
               │ switches scenes in-process
@@ -77,6 +81,7 @@ The old global keyd setup is retired. See [system/README.md](system/README.md).
 │  - Typing                  │
 │  - Music                   │
 │  - Reading                 │
+│  - Math (application trial) │
 │                            │
 │  Fullscreen, no chrome     │
 │  Exit = return to launcher │
@@ -98,7 +103,7 @@ The launcher supervises apps. Apps exit cleanly back to the launcher. If an app 
 
 Fullscreen home screen with large, simple app targets.
 
-![ToddlerBox Launcher](assets/screenshots/launcher.png)
+![ToddlerBox trial launcher](docs/images/math-launcher.png)
 
 ### Paint
 
@@ -132,14 +137,19 @@ to hear the word and reveal its picture. Next chooses another random card withou
 
 ![ToddlerBox Reading App](assets/screenshots/reading.png)
 
+### Math application trial
+
+Four tap-to-reveal modes, passive illustrated ten-frames and the full 0–100 range.
+See [the trial design and Mac instructions](MATH_DESIGN.md).
+
 ---
 
 ## Components
 
 ### Launcher
 
-- Fullscreen home screen with five icons; centered rows when needed
-- Runs built-in apps in-process (`paint`, `photos`, `typing`, `music`, `reading`)
+- Standard trial home screen has six icons in two rows of three
+- Runs built-in apps in-process (`paint`, `photos`, `typing`, `music`, `reading`, `math`)
 - Subprocess fallback only in unsupervised desktop development
 - No clickable "exit" control on-screen
 - Ignores function keys (`F1`-`F12`)
@@ -205,7 +215,7 @@ to hear the word and reveal its picture. Next chooses another random card withou
 - Random Next excludes the current card; no scores, rewards, tests or learning history
 - 75 illustrated words across short vowels, digraphs and consonant blends, plus alphabet sounds/names
 - Defaults mix three-, four- and selected five-letter words; parent settings can narrow the deck
-- Numbers and math are reserved for a future separate app
+- Numbers and arithmetic stay separate in the Math application trial
 - Next, Home, focus changes and parent recovery stop speech
 - [Content credits and preparation](assets/reading/README.md); [design decisions](READING_DESIGN.md)
 
@@ -267,7 +277,8 @@ the selected deck without changing its difficulty settings.
 
 App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
 an older installation, add the Music and/or Reading launcher entries from this
-repository's `config.yaml` in parent mode. Fresh images include all five apps.
+repository's `config.yaml` in parent mode. Released 0.3.0 images include five apps;
+the separate Math trial adds the sixth without changing that installer.
 
 ---
 
@@ -341,6 +352,7 @@ uv run python -m toddlerbox.photos
 uv run python -m toddlerbox.typing
 uv run python -m toddlerbox.music
 uv run python -m toddlerbox.reading
+uv run python -m toddlerbox.math
 ```
 
 ---

@@ -221,14 +221,14 @@ def test_render_exception_releases_stream(scene, monkeypatch):
 
 
 @pytest.mark.parametrize("size", [(800, 600), (1024, 600), (1024, 768), (1280, 800), (1366, 768)])
-def test_five_launcher_icons_and_reading_controls_fit(scene, size):
+def test_six_launcher_icons_and_reading_controls_fit(scene, size):
     from toddlerbox.launcher import _build_buttons, _load_apps, _EMBEDDED_RUNNERS
     from toddlerbox.config import DEFAULT_CONFIG
     from toddlerbox.reading.app import ReadingApp
     old, _ = scene
     screen = pygame.display.set_mode(size)
     buttons = _build_buttons(_load_apps(DEFAULT_CONFIG), screen.get_rect())
-    assert len(buttons) == 5 and "toddlerbox.reading" in _EMBEDDED_RUNNERS
+    assert len(buttons) == 6 and "toddlerbox.reading" in _EMBEDDED_RUNNERS
     for i, button in enumerate(buttons):
         assert button.rect.w >= 120 and screen.get_rect().contains(button.rect)
         assert all(not button.rect.colliderect(other.rect) for other in buttons[i+1:])

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Math application trial
+
+- Separate `codex/math-app` branch for Mac user testing; no installer or released-main changes.
+- Four passive, tap-to-reveal number/arithmetic modes through 100, weighted per number and grouped into tens.
+- Standard launcher: Paint/Photos/Music above Typing/Reading/Math; existing custom configuration is preserved.
+- Silent initial trial; no scoring, learning history or object-tapping controls.
+
 ## 0.3.0 - 2026-10-04
 
 - Five offline activities with shared minimal styling and preserved illustrated icons.
@@ -19,4 +26,3 @@
 - Added screenshot gallery to README with inline GitHub-rendered images.
 - Added `Pillow` dependency for EXIF metadata parsing.
 - `pytest` is included in core dependencies for always-available test runs in the project venv.
-

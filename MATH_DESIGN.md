@@ -1,0 +1,143 @@
+# Math application trial
+
+This is a separate application trial on `codex/math-app`, based on released
+ToddlerBox 0.3.0. It is not in the released installer, signed update catalog or
+main branch. Mac user testing comes before integration or release qualification.
+
+## Interaction
+
+Four modes cycle through one compact top control: `123`, `Count`, `+`, `−`.
+Home and Next retain the shared style. Tap the large number/question card to
+reveal. Objects are visual only: tapping them has no action. There is no left
+rail, answer entry, right/wrong feedback, scoring, progression or learning history.
+
+- **Numerals:** a numeral first; tapping reveals its object collection.
+- **Count:** objects first; tapping the `?` card reveals their numeral.
+- **Addition:** `A + B = ?` above two collections; tapping reveals C and a third
+  collection regrouped into tens.
+- **Subtraction:** `A − B = ?` with A colored objects; tapping marks the last B
+  positions with muted gray ghosts and cancellation strokes, then shows the C
+  remaining objects regrouped in a separate result area.
+
+The result remains visible until Next or mode change. Mode changes and Next
+discard stale pointer ownership. Focus changes and long frame gaps also discard
+input, so an old release cannot reveal a new question. In development, Home
+returns to the launcher (or closes standalone Math).
+
+The first trial is **silent**. Full, consistently voiced, licensed 0–100 audio
+has not been verified. Speech is optional and must not gate visual revelation.
+A future complete pack would use deliberate playback of the disclosed number,
+with no autoplay or speech-triggered reveal.
+
+## Quantities and random selection
+
+The default range is **0–100** from the start. Every quantity uses ten-frames:
+two rows of five, filled in fixed row-major order, with complete tens and a final
+partial frame. Zero is an empty frame; hidden objects instead show a neutral
+question area. Exactly 100 occupies ten complete frames. Arithmetic uses the
+same illustration size across all its collections.
+
+An explicit allowlist selects one-object Reading illustrations: cat, dog, pig,
+hen, fish, frog, egg, bun, crab and ant. One motif is used throughout an example.
+Its PNG bytes are unchanged; runtime cropping and bounded scaling improve small
+display readability. Retain [Reading's sources, credits and license terms](assets/reading/README.md).
+No new image downloads, UI frameworks or runtime synthesis are required.
+PNG file size, format, dimensions and CRCs are checked before SDL decoding;
+damaged motifs are skipped while other usable illustrations remain available.
+
+Each integer 0–20 has weight **12**; each integer 21–100 has weight **1**.
+The unrestricted number distribution is 252/332 (75.90%) low and 80/332 (24.10%)
+high. This is a *per-number* ratio, not a 12:1 ratio between the two bands.
+
+Addition weights the total T and divides its weight equally among T+1 ordered
+splits. Subtraction weights starting total A and divides its weight equally among
+A+1 amounts to remove. Addition totals never exceed 100; subtraction cannot be
+negative. Crossing tens is included, including `8+7` and `23−8`.
+
+Next excludes the current numerical prompt regardless of drawing, then samples
+the finite remaining distribution without rejection loops. Relative weights are
+preserved after exclusion; the overall band proportions can therefore change
+slightly. Swapped addition operands are different displayed prompts. No per-mode
+history is retained. A parent-configured singleton range hides Next.
+
+```yaml
+math:
+  mode: numerals       # numerals, count, addition, subtraction
+  max_number: 100      # optional parent setting, 0–100
+  low_number_weight: 12
+```
+
+## Launcher and configuration
+
+The standard launcher explicitly uses two rows of three, even on a wide screen:
+
+| | | |
+|---|---|---|
+| Paint | Photos | Music |
+| Typing | Reading | Math |
+
+Fresh defaults have this arrangement. Exactly recognized historical five-app
+configurations are augmented and reordered in memory, without rewriting their
+files. Custom lists, ordering, paths, commands and deliberate omissions remain
+unchanged. Existing data paths and private configuration are preserved.
+
+## Runtime and validation
+
+Math is an embedded activity using the existing single-pointer helpers, frame
+heartbeat, independent production parent recovery and authenticated control
+channel. It writes no child work. Its normal run loop acknowledges save-current
+through the existing no-work path and draws the screen-only sync receipt before
+the display flip. No controller, installer or update protocol changes are made.
+
+Pure tests cover finite distributions, all 5,151 possible prompts per arithmetic
+mode, conditional repeat suppression, invalid configuration, zero and ten-frame
+geometry. Focused pixel checks cover hidden values, ghost removal, result
+revelation, input cancellation, cache bounds and the actual control/flip order.
+Native screenshots include dense arithmetic at 800×600 and 1366×768. Baseline
+comparisons use genuine released code and identical fixtures; only the launcher
+is intentionally different. Evidence and limits are in `VALIDATION.md`.
+
+## Teaching references
+
+- [GCompris activities](https://gcompris.net/screenshots-en.html): counting,
+  quantities and arithmetic. The inspected activity sources at
+  `f693b71be92e6d1f5261a0162b15d00d413d186a` are GPL-3.0-or-later;
+  the complete suite includes an AGPL dependency. No activity code is copied.
+- [Number Frames](https://www.mathlearningcenter.org/apps/number-frames) and
+  [Number Pieces](https://www.mathlearningcenter.org/apps/number-pieces): teaching
+  references for grouping and regrouping. No code or media is redistributed.
+- [Sugar Abacus](https://github.com/sugarlabs/activity-abacus): an open-source
+  arithmetic manipulative; GTK/Sugar dependencies make it a different runtime.
+- [Teaching Math to Young Children](https://ies.ed.gov/ncee/wwc/PracticeGuide/18):
+  developmental number/operations guidance, not evidence validating this app.
+
+## Mac trial
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if needed.
+Use a separate checkout to keep your released checkout and work untouched:
+
+```bash
+git clone --branch codex/math-app --single-branch https://github.com/famulare/ToddlerBox.git ToddlerBox-math-trial
+cd ToddlerBox-math-trial
+uv sync --frozen --group dev
+uv run --frozen python -m toddlerbox.launcher
+```
+
+For Math alone: `uv run --frozen python -m toddlerbox.math`.
+The checkout defaults to its own `./data`. Run from its repository root so all
+existing artwork resolves. An inherited `KIDBOX_CONFIG` overrides that default;
+unset it for this isolated trial if it points at your private installed config.
+
+Try the six-tile ordering, all four modes, reveal versus inert object taps, Next,
+mode changes and Home. Check small counts, zero, crossing tens and dense 100-object
+displays for clarity. The app deliberately has no difficulty lock or audio.
+The automatic tests were run on Linux; actual Mac rendering and pointer behavior
+remain user-test checks. The focused portable suite is:
+
+```bash
+uv run --frozen pytest -q tests/test_math.py tests/test_config.py tests/test_launcher.py
+```
+
+The authenticated Linux IPC test skips on Mac; this does not weaken production
+authentication. The full controller suite uses Linux-only APIs and is not a Mac
+compatibility test. No OS reinstall or installer integration is part of this trial.

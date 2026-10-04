@@ -14,6 +14,7 @@ import pygame
 
 from toddlerbox.config import load_config
 from toddlerbox.music.app import run_embedded as run_music_embedded
+from toddlerbox.math.app import run_embedded as run_math_embedded
 from toddlerbox.reading.app import run_embedded as run_reading_embedded
 from toddlerbox.ui import theme
 from toddlerbox.paths import get_data_root
@@ -51,6 +52,7 @@ _EMBEDDED_RUNNERS: Dict[str, Callable[[pygame.Surface, pygame.Rect, pygame.time.
     "toddlerbox.typing": run_typing_embedded,
     "toddlerbox.music": run_music_embedded,
     "toddlerbox.reading": run_reading_embedded,
+    "toddlerbox.math": run_math_embedded,
 }
 
 
@@ -102,8 +104,12 @@ def _build_buttons(apps: List[LauncherApp], screen_rect: pygame.Rect) -> List[Bu
     icon_size = max(120, min(184, int(min(screen_rect.width, screen_rect.height) * 0.23)))
     gap = int(icon_size * 0.3)
     fit_columns = max(1, (screen_rect.w - 32 + gap) // (icon_size + gap))
-    rows = math.ceil(len(apps) / fit_columns)
-    columns = math.ceil(len(apps) / rows)
+    standard_modules = [f"toddlerbox.{name}" for name in ("paint", "photos", "music", "typing", "reading", "math")]
+    if [_module_name_for_command(app.command) for app in apps] == standard_modules:
+        rows, columns = 2, 3
+    else:
+        rows = math.ceil(len(apps) / fit_columns)
+        columns = math.ceil(len(apps) / rows)
     total_height = rows * icon_size + (rows - 1) * gap
     start_y = screen_rect.centery - total_height // 2
     buttons = []
@@ -115,7 +121,7 @@ def _build_buttons(apps: List[LauncherApp], screen_rect: pygame.Rect) -> List[Bu
         rect = pygame.Rect(start_x + column * (icon_size + gap), start_y + row * (icon_size + gap), icon_size, icon_size)
         module = _module_name_for_command(app.command)
         image = load_image(app.icon_path)
-        if image is None and module in {"toddlerbox.music", "toddlerbox.reading"}:
+        if image is None and module in {"toddlerbox.music", "toddlerbox.reading", "toddlerbox.math"}:
             image = theme.artwork(module.rsplit(".", 1)[1], (icon_size, icon_size))
         if image is not None:
             image = theme.activity_tile(image, app.name, icon_size)

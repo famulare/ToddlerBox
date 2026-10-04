@@ -2,7 +2,8 @@
 
 Reading is the fifth embedded ToddlerBox activity. It supports exploration with
 Rosie and a parent, without scores, rewards, timers, assessment or automatic
-progression. Numbers and arithmetic are reserved for a separate future activity.
+progression. Numbers and arithmetic are separate; the application-only Math
+trial is described in [MATH_DESIGN.md](MATH_DESIGN.md).
 
 ## Interaction
 

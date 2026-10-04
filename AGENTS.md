@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/toddlerbox/` contains the launcher and apps (`paint/`, `photos/`, `typing/`, `music/`, `reading/`).
+- `src/toddlerbox/` contains the launcher and apps (`paint/`, `photos/`, `typing/`, `music/`, `reading/`, `math/`).
 - `src/toddlerbox/ui/` contains shared UI helpers and widgets.
 - `src/toddlerbox/runtime/` contains runtime safety/logging helpers.
 - `tests/` holds pytest unit tests.
@@ -19,6 +19,7 @@ Use `uv` with the local `.venv`; the repo scripts now pick a per-user writable c
 - `uv run python -m toddlerbox.typing` — run typing.
 - `uv run python -m toddlerbox.music` — run music.
 - `uv run python -m toddlerbox.reading` — run reading.
+- `uv run python -m toddlerbox.math` — run the application-only Math trial.
 - `uv run --frozen pytest` — run unit tests.
 - `./scripts/run-stable.sh` — bounded process-exit retries for development.
 - `./system/build.sh` — build the Ubuntu VM disk and USB installer from the shared system recipe.
@@ -66,3 +67,4 @@ Use `uv` with the local `.venv`; the repo scripts now pick a per-user writable c
 - Update README, contract, current setup/update/build guides and changelog together. Retire obsolete operational instructions rather than leaving competing startup paths. Keep provenance/license records; label historical research as historical.
 - Do not ask a parent to manually authenticate hashes for normal signed updates. Destructive installation still requires human confirmation of the exact physical disk and a private verified backup.
 - Keep work scoped and resource conscious: reuse evidence when inputs are unchanged, avoid broad review campaigns, and do not promise a measured account quota.
+- The Math trial stays on `codex/math-app` until Mac user testing and explicit integration approval. Do not merge it, rebuild an installer or publish a release as part of the application trial. Keep the standard launcher two rows of three: Paint/Photos/Music, then Typing/Reading/Math. Math objects are passive; answers reveal on tap with no assessment.
