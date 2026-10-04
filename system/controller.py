@@ -78,8 +78,12 @@ class ObservationWindow:
     def reset(self):
         self.first = self.last = None
         self.confirmed = False
+        self.generation = None
 
-    def frame(self, now):
+    def frame(self, now, *, generation=None):
+        if self.generation != generation:
+            self.reset()
+            self.generation = generation
         if self.confirmed:
             return False
         if self.first is None or self.last is None or now - self.last > 2:
@@ -586,10 +590,12 @@ def main() -> None:
                         # Promotion/setup evidence comes from the pinned launcher,
                         # not merely any process sharing the child account UID.
                         if ((STATE / "appliance-v1").exists() and sync_bridge.healthy(time.monotonic())
-                                and sync_bridge.peer[0] == credentials[0] and sync_bridge.peer[2] == _address
-                                and observation.frame(time.monotonic())):
-                            from appliance import observed
-                            observed()
+                                and sync_bridge.peer[0] == credentials[0] and sync_bridge.peer[2] == _address):
+                            from appliance import observed, invalidate_observation
+                            if observation.generation is not None and observation.generation != sync_bridge.generation:
+                                invalidate_observation()
+                            if observation.frame(time.monotonic(), generation=sync_bridge.generation):
+                                observed()
                     elif message.startswith(b"save-result:"):
                         sync_bridge.result(message, credentials)
                 elif key.data == "control" and uid == 0:

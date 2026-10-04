@@ -252,6 +252,16 @@ def test_observation_cannot_span_freeze_or_session_restart():
     assert window.frame(122)
 
 
+def test_observation_is_bound_to_one_pinned_launcher_generation():
+    from test_system_controller import controller
+    window = controller.ObservationWindow()
+    assert all(not window.frame(t, generation=1) for t in range(10))
+    assert not window.frame(10, generation=2)
+    assert all(not window.frame(t, generation=2) for t in range(11, 20))
+    assert window.frame(20, generation=2)
+    assert not window.frame(21, generation=3)
+
+
 def test_intentional_restart_does_not_restore_and_failed_repair_never_loops(appliance_machine, updater, modules, tmp_path):
     recovery, core, _, _ = modules
     pending(appliance_machine, updater, tmp_path)
