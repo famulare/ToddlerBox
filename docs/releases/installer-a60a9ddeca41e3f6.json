@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "source_revision": "9952ee142fd128aeec326161c01ddeb91166b155",
+  "source_id": "a60a9ddeca41e3f6",
+  "architecture": "amd64",
+  "ubuntu_snapshot": "20260926T000000Z",
+  "iso": {
+    "filename": "toddlerbox-installer.iso",
+    "bytes": 1542178816,
+    "sha256": "33bf906226fa2db87d87d5e325c4951bbe94a93ca9c911d7822430824ef10066"
+  },
+  "raw_sha256": "e47ad87f50940032597369c26ea0ab328d73f45f8dcb1fd46b4b9efd819a5c4a",
+  "qcow2_sha256": "70a4aa78e8946271a2c90990b5536a60d853ac6c287efcfcce076fdc04fbe6a9",
+  "app": {
+    "filename": "toddlerbox-app-a60a9ddeca41e3f6.tar.gz",
+    "sha256": "a32f3568149bb0495c9d77e14d24923baa483313c7728beebfd5c01cf4cc9cfe"
+  },
+  "qualification_record": "VALIDATION.md",
+  "physical_acceptance_pending": [
+    "HP Wi-Fi scan/association/reconnect",
+    "touchpad/touchscreen",
+    "speaker loudness/pronunciation",
+    "Secure Boot"
+  ]
+}

@@ -1,0 +1,27 @@
+name: Publish qualified installer
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - name: Reassemble verified public installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          uv run --no-project --python /usr/bin/python3 scripts/download-public-installer.py docs/builds/a60a9ddeca41e3f6-transfer.json toddlerbox-installer.iso
+          printf '%s  %s\n' '33bf906226fa2db87d87d5e325c4951bbe94a93ca9c911d7822430824ef10066' toddlerbox-installer.iso > SHA256SUMS
+          sha256sum -c SHA256SUMS
+          cp docs/releases/installer-a60a9ddeca41e3f6.json source.json
+      - name: Publish normal release assets after checksum verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload candidate-play-a60a9ddeca41e3f6 toddlerbox-installer.iso SHA256SUMS source.json --clobber

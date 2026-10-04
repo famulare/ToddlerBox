@@ -10,7 +10,7 @@ omission and a likely cause of the symptom, pending the actual HP repair result.
 This omission can be repaired without reinstalling. On the internet-connected Mac, run without sudo:
 
 ```sh
-curl -fL https://raw.githubusercontent.com/famulare/ToddlerBox/codex/wifi-backend-repair/scripts/download-wifi-repair.sh -o download-wifi-repair.sh
+curl -fL https://raw.githubusercontent.com/famulare/ToddlerBox/main/scripts/download-wifi-repair.sh -o download-wifi-repair.sh
 bash download-wifi-repair.sh
 ```
 
@@ -41,3 +41,7 @@ updates install it through the signed Ubuntu package manager. The existing publi
 controls bundle is unchanged; install the offline Wi-Fi repair first, then that
 bundle can download its audio packages. The old qualified installer remains
 unchanged and requires this repair on fresh Wi-Fi-only installations.
+
+The newly rebuilt Reading/piano installer includes this backend and `iw`/`rfkill`.
+Its fresh installed VM activates `fi.w1.wpa_supplicant1` successfully; physical HP
+scanning/association/reconnection remain acceptance checks. See [builds](builds/README.md).
