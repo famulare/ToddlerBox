@@ -49,17 +49,17 @@ class Qualification:
         media=['-cdrom','/build/toddlerbox-installer.iso','-boot','d'] if installer else []
         # Use software CPU emulation intentionally: this evidence never assumes nested KVM.
         self.docker('run','-d','--name',self.name,'--user',f'{os.getuid()}:{os.getgid()}',
-                    '--network=none','-v',f'{self.image}:/build:ro','-v',f'{self.out}:/build/vm',
+                    '--network=none','-v',f'{self.image}:/build:ro','-v',f'{self.out}:/vm',
                     'toddlerbox-image-tools','qemu-system-x86_64','-accel','tcg,thread=multi',
                     '-machine','q35','-cpu','qemu64','-smp','2','-m','4096',
                     '-drive','if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd',
-                    '-drive','if=pflash,format=raw,file=/build/vm/OVMF.fd',
-                    '-drive','if=virtio,format=qcow2,discard=unmap,detect-zeroes=unmap,file=/build/vm/target.qcow2',
+                    '-drive','if=pflash,format=raw,file=/vm/OVMF.fd',
+                    '-drive','if=virtio,format=qcow2,discard=unmap,detect-zeroes=unmap,file=/vm/target.qcow2',
                     '-device','virtio-vga','-device','qemu-xhci','-device','usb-tablet','-nic','none',
-                    '-audiodev','wav,id=audio,path=/build/vm/audio.wav','-device','ich9-intel-hda',
+                    '-audiodev','wav,id=audio,path=/vm/audio.wav','-device','ich9-intel-hda',
                     '-device','hda-duplex,audiodev=audio','-display','none',
-                    '-qmp','unix:/build/vm/qmp.sock,server=on,wait=off',
-                    '-chardev','socket,id=serial,path=/build/vm/serial.sock,server=on,wait=off,logfile=/build/vm/serial.log',
+                    '-qmp','unix:/vm/qmp.sock,server=on,wait=off',
+                    '-chardev','socket,id=serial,path=/vm/serial.sock,server=on,wait=off,logfile=/vm/serial.log',
                     '-serial','chardev:serial',*media,stdout=subprocess.DEVNULL)
 
     def stop(self):
@@ -75,7 +75,7 @@ class Qualification:
         self.key('ret')
 
     def shot(self,name):
-        command('screendump',{'filename':f'/build/vm/{name}.ppm'})
+        command('screendump',{'filename':f'/vm/{name}.ppm'})
         path=self.out/f'{name}.png'
         Image.open(self.out/f'{name}.ppm').save(path)
         return path
