@@ -8,6 +8,16 @@ install -d /etc/toddlerbox /usr/local/lib/toddlerbox-system /usr/local/libexec
 install -d -m 0700 /var/lib/toddlerbox-system
 install -m 0644 "$source_dir/controller.py" /usr/local/lib/toddlerbox-system/controller.py
 install -m 0644 "$source_dir/update_bundle.py" /usr/local/lib/toddlerbox-system/update_bundle.py
+install -m 0644 "$source_dir/boot_recovery.py" "$source_dir/appliance.py" "$source_dir/release_client.py" /usr/local/lib/toddlerbox-system/
+install -m 0644 "$source_dir/release-public-key.pem" /etc/toddlerbox/
+install -D -m 0755 "$source_dir/grub-parent-recovery" /etc/grub.d/41_toddlerbox_parent
+install -d /etc/default/grub.d
+printf 'GRUB_TIMEOUT_STYLE=menu\nGRUB_TIMEOUT=5\nGRUB_DEFAULT=0\nGRUB_CMDLINE_LINUX_DEFAULT=""\nGRUB_CMDLINE_LINUX="console=tty0 console=ttyS0,115200"\n' >/etc/default/grub.d/toddlerbox.cfg
+install -m 0755 "$source_dir/bin/toddlerbox-maintenance" /usr/local/sbin/
+touch /var/lib/toddlerbox-system/appliance-v1
+printf '{"sequence":%s,"source":"%s"}\n' "$(cat "$source_dir/release-sequence")" "$release_id" >/var/lib/toddlerbox-system/release-sequence.json
+chmod 0600 /var/lib/toddlerbox-system/release-sequence.json
+install -d -m 0700 /var/lib/toddlerbox-system/updates
 install -m 0755 "$source_dir/bin/toddlerbox-update" /usr/local/sbin/
 install -d /usr/local/lib/toddlerbox-system/tbx_sync
 install -m 0644 "$source_dir"/tbx_sync/*.py /usr/local/lib/toddlerbox-system/tbx_sync/
@@ -20,7 +30,7 @@ install -m 0755 "$source_dir/bin/toddlerbox-volume" /usr/local/libexec/
 install -m 0755 "$source_dir/bin/toddlerbox-session" /usr/local/libexec/
 install -m 0644 "$source_dir"/units/* /etc/systemd/system/
 ln -s "releases/$release_id" /opt/toddlerbox/current
-chmod -R a+rX /opt/toddlerbox/releases
+chmod -R a+rX,go-w /opt/toddlerbox/releases
 cp /opt/toddlerbox/current/config.yaml /etc/toddlerbox/config.yaml
 sed -i 's|data_root: ./data|data_root: /var/lib/toddlerbox|' /etc/toddlerbox/config.yaml
 printf '\ntyping:\n  autosave_seconds: 5\n' >>/etc/toddlerbox/config.yaml
@@ -65,6 +75,24 @@ Type=Application
 Icon=applications-games
 Categories=System;
 EOF
+cat >/usr/share/applications/toddlerbox-maintenance.desktop <<'EOF'
+[Desktop Entry]
+Name=ToddlerBox Setup & Maintenance
+Exec=/usr/local/sbin/toddlerbox-maintenance
+Terminal=true
+Type=Application
+Icon=preferences-system
+Categories=System;
+EOF
+install -d -o parent -g parent /home/parent/.config /home/parent/.config/autostart
+cat >/home/parent/.config/autostart/toddlerbox-setup.desktop <<'EOF'
+[Desktop Entry]
+Name=ToddlerBox First Setup
+Exec=/usr/local/sbin/toddlerbox-maintenance --autostart
+Type=Application
+OnlyShowIn=GNOME;
+EOF
+chown parent:parent /home/parent/.config/autostart/toddlerbox-setup.desktop
 for command in setup run status reconnect; do
     case "$command" in
         setup) title='Set Up ToddlerBox Drive' ;;
@@ -99,12 +127,12 @@ install -d /etc/systemd/system/gdm3.service.d
 cat >/etc/systemd/system/gdm3.service.d/toddlerbox.conf <<'EOF'
 [Unit]
 Wants=toddlerbox-controller.service
-After=toddlerbox-controller.service toddlerbox-firstboot.service
+After=toddlerbox-controller.service toddlerbox-firstboot.service toddlerbox-bootgate.service
 
 [Service]
 TimeoutStopSec=10
 EOF
-systemctl enable toddlerbox-firstboot.service toddlerbox-controller.service NetworkManager.service
+systemctl enable toddlerbox-bootgate.service toddlerbox-firstboot.service toddlerbox-controller.service NetworkManager.service
 systemctl enable gdm3.service
 systemctl set-default graphical.target
 systemctl mask ctrl-alt-del.target
@@ -125,5 +153,10 @@ install -m 0755 "$source_dir/initramfs/install" /etc/initramfs-tools/scripts/ini
 update-initramfs -u -k all
 dpkg-query -W -f='${Package}\t${Version}\t${Architecture}\n' >/opt/toddlerbox/packages.tsv
 cp "$source_dir/versions.env" /opt/toddlerbox/versions.env
+# Builds use a pinned snapshot; installed parent maintenance uses signed live LTS repositories.
+cp /etc/apt/sources.list.d/ubuntu.sources /opt/toddlerbox/build-ubuntu.sources
+printf 'Types: deb\nURIs: https://archive.ubuntu.com/ubuntu/\nSuites: noble noble-updates\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n\nTypes: deb\nURIs: https://security.ubuntu.com/ubuntu/\nSuites: noble-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' >/etc/apt/sources.list.d/ubuntu.sources
+printf 'APT::Periodic::Enable "0";\nAPT::Periodic::Update-Package-Lists "0";\nAPT::Periodic::Unattended-Upgrade "0";\n' >/etc/apt/apt.conf.d/99toddlerbox-explicit-maintenance
+systemctl mask apt-daily.timer apt-daily-upgrade.timer
 printf '%s\n' "$release_id" >/opt/toddlerbox/release-id
 rm -f /var/lib/systemd/random-seed

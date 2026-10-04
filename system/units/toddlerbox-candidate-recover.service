@@ -1,0 +1,12 @@
+[Unit]
+Description=Restore an unconfirmed failed ToddlerBox candidate
+OnFailure=toddlerbox-recovery.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl stop gdm3.service
+ExecStart=/usr/bin/python3 /usr/local/lib/toddlerbox-system/boot_recovery.py --failure
+ExecStart=/usr/bin/systemctl reset-failed toddlerbox-controller.service
+ExecStart=/usr/bin/systemctl --no-block restart toddlerbox-controller.service
+ExecStart=/usr/bin/systemctl --no-block start gdm3.service
+TimeoutStartSec=120

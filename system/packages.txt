@@ -35,6 +35,8 @@ sudo
 locales
 ca-certificates
 curl
+gh
+python3-cryptography
 rsync
 zstd
 gdisk

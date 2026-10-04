@@ -1,8 +1,9 @@
 [Unit]
 Description=Set up the parent password on the local console
-After=systemd-user-sessions.service plymouth-quit-wait.service
+After=systemd-user-sessions.service plymouth-quit-wait.service toddlerbox-bootgate.service
+Requires=toddlerbox-bootgate.service
 Before=toddlerbox-controller.service display-manager.service
-ConditionPathExists=!/var/lib/toddlerbox-system/setup-complete
+ConditionPathExists=!/var/lib/toddlerbox-system/password-created
 Conflicts=getty@tty1.service
 
 [Service]

@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "release_version": "0.3.0",
+  "release_tag": "v0.3.0",
+  "source_revision": "a3a74fb4d9f998c28426840784cc8508c95a396d",
+  "source_id": "1e136b40a252ca52",
+  "architecture": "amd64",
+  "ubuntu_snapshot": "20260926T000000Z",
+  "iso": {
+    "filename": "toddlerbox-installer.iso",
+    "bytes": 1552713728,
+    "sha256": "cf77521416b89ab187e31fc64dad36f73fc48d17081b1bd0f4705cde3bea7db8"
+  },
+  "raw_sha256": "90be6ae10f2f6a2aad5a6e46a4e1c242bc67ca02cb71687d5849afb4f10825f4",
+  "qcow2_sha256": "8655b3648b21d5e369aef13f7f39fb272182b0dcfe2b38b4bf27855d8323a935",
+  "app": {
+    "filename": "toddlerbox-app-1e136b40a252ca52.tar.gz",
+    "bytes": 67637403,
+    "sha256": "e60f0f4ece0d692ffeb3820e84cd9aeb8d01b890964d26fb15f83ee698280156"
+  },
+  "update": {
+    "filename": "ToddlerBox-update.pyz",
+    "bytes": 67629127,
+    "sha256": "f56c93babcf6b449a4c56850f0c43b3d9c1b7ce12bbae73ee71c45f12d913595"
+  },
+  "qualification_record": "VALIDATION.md",
+  "physical_acceptance_pending": [
+    "HP Wi-Fi scan/connect/reconnect",
+    "touchscreen/trackpad",
+    "speaker loudness/pronunciation",
+    "sleep/resume",
+    "Secure Boot unsupported"
+  ],
+  "status": "superseded-unqualified-permission-failure",
+  "failure": "Factory uv lock was world-writable; complete release reuse was correctly refused. Rebuild normalizes group/other write bits."
+}

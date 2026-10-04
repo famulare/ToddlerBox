@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "source_revision": "790e3bf806fb87f5048a29ee67b59aa8b2b4967f",
+  "source_id": "5046c47496917dd3",
+  "architecture": "amd64",
+  "ubuntu_snapshot": "20260926T000000Z",
+  "iso": {
+    "filename": "toddlerbox-installer.iso",
+    "bytes": 1552715776,
+    "sha256": "9b26aa5452f511fffe92f711a22c5b390eac064bd0a89b1e09782801469b4199"
+  },
+  "raw_sha256": "e14cbb894de09b7604b2212d6f48ac071d629d0549dcbef8f7c77261a0a60fda",
+  "qcow2_sha256": "0552517cac01eab171513ef8acbdf970149667d20a0acf06953bebc1c901ed25",
+  "app": {
+    "filename": "toddlerbox-app-5046c47496917dd3.tar.gz",
+    "bytes": 67637657,
+    "sha256": "4f1735e97760ab0c4b8963c5f7d35528fa7919ddc3ec1d9db4c5a659a89e32ab"
+  },
+  "update": {
+    "filename": "ToddlerBox-update.pyz",
+    "bytes": 67629846,
+    "sha256": "5e3f898d45b8788c1391a52113c1fcaa74d8de7dc404c30e1c91ecea198cc2c2"
+  },
+  "qualification_record": "VALIDATION.md",
+  "physical_acceptance_pending": [
+    "HP Wi-Fi scan/connect/reconnect",
+    "touchscreen/trackpad",
+    "speaker loudness/pronunciation",
+    "sleep/resume",
+    "Secure Boot unsupported"
+  ],
+  "qualification": "superseded-unqualified-prototype",
+  "superseded_by": "1e136b40a252ca52"
+}

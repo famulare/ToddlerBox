@@ -243,6 +243,17 @@ data_root/
 - Parent-initiated checksum-verified update bundles can carry fixed system controls
   and an optional app release without reinstalling Ubuntu. Preserve child work,
   private configuration and rollback backups; no automatic update polling.
+- The appliance image provides resumable authenticated parent setup, with explicit
+  optional skips and a supervised child/escape check before completion.
+- Public release downloads verify signed metadata and hashes automatically, with
+  an installed monotonic release floor; no Git credentials/manual hash comparison.
+- Unconfirmed candidates retain one known-good system/app pair. Real-frame testing
+  and authenticated parent acceptance precede promotion. Independent resident
+  recovery precedes the replaceable controller/GDM; interrupted restore is retryable.
+- Ubuntu package maintenance is explicit and uses signed normal LTS repositories;
+  application rollback does not undo OS package changes. No unattended reboots.
+- Parent diagnostics use a bounded allowlist, remain accessible during recovery,
+  and are reviewed before opening a public issue. Family work/credentials stay private.
 - Cleanup acknowledgement and a bounded five-second grace precede forced termination; launcher identity is pinned with pidfds.
 - Release changes are serialized and directory-synced, with declared data-schema compatibility. Rollback retains an identifiable previous target and requires parent mode.
 - See `system/README.md` for exact behavior, artifact identity, and qualification limits.

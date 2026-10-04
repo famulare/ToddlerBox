@@ -1,3 +1,5 @@
+> Historical review of an earlier source checkpoint. Targeted repairs have landed; use the current design contract and VALIDATION.md for present behavior. Findings below retain their original evidence and are not a current open-issue list.
+
 # Independent ToddlerBox design review
 
 Reviewed **3b2917941187627360371447447dcfd465ba4457**, branch `system/bootable-ubuntu`, on 2026-10-02. This review covers the application and its recovery boundary. It makes no application or system changes. Music is discussed only as a proposed extension.

@@ -3,5 +3,7 @@ Description=Disable child autologin if the independent controller fails
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c 'mkdir -p /var/lib/toddlerbox-system; touch /var/lib/toddlerbox-system/parent-mode; printf "[daemon]\nAutomaticLoginEnable=false\n" > /etc/gdm3/custom.conf'
+ExecStart=/bin/sh -c 'mkdir -p /var/lib/toddlerbox-system /run/toddlerbox-system; touch /var/lib/toddlerbox-system/parent-mode; printf "[daemon]\nAutomaticLoginEnable=false\n" > /run/toddlerbox-system/gdm.conf; printf "parent\n" > /run/toddlerbox-system/mode'
+ExecStart=/usr/bin/systemctl stop gdm3.service
+ExecStart=-/usr/bin/python3 /usr/local/lib/toddlerbox-system/boot_recovery.py --failure
 ExecStart=/usr/bin/systemctl --no-block restart gdm3.service

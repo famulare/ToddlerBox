@@ -1,5 +1,23 @@
 # Updates without reinstalling Ubuntu
 
+## Appliance installer and later releases
+
+Open **ToddlerBox Setup & Maintenance** from the parent desktop. Choose **Check
+updates**, then **Install update** after saving parent work. The image embeds a
+release-verification key; public GitHub downloads need no login, Git credentials
+or manual checksum comparison. A failed download or signature leaves the installed
+release untouched. Test the candidate child session for at least ten seconds,
+return through authenticated parent login, then choose **Accept tested update**.
+Until acceptance, a second update is refused and the previous system/app pair
+remains available for recovery. Status, rollback and retry recovery are in the
+same program. See [parent maintenance](parent-maintenance.md) and
+[release signing](release-signing.md) for the exact boundaries.
+
+Older images without this embedded trust anchor use the historical manual route
+below, or reinstall the new appliance image after backing up child work.
+
+## Historical controls update bootstrap
+
 ToddlerBox updates are explicit parent maintenance. Download one public update
 bundle and check its SHA-256 against the release page. No weekly checks,
 background downloads, or child-facing update controls run on the laptop.
@@ -84,8 +102,8 @@ schema compatibility and keeps previous releases. Backup child work separately
 before maintenance, as with other computer updates.
 
 The initial hardware-controls bundle contains only system changes. Future app
-changes can be included in the same download. A desktop button/file picker can
-be added later; the current interface is one parent command.
+changes can be included in the same download. This historical bootstrap is retained only for older installations; the appliance
+release uses the parent setup and maintenance menu above.
 
 ## Build a bundle
 

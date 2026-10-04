@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reassemble a checksum-identified public ISO from temporary GitHub Git blobs.
+"""Reassemble a public ISO or update bundle from temporary GitHub Git blobs.
 
 Use only the reviewed manifest provided with the candidate; these unattached
 objects are a temporary transport, not durable release hosting. The recipient
@@ -22,7 +22,7 @@ def download(manifest_path, output):
     manifest=json.loads(Path(manifest_path).read_text())
     if (manifest.get('version')!=1 or manifest.get('repository')!='famulare/ToddlerBox'
             or not re.fullmatch('[0-9a-f]{64}',manifest.get('sha256',''))
-            or manifest.get('filename')!='toddlerbox-installer.iso'):
+            or manifest.get('filename') not in {'toddlerbox-installer.iso', 'ToddlerBox-update.pyz'}):
         raise ValueError('Unexpected public installer manifest')
     chunks=manifest['chunks']
     if (not 1<=len(chunks)<=1024 or sum(c['size'] for c in chunks)!=manifest['size']

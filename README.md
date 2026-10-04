@@ -1,6 +1,6 @@
 # ToddlerBox
 
-**ToddlerBox** is a minimalist, offline-first Linux "kid mode" designed for very young children.
+**ToddlerBox 0.3.0** is a minimalist, offline-first Linux "kid mode" designed for very young children.
 By default it boots into a fullscreen launcher with five large buttons:
 
 - **Paint**
@@ -121,14 +121,14 @@ Large-format typing surface with per-character styling controls and recall.
 ### Music
 
 Six short piano arrangements with song choices, autoplay, pause and a passive
-falling-note keyboard. Audio and note cues are generated from the same score.
+falling-note keyboard with playable keys and Free Play. Audio and note cues are generated from the same score.
 
 ![ToddlerBox Music App](assets/screenshots/music.png)
 
 ### Reading
 
-Tap a word to hear its sounds and then the whole word; its picture appears
-afterward. Next chooses another random card without an immediate repeat.
+Tap each letter or sound group at your own pace. Tap the whole-word button
+to hear the word and reveal its picture. Next chooses another random card without an immediate repeat.
 
 ![ToddlerBox Reading App](assets/screenshots/reading.png)
 
@@ -191,6 +191,7 @@ afterward. Next chooses another random card without an immediate repeat.
 - Mary Had a Little Lamb, Twinkle, Ode to Joy, Frère Jacques, Row Your Boat and Minuet in G
 - Short piano arrangements, 21–33 seconds each, with quiet accompaniment
 - Fixed two-octave keyboard: blue melody, gold accompaniment, held keys matching note cues
+- Play keys over a song without interrupting it, or choose Free Play
 - Select a song, pause/resume, or let autoplay continue through the collection
 - Home and parent recovery stop playback; unavailable audio remains quiet and responsive
 - Offline audio, scores, notices and reproducible generation recipe in [assets/music](assets/music/README.md)
@@ -358,7 +359,11 @@ USB installation media from the same assembled filesystem.
 GDM starts a standalone Cage child session. Hold `Ctrl+Alt+Home` for two seconds
 to reach the separate parent account's GNOME login. An independent controller
 handles that chord and bounded crash/hang recovery. The boot menu also provides
-parent recovery. First boot asks you to create the parent password.
+parent recovery. First boot asks you to create the parent password, then opens
+authenticated parent setup for network, audio, input and recovery checks.
+Use **ToddlerBox Setup & Maintenance** for public signed updates, rollback,
+Ubuntu maintenance and reviewed support reports. No Git credentials or manual
+release-hash checks are needed. See [parent maintenance](docs/parent-maintenance.md).
 
 See the system guide for prerequisites, graphical VM inspection, installation,
 release rollback, and qualification limits. The former tty-autologin, GDM-masking,

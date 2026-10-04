@@ -1,0 +1,14 @@
+[Unit]
+Description=Resident ToddlerBox update recovery before graphical startup
+After=local-fs.target
+Before=toddlerbox-firstboot.service toddlerbox-controller.service display-manager.service
+OnFailure=toddlerbox-recovery.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/toddlerbox-system/boot_recovery.py
+RemainAfterExit=yes
+TimeoutStartSec=120
+
+[Install]
+WantedBy=graphical.target
