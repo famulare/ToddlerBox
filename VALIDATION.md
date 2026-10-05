@@ -1415,3 +1415,30 @@ the previous frame; the later `math-speaking.png` shows the correct numeral
 and speaker, with actual PCM independently confirming the requested playback.
 Installer helper focused checks: `uv run --frozen pytest -q
 tests/test_installer_download.py` — **8 passed**.
+
+
+### Public 0.4.0 delivery (2026-10-05)
+
+[Publication run 37253807123](https://github.com/famulare/ToddlerBox/actions/runs/37253807123)
+verified the public Ed25519 signature, exact qualified source, updater ZIP
+manifest, complete updater SHA-256/bytes and GitHub asset digests before
+publishing [v0.4.0](https://github.com/famulare/ToddlerBox/releases/tag/v0.4.0).
+Published tag dereferences to the original built revision
+`4bee91b66acce2305d57792abb2ac33cfafc0f44`; release is public, not a draft.
+Signed stable sequence is 2 and the installed 0.3 trust key is unchanged.
+
+The actual production `release_client.catalog` and `download` fetched the public
+main manifest/signature and complete 89,655,805-byte updater without GitHub
+authentication headers, verified the signature and matched the final checksum.
+The normal anonymous helper command also downloaded the complete ISO into a new
+file, checked all 1,572,311,040 bytes and the SHA-256, and published it atomically:
+
+```sh
+uv run --frozen python scripts/download-installer.py /tmp/ToddlerBox-0.4.0-public.iso
+```
+
+Selected final public VM evidence is attached as `qualification-evidence.zip`;
+draft-only failure images were removed from the published assets after their
+inspection. Raw/private files and all earlier qualified VM checkpoints remain
+excluded and preserved. Only `main` remains among remote development branches.
+Later documentation commits preserve the original signed build identity.
