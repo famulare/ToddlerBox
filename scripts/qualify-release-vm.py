@@ -84,12 +84,13 @@ class Qualification:
 
     def text(self):
         path=self.shot('probe')
-        console=subprocess.check_output(['tesseract',str(path),'stdout'],stderr=subprocess.DEVNULL,text=True,timeout=30)
+        ocr_env=dict(os.environ,OMP_THREAD_LIMIT='1')
+        console=subprocess.check_output(['tesseract',str(path),'stdout'],stderr=subprocess.DEVNULL,text=True,timeout=30,env=ocr_env)
         # Sparse icon captions are missed by default page segmentation.
         picture=Image.open(path)
         path=self.out/'ocr-probe.png'
         picture.resize((picture.width*2,picture.height*2)).save(path)
-        captions=subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=30)
+        captions=subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=30,env=ocr_env)
         return ' '.join((console+' '+captions).lower().split())
 
     def wait_text(self,*words,timeout=360):
@@ -302,7 +303,7 @@ INNER
             self.shot(title.lower());self.home()
         print('QA: activities passed; checking parent escape and setup completion',flush=True)
         self.serial('for i in $(seq 1 40); do test ! -e /run/toddlerbox-system/setup-test-observed || exit 0; sleep 1; done; exit 1')
-        self.key('ctrl-alt-home',2500);time.sleep(5);self.mode('parent');self.shot('authenticated-parent-greeter')
+        self.key('ctrl-alt-home',2500);time.sleep(5);self.mode('parent');self.wait_text('parent',timeout=180);self.shot('authenticated-parent-greeter')
         self.serial('''
         test -e /run/toddlerbox-system/setup-recovery-observed
         toddlerbox-maintenance --action check network skipped
@@ -316,7 +317,7 @@ INNER
         self.wait_text('Paint','Math','Reading');self.wait_health()
         print('QA: checking deliberate app freeze recovery',flush=True)
         self.serial("pid=$(pgrep -u toddlerbox -f '^([^ ]*/)?python[0-9.]* -m toddlerbox[.]launcher$'); test -n \"$pid\"; kill -STOP $pid")
-        self.key('ctrl-alt-home',2500);time.sleep(6);self.mode('parent')
+        self.key('ctrl-alt-home',2500);time.sleep(6);self.mode('parent');self.wait_text('parent',timeout=180)
         self.shot('frozen-app-parent-recovery')
         self.serial('toddlerbox-mode child');self.wait_text('Paint','Math','Reading');self.wait_health()
         self.serial("pid=$(pgrep -u toddlerbox -f '^([^ ]*/)?python[0-9.]* -m toddlerbox[.]launcher$'); test -n \"$pid\"; printf %s $pid >/root/qa-old-pid; python3 -c 'import json; open(\"/root/qa-old-restarts\",\"w\").write(str(json.load(open(\"/run/toddlerbox-system/status.json\"))[\"restarts\"]))'; kill -STOP $pid")
