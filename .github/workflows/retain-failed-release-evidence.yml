@@ -1,0 +1,44 @@
+name: Retain selected failed VM evidence
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Failed or cancelled build-qualified-release run
+        required: true
+        type: string
+permissions:
+  contents: write
+  actions: read
+jobs:
+  retain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Retain only previously selected public evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          case "$RUN_ID" in ''|*[!0-9]*) exit 1;; esac
+          gh api repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID > run.json
+          test "$(jq -r .path run.json)" = .github/workflows/build-qualified-release.yml
+          case "$(jq -r .conclusion run.json)" in failure|cancelled) ;; *) exit 1;; esac
+          test "$(gh release view v0.4.0 --json isDraft --jq .isDraft)" = true
+          mkdir evidence
+          gh run download "$RUN_ID" --name release-0.4-public-evidence --dir evidence
+          python3 - <<'PY'
+          from pathlib import Path
+          import os,zipfile
+          names={'installer.png','first-boot-password.png','six-activity-launcher.png','music-first-song.png','music-scrolled.png','music-largo.png','music-free-play.png','math-objects-first.png','math-revealed.png','math-speaking.png','math-equation.png','paint.png','photos.png','typing.png','reading.png','frozen-app-parent-recovery.png','watchdog-recovered-launcher.png','rebooted-launcher.png','authenticated-parent-greeter.png','diagnostic-authenticated.png','source.json','packages.tsv'}
+          found=set()
+          with zipfile.ZipFile(f'failed-vm-{os.environ["RUN_ID"]}.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
+              for p in sorted(Path('evidence').rglob('*')):
+                  if p.is_file() and p.name in names:
+                      assert not p.is_symlink() and p.name not in found
+                      assert p.stat().st_size < 16*1024*1024
+                      z.write(p,p.name);found.add(p.name)
+          assert found
+          print(sorted(found))
+          PY
+          gh release upload v0.4.0 "failed-vm-$RUN_ID.zip" --clobber
