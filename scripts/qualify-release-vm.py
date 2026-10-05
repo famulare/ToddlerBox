@@ -85,6 +85,9 @@ class Qualification:
     def text(self):
         path=self.shot('probe')
         # Sparse icon captions are missed by default page segmentation.
+        picture=Image.open(path)
+        path=self.out/'ocr-probe.png'
+        picture.resize((picture.width*2,picture.height*2)).save(path)
         return subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True).lower()
 
     def wait_text(self,*words,timeout=360):
@@ -341,6 +344,7 @@ def main():
         # Probe could be mid-password if a run failed. It is never a publication artifact.
         (q.out/'probe.png').unlink(missing_ok=True)
         (q.out/'probe.ppm').unlink(missing_ok=True)
+        (q.out/'ocr-probe.png').unlink(missing_ok=True)
 
 
 if __name__=='__main__':main()
