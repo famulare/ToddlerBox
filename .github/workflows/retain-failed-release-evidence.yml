@@ -15,6 +15,9 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
       - name: Retain only previously selected public evidence
         env:
           GH_TOKEN: ${{ github.token }}
@@ -27,7 +30,7 @@ jobs:
           test "$(gh release view v0.4.0 --json isDraft --jq .isDraft)" = true
           mkdir evidence
           gh run download "$RUN_ID" --name release-0.4-public-evidence --dir evidence
-          python3 - <<'PY'
+          uv run --no-project --python /usr/bin/python3 python - <<'PY'
           from pathlib import Path
           import os,zipfile
           names={'installer.png','first-boot-password.png','six-activity-launcher.png','music-first-song.png','music-scrolled.png','music-largo.png','music-free-play.png','math-objects-first.png','math-revealed.png','math-speaking.png','math-equation.png','paint.png','photos.png','typing.png','reading.png','frozen-app-parent-recovery.png','watchdog-recovered-launcher.png','rebooted-launcher.png','authenticated-parent-greeter.png','diagnostic-authenticated.png','source.json','packages.tsv'}
