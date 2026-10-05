@@ -84,11 +84,13 @@ class Qualification:
 
     def text(self):
         path=self.shot('probe')
+        console=subprocess.check_output(['tesseract',str(path),'stdout'],stderr=subprocess.DEVNULL,text=True)
         # Sparse icon captions are missed by default page segmentation.
         picture=Image.open(path)
         path=self.out/'ocr-probe.png'
         picture.resize((picture.width*2,picture.height*2)).save(path)
-        return subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True).lower()
+        captions=subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True)
+        return ' '.join((console+' '+captions).lower().split())
 
     def wait_text(self,*words,timeout=360):
         end=time.monotonic()+timeout
@@ -145,7 +147,11 @@ class Qualification:
         self.stop()
         self.results.append('fresh ISO installation, payload checksum and exact target confirmation')
         self.start()
-        self.wait_text('new password')
+        try:
+            self.wait_text('new password')
+        except TimeoutError:
+            self.shot('first-boot-password')  # Still before any password input.
+            raise
         self.shot('first-boot-password')
         self.type(self.password)
         # Console font OCR is unreliable for the confirmation prompt.
