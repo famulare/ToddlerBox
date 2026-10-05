@@ -84,7 +84,8 @@ class Qualification:
 
     def text(self):
         path=self.shot('probe')
-        return subprocess.check_output(['tesseract',str(path),'stdout'],stderr=subprocess.DEVNULL,text=True).lower()
+        # Sparse icon captions are missed by default page segmentation.
+        return subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True).lower()
 
     def wait_text(self,*words,timeout=360):
         end=time.monotonic()+timeout
@@ -226,6 +227,7 @@ os.environ['KIDBOX_CONFIG']='/etc/toddlerbox/config.yaml'
 assert len(load_config()['launcher']['apps'])==6
 assert len(load_library(Path('/opt/toddlerbox/current/assets/music'),Mock())[0])==18
 assert all(NumberBank(Mock()).get(n) for n in range(101))
+assert all(NumberBank(Mock()).operator(n) for n in ('plus','minus','equals'))
 INNER
         toddlerbox-maintenance --action test
         ''')
@@ -263,8 +265,11 @@ INNER
         self.click((w-128)//2+24,152);self.shot('math-revealed')
         time.sleep(2);assert self.rms()<1
         self.click(w//2+125,45);time.sleep(.45);assert self.rms(.5)>10
-        self.shot('math-speaking');self.home();time.sleep(3);assert self.rms()<1
-        self.results.append('Math pictures-first, reveal without autoplay, explicit number HDA output and Home silence')
+        self.shot('math-speaking')
+        self.click(w//2,45);self.click((w-128)//2+24,152)
+        self.click(w//2+125,45);time.sleep(.45);assert self.rms(.5)>10
+        self.shot('math-equation');self.home();time.sleep(3);assert self.rms()<1
+        self.results.append('Math pictures-first, silent reveal, explicit number/equation HDA output, validated operator clips and Home silence')
         for i,title in ((0,'Paint'),(1,'Photos'),(3,'Typing'),(4,'Reading')):
             self.click(*centers[i]);time.sleep(2)
             if title == 'Reading': self.wait_text(title)

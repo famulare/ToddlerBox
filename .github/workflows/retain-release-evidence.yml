@@ -31,7 +31,7 @@ jobs:
           uv run --no-project --python /usr/bin/python3 python - <<'PY'
           from pathlib import Path
           import zipfile
-          names={'installer.png','first-boot-password.png','six-activity-launcher.png','music-first-song.png','music-scrolled.png','music-largo.png','music-free-play.png','math-objects-first.png','math-revealed.png','math-speaking.png','paint.png','photos.png','typing.png','reading.png','frozen-app-parent-recovery.png','watchdog-recovered-launcher.png','rebooted-launcher.png','authenticated-parent-greeter.png','results.json','source.json','packages.tsv'}
+          names={'installer.png','first-boot-password.png','six-activity-launcher.png','music-first-song.png','music-scrolled.png','music-largo.png','music-free-play.png','math-objects-first.png','math-revealed.png','math-speaking.png','math-equation.png','paint.png','photos.png','typing.png','reading.png','frozen-app-parent-recovery.png','watchdog-recovered-launcher.png','rebooted-launcher.png','authenticated-parent-greeter.png','results.json','source.json','packages.tsv'}
           found=set()
           with zipfile.ZipFile('qualification-evidence.zip','w',compression=zipfile.ZIP_DEFLATED) as z:
               for p in sorted(Path('evidence').rglob('*')):
