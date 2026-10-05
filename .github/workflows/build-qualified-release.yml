@@ -113,7 +113,7 @@ jobs:
             test "$tag_sha" = "$candidate_git"
           else
             # GitHub may defer tag creation until a draft is published.
-            rg -q "HTTP 404" /tmp/tag-ref.json.err
+            grep -q "HTTP 404" /tmp/tag-ref.json.err
           fi
           source system/versions.env
           docker build --platform linux/amd64 --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt --build-arg "UBUNTU_IMAGE=$UBUNTU_IMAGE" --build-arg "UBUNTU_SNAPSHOT=$UBUNTU_SNAPSHOT" -f system/Dockerfile.tools -t toddlerbox-image-tools .

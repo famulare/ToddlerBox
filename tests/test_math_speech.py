@@ -244,3 +244,19 @@ def test_equation_home_and_mode_change_stop_real_sdl_and_clear_queue(app):
     tap(app, app.speech_rect.center)
     assert not tap(app, app.home_rect.center)
     assert not pygame.mixer.music.get_busy() and not app.player.queue
+
+
+def test_complete_equation_advances_all_five_words_with_real_sdl(app):
+    import time
+    select(app, "subtraction", 8, 3, revealed=True)
+    play = Mock(wraps=app.player.audio.play)
+    app.player.audio.play = play
+    tap(app, app.speech_rect.center)
+    end = time.monotonic() + 8
+    while app.player.deadline is not None and time.monotonic() < end:
+        app.player.update()
+        time.sleep(.01)
+    assert [call.args[0].path.stem for call in play.call_args_list] == [
+        "number-8", "minus", "number-3", "equals", "number-5"]
+    assert app.player.deadline is None and not app.player.queue
+    assert not pygame.mixer.music.get_busy()
