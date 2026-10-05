@@ -205,6 +205,16 @@ class Qualification:
         self.click(size[0]-36,45)
         self.wait_text('Paint','Math','Reading')
 
+    def wait_audio(self):
+        # Software emulation does not promise a fixed wall-time/guest-audio
+        # offset. Require actual recorded PCM, bounded by eight seconds.
+        end=time.monotonic()+8
+        while time.monotonic()<end:
+            if self.rms(.5)>10:
+                return
+            time.sleep(.15)
+        raise AssertionError('No audible PCM after deliberate speech tap')
+
     def smoke(self):
         self.serial('''
         test -e /var/lib/toddlerbox-system/password-created
@@ -267,10 +277,11 @@ INNER
         self.shot('math-objects-first')
         self.click((w-128)//2+24,152);self.shot('math-revealed')
         time.sleep(2);assert self.rms()<1
-        self.click(w//2+125,45);time.sleep(.45);assert self.rms(.5)>10
+        self.click(w//2+125,45);self.wait_audio()
         self.shot('math-speaking')
         self.click(w//2,45);self.click((w-128)//2+24,152)
-        self.click(w//2+125,45);time.sleep(.45);assert self.rms(.5)>10
+        time.sleep(3);assert self.rms()<1
+        self.click(w//2+125,45);self.wait_audio()
         self.shot('math-equation');self.home();time.sleep(3);assert self.rms()<1
         self.results.append('Math pictures-first, silent reveal, explicit number/equation HDA output, validated operator clips and Home silence')
         for i,title in ((0,'Paint'),(1,'Photos'),(3,'Typing'),(4,'Reading')):
