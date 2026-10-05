@@ -84,12 +84,12 @@ class Qualification:
 
     def text(self):
         path=self.shot('probe')
-        console=subprocess.check_output(['tesseract',str(path),'stdout'],stderr=subprocess.DEVNULL,text=True)
+        console=subprocess.check_output(['tesseract',str(path),'stdout'],stderr=subprocess.DEVNULL,text=True,timeout=30)
         # Sparse icon captions are missed by default page segmentation.
         picture=Image.open(path)
         path=self.out/'ocr-probe.png'
         picture.resize((picture.width*2,picture.height*2)).save(path)
-        captions=subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True)
+        captions=subprocess.check_output(['tesseract',str(path),'stdout','--psm','11'],stderr=subprocess.DEVNULL,text=True,timeout=30)
         return ' '.join((console+' '+captions).lower().split())
 
     def wait_text(self,*words,timeout=360):
@@ -99,7 +99,7 @@ class Qualification:
                 value=self.text()
                 if all(word.lower() in value for word in words):
                     return value
-            except (OSError,RuntimeError,ValueError,subprocess.CalledProcessError):
+            except (OSError,RuntimeError,ValueError,subprocess.CalledProcessError,subprocess.TimeoutExpired):
                 pass
             time.sleep(2)
         raise TimeoutError(f'VM screen did not reach expected labels {words}')
@@ -127,6 +127,7 @@ class Qualification:
         raise TimeoutError('Independent serial prompt timeout (contents withheld)')
 
     def install(self):
+        print('QA: booting fresh installer',flush=True)
         self.start(installer=True)
         try:
             self.wait_text('Install ToddlerBox','serial console')
@@ -146,6 +147,7 @@ class Qualification:
         self.docker('wait',self.name,timeout=90,stdout=subprocess.DEVNULL)
         self.stop()
         self.results.append('fresh ISO installation, payload checksum and exact target confirmation')
+        print('QA: installed disk, booting first setup',flush=True)
         self.start()
         try:
             self.wait_text('new password')
@@ -222,6 +224,7 @@ class Qualification:
         raise AssertionError('No audible PCM after deliberate speech tap')
 
     def smoke(self):
+        print('QA: authenticating parent and verifying boot gate',flush=True)
         self.serial('''
         test -e /var/lib/toddlerbox-system/password-created
         test ! -e /var/lib/toddlerbox-system/setup-complete
@@ -258,6 +261,7 @@ INNER
         icon=max(120,min(184,int(min(size)*.23)));gap=int(icon*.3)
         left=w//2-(3*icon+2*gap)//2;top=h//2-(2*icon+gap)//2
         centers=[(left+(i%3)*(icon+gap)+icon//2,top+(i//3)*(icon+gap)+icon//2) for i in range(6)]
+        print('QA: healthy six-app child session; checking Music',flush=True)
         # Music: reach last song with wheel, keep Free Play reachable and verify real HDA PCM.
         self.click(*centers[2]);self.wait_text('Music','Autoplay')
         time.sleep(4);assert self.rms()>10
@@ -278,6 +282,7 @@ INNER
         self.click(*piano_keys(keyboard,48,72)[60].center)
         self.home();time.sleep(3);assert self.rms()<1
         self.results.append('18-song library, scroll to last song, Free Play, HDA song output and Home silence')
+        print('QA: Music passed; checking Math',flush=True)
         # Math: pictures first, silent reveal, explicit bundled speech, cleanup.
         self.click(*centers[5]);self.wait_text('Math','Numbers')
         self.shot('math-objects-first')
@@ -290,10 +295,12 @@ INNER
         self.click(w//2+125,45);self.wait_audio()
         self.shot('math-equation');self.home();time.sleep(3);assert self.rms()<1
         self.results.append('Math pictures-first, silent reveal, explicit number/equation HDA output, validated operator clips and Home silence')
+        print('QA: Math passed; checking other activities',flush=True)
         for i,title in ((0,'Paint'),(1,'Photos'),(3,'Typing'),(4,'Reading')):
             self.click(*centers[i]);time.sleep(2)
             if title == 'Reading': self.wait_text(title)
             self.shot(title.lower());self.home()
+        print('QA: activities passed; checking parent escape and setup completion',flush=True)
         self.serial('for i in $(seq 1 40); do test ! -e /run/toddlerbox-system/setup-test-observed || exit 0; sleep 1; done; exit 1')
         self.key('ctrl-alt-home',2500);time.sleep(5);self.mode('parent');self.shot('authenticated-parent-greeter')
         self.serial('''
@@ -307,6 +314,7 @@ INNER
         toddlerbox-mode child
         ''')
         self.wait_text('Paint','Math','Reading');self.wait_health()
+        print('QA: checking deliberate app freeze recovery',flush=True)
         self.serial("pid=$(pgrep -u toddlerbox -f '^([^ ]*/)?python[0-9.]* -m toddlerbox[.]launcher$'); test -n \"$pid\"; kill -STOP $pid")
         self.key('ctrl-alt-home',2500);time.sleep(6);self.mode('parent')
         self.shot('frozen-app-parent-recovery')
@@ -326,6 +334,7 @@ INNER
         self.wait_text('Paint','Math','Reading');self.wait_health()
         self.shot('watchdog-recovered-launcher')
         self.results.append('supervised first setup, independent escape from stopped launcher and watchdog recovery')
+        print('QA: watchdog passed; checking reboot',flush=True)
         command('system_reset');time.sleep(15)
         self.wait_text('Paint','Math','Reading');self.wait_health();self.shot('rebooted-launcher')
         self.results.append('setup completion persists and reboot returns to supervised child session without network')
@@ -341,14 +350,21 @@ INNER
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--image-dir',required=True,type=Path);p.add_argument('--output',required=True,type=Path)
-    args=p.parse_args();q=Qualification(args.image_dir,args.output)
+    args=p.parse_args()
+    # Harness only: bound the imported QMP client; serial sockets set their own
+    # shorter timeout. No production controller or guest settings are changed.
+    socket.setdefaulttimeout(20)
+    q=Qualification(args.image_dir,args.output)
     try:
         q.install();print('Fresh installation and parent password completed',flush=True);q.smoke()
     except Exception:
         if q.authenticated:
             # Only after independent real parent authentication. Never capture
             # a failed password-entry screen or expose the raw serial log.
-            q.shot('diagnostic-authenticated')
+            try:
+                q.shot('diagnostic-authenticated')
+            except Exception as error:
+                print(f'Diagnostic screen unavailable: {type(error).__name__}',flush=True)
             try:
                 print(q.serial('cat /run/toddlerbox-system/status.json; journalctl -b -u toddlerbox-controller -u gdm3 --no-pager -n 70; tail -60 /var/lib/toddlerbox/logs/toddlerbox.log 2>/dev/null || true'),flush=True)
             except Exception as error:
