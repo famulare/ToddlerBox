@@ -1,0 +1,78 @@
+name: Publish signed qualified release
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: toddlerbox-v0.4.0-candidate
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - name: Verify signed identity and qualified candidate assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          uv sync --frozen --group dev --python /usr/bin/python3
+          mkdir candidate
+          gh api repos/$GITHUB_REPOSITORY/releases/$(gh release view v0.4.0 --json databaseId --jq .databaseId) > candidate/release.json
+          test "$(jq -r .draft candidate/release.json)" = true
+          gh release download v0.4.0 --dir candidate --pattern source.json --pattern ToddlerBox-update.pyz --pattern results.json
+          uv run --frozen python - <<'PY'
+          import hashlib,json,sys,zipfile
+          from pathlib import Path
+          sys.path.insert(0,'system')
+          from release_client import verify
+          p=Path('candidate');source=json.loads((p/'source.json').read_text());release=json.loads((p/'release.json').read_text())
+          v=verify(Path('releases/stable.json').read_bytes(),Path('releases/stable.json.sig').read_bytes(),Path('system/release-public-key.pem').read_bytes())
+          assert v['tag']=='v0.4.0' and v['sequence']==2
+          assert source['qualification_status']=='passed' and source['content']==v['source']
+          assert source['qualification']==json.loads((p/'results.json').read_text())
+          assert source['qualification']['checks'] and release['target_commitish']==source['git']
+          assert set(source['artifacts'])=={'toddlerbox-installer.iso','ToddlerBox-update.pyz'}
+          for name,row in source['artifacts'].items():
+              assets=[a for a in release['assets'] if a['name']==name];assert len(assets)==1
+              assert assets[0]['size']==row['bytes'] and assets[0]['digest']=='sha256:'+row['sha256']
+          bundle=p/'ToddlerBox-update.pyz'
+          assert bundle.stat().st_size==v['bytes']
+          with bundle.open('rb') as f: assert hashlib.file_digest(f,'sha256').hexdigest()==v['sha256']
+          assert source['artifacts'][v['asset']]=={'bytes':v['bytes'],'sha256':v['sha256']}
+          with zipfile.ZipFile(bundle) as z: assert json.loads(z.read('manifest.json'))['source']=={'git':source['git'],'content':source['content']}
+          PY
+          if gh api repos/$GITHUB_REPOSITORY/git/ref/tags/v0.4.0 > candidate/tag.json 2> candidate/tag.json.err; then
+            type=$(jq -r .object.type candidate/tag.json)
+            sha=$(jq -r .object.sha candidate/tag.json)
+            while test "$type" = tag; do
+              gh api repos/$GITHUB_REPOSITORY/git/tags/$sha > candidate/tag.json
+              type=$(jq -r .object.type candidate/tag.json)
+              sha=$(jq -r .object.sha candidate/tag.json)
+            done
+            test "$type" = commit
+            test "$sha" = "$(jq -r .git candidate/source.json)"
+          else
+            # GitHub may defer tag creation until a draft is published.
+            grep -q "HTTP 404" candidate/tag.json.err
+          fi
+      - name: Publish verified candidate with public signatures
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload v0.4.0 releases/stable.json releases/stable.json.sig --clobber
+          gh release edit v0.4.0 --draft=false --latest --title 'ToddlerBox 0.4.0' --notes-file docs/releases/v0.4.0.md
+          # Publication must create the exact verified source tag.
+          gh api repos/$GITHUB_REPOSITORY/git/ref/tags/v0.4.0 > candidate/tag.json
+          type=$(jq -r .object.type candidate/tag.json)
+          sha=$(jq -r .object.sha candidate/tag.json)
+          while test "$type" = tag; do
+            gh api repos/$GITHUB_REPOSITORY/git/tags/$sha > candidate/tag.json
+            type=$(jq -r .object.type candidate/tag.json)
+            sha=$(jq -r .object.sha candidate/tag.json)
+          done
+          test "$type" = commit
+          test "$sha" = "$(jq -r .git candidate/source.json)"

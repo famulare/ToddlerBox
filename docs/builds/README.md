@@ -1,4 +1,42 @@
-# ToddlerBox 0.3.0 installer
+# ToddlerBox 0.4.0 installer
+
+[Download release 0.4.0](https://github.com/famulare/ToddlerBox/releases/tag/v0.4.0).
+Six offline activities include pictures-first Math and 18 short Music melodies
+with a scrollable left menu. This installer targets Ubuntu 24.04 x86-64 UEFI;
+Secure Boot is outside the supported configuration. See [validation](../../VALIDATION.md)
+and [private backup/reinstallation](../reinstall.md) before erasing the HP.
+
+Download and verify automatically **without sudo** or GitHub login:
+
+```sh
+curl -fL https://raw.githubusercontent.com/famulare/ToddlerBox/main/scripts/download-installer.py -o download-installer.py
+python3 download-installer.py ~/Downloads/ToddlerBox-0.4.0.iso
+```
+
+The helper checks the complete SHA-256 and byte count, preserving a different
+existing destination. Flash with Etcher and let write validation finish.
+Confirm the exact physical installation disk separately. Initial download trusts
+GitHub HTTPS; installed updates also verify the embedded signing key. Existing
+parent configuration is preserved by updates; exact historical standard five-app
+profiles display six icons automatically. Custom launchers retain their choices.
+Fresh installation includes all six icons.
+
+Built source `4bee91b66acce2305d57792abb2ac33cfafc0f44`, content ID `0de59fe202491fa9`;
+[source/checksum record](../releases/installer-0de59fe202491fa9.json) and
+[pinned packages](../releases/packages-0de59fe202491fa9.tsv).
+ISO: **1,572,311,040 bytes**, SHA-256
+`b0e8e0652e51cb13506aa462b7a673ae93911dd16af77576ad3c71dce5805b01`.
+Signed updater: **89,655,805 bytes**, SHA-256
+`b06b7ed5f0a422d35f96100ca97e54fe029f86ac165e75d136f85ddc3149bef2`.
+Later documentation and delivery commits are separate from this build identity.
+
+The explicit-only hosted workflow built pinned Ubuntu inputs and qualified a
+fresh disposable no-NIC x86-64 Q35/UEFI/TCG VM. Its selected public evidence is in
+[run 37252578740](https://github.com/famulare/ToddlerBox/actions/runs/37252578740).
+Signing stays in private maintainer storage; no key, family media, Google token
+or VM password is in the artifacts. HP physical acceptance remains separate.
+
+# Previous qualified ToddlerBox 0.3.0 installer
 
 [Download release 0.3.0](https://github.com/famulare/ToddlerBox/releases/tag/v0.3.0).
 The ordinary `toddlerbox-installer.iso` asset is for Ubuntu 24.04 x86-64 UEFI;

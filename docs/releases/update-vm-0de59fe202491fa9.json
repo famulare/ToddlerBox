@@ -1,0 +1,21 @@
+{
+  "format": 1,
+  "from_version": "0.3.0",
+  "to_version": "0.4.0",
+  "source": "0de59fe202491fa9",
+  "updater_sha256": "b06b7ed5f0a422d35f96100ca97e54fe029f86ac165e75d136f85ddc3149bef2",
+  "baseline_content": "8776dfa5476b7156",
+  "checks": [
+    "full signed 0.4.0 update verified by installed 0.3 key",
+    "synthetic Paint/Typing work exact hashes preserved",
+    "actual candidate continuous frames and deliberate parent acceptance",
+    "sequence 2 retained and older signed sequence refused",
+    "parent configuration byte-for-byte preserved; reboot starts supervised child session",
+    "installed Ubuntu Python 3.12 SDL five-word equation sequencing completed in order; hashes rechecked"
+  ],
+  "limitations": [
+    "Synthetic fixtures only",
+    "Virtual audio plus isolated SDL sequencing is not HP listening acceptance",
+    "Original qualified disk and firmware checkpoint retained read-only"
+  ]
+}

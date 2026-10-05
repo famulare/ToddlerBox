@@ -16,7 +16,7 @@ import time
 import urllib.parse
 import urllib.request
 
-SOURCE = 'https://raw.githubusercontent.com/famulare/ToddlerBox/main/docs/releases/installer-8776dfa5476b7156.json'
+SOURCE = 'https://raw.githubusercontent.com/famulare/ToddlerBox/main/docs/releases/installer-0de59fe202491fa9.json'
 HOSTS = {'raw.githubusercontent.com', 'github.com', 'release-assets.githubusercontent.com', 'objects.githubusercontent.com'}
 
 

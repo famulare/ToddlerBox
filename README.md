@@ -1,7 +1,7 @@
 # ToddlerBox
 
 **ToddlerBox 0.4:** six offline activities, a two-row launcher, pictures-first Math
-with deliberate number speech, and 18 short songs in a scrollable Music library.
+with deliberate math speech, and 18 short songs in a scrollable Music library.
 
 ToddlerBox is a minimalist, offline-first Linux "kid mode" designed for very young children.
 The fullscreen launcher has six large buttons in two rows:
@@ -139,7 +139,8 @@ to hear the word and reveal its picture. Next chooses another random card withou
 ### Math
 
 Three modes: pictures-first Numbers, Addition and Subtraction. Passive illustrated
-ten-frames cover 0–100; a speaker button reads the revealed number on demand.
+ten-frames cover 0–100; a speaker button reads the revealed number or complete
+arithmetic equation on demand.
 See [the design and desktop instructions](MATH_DESIGN.md).
 
 ---
@@ -275,10 +276,11 @@ For example, `reading: {word_sets: [short_a_cvc]}` narrows the deck to short-a
 words. Change these YAML settings from parent mode; the child controls browse
 the selected deck without changing its difficulty settings.
 
-App-only updates preserve an existing `/etc/toddlerbox/config.yaml`. When upgrading
-an older installation, add the Music and/or Reading launcher entries from this
-repository's `config.yaml` in parent mode. Released 0.3.0 images include five apps;
-0.4 adds Math as the sixth activity.
+App-only updates preserve `/etc/toddlerbox/config.yaml` exactly. The two exact
+historical standard five-app profiles display all six activities automatically,
+without rewriting that file. Custom launchers retain their choices; see
+[update configuration](docs/updates.md) to add Math. A fresh 0.4 installation
+includes all six activities.
 
 ---
 

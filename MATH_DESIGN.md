@@ -25,14 +25,17 @@ input, so an old release cannot reveal a new question. In development, Home
 returns to the launcher (or closes standalone Math).
 
 A small speaker button appears after revelation. Each deliberate tap reads the
-disclosed numeral (Numbers) or answer (arithmetic), replacing any current clip.
+disclosed numeral (Numbers) or complete equation (arithmetic), replacing current
+speech. For example, `8 - 3 = 5` reads "eight minus three equals five".
 Nothing plays automatically and playback never reveals or changes an example.
 Home, Next, mode changes and focus changes stop and unload the clip. A duration
 deadline bounds a stalled stream; unavailable audio leaves visual use intact and
 device failures can be retried by tapping again. All 101 complete number names
-are bundled as bounded PCM WAVs: no network, runtime synthesis or new runtime
+and the three words plus/minus/equals are bundled as bounded PCM WAVs. The five
+equation clips are validated before playback; an early stop cancels the rest.
+There is no network, runtime synthesis or new runtime
 dependencies. See [audio preparation and provenance](assets/math/README.md).
-The synthetic voice still needs parent listening on the Mac.
+Pronunciation and output loudness still need parent listening on the HP.
 
 ## Quantities and random selection
 

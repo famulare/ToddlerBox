@@ -49,6 +49,9 @@ In parent GNOME, check visible Wi-Fi networks, connect, resolve a website, then
 reboot and confirm reconnection. In child mode, check trackpad light tap and firm
 click/drag, touchscreen edges, volume-up/down/mute keys, Reading sound-unit taps
 and whole-word reveal, Music playback plus overlapping piano keys and Free Play.
-Confirm Home stops sound and Ctrl+Alt+Home still reaches parent login. Record any
+In Math, confirm objects appear first, a tap reveals the numeral without sound,
+and the speaker plays the number only on request. In Addition/Subtraction,
+confirm it reads the full displayed equation. Confirm Home stops sound and
+Ctrl+Alt+Home still reaches parent login. Record any
 remaining failure with the parent controller/session journal. VM qualification
 cannot establish the HP's radio, audio routing or physical input behavior.

@@ -1,6 +1,6 @@
 {
   "asset": "ToddlerBox-update.pyz",
-  "bytes": 67630331,
+  "bytes": 89655805,
   "channel": "stable",
   "format": 1,
   "platform": "ubuntu24.04-x86_64",
@@ -9,8 +9,8 @@
     "typing": 1,
     "version": 1
   },
-  "sequence": 1,
-  "sha256": "1e8f4839cfac6bc732071068ed460a18fa2fedb344753e78ed7277d3cd829bf9",
-  "source": "8776dfa5476b7156",
-  "tag": "v0.3.0"
+  "sequence": 2,
+  "sha256": "b06b7ed5f0a422d35f96100ca97e54fe029f86ac165e75d136f85ddc3149bef2",
+  "source": "0de59fe202491fa9",
+  "tag": "v0.4.0"
 }

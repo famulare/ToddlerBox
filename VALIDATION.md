@@ -1257,3 +1257,161 @@ source/tag identities, artifacts and signatures have been checked.
 VM/image qualification and publication results will be appended after execution.
 Physical HP Wi-Fi, touch gestures, trackpad, audible sound and sleep/resume remain
 hardware acceptance checks. No real Google/family-data test runs on the builder.
+
+
+### Arithmetic speech and resident bundle compatibility (2026-10-05)
+
+The final user follow-up changes deliberate arithmetic speech from the answer
+alone to the full equation, using the existing 101 number clips plus three
+bounded, hash-checked recordings: plus, minus, equals. No visual layout or
+revelation behavior changes. Actual baseline `95d89aa11c36376cb0102590f3e7e5200509ad7f`
+and new source under the same headless SDL/toolchain produced exactly identical
+40 Math frames (800×600 and 1366×768; ten examples before/after reveal), and all
+101 original number WAVs are byte-for-byte identical. The pinned Piper model,
+zero-noise settings and preparation lock remain unchanged. Preparation command:
+`UV_CACHE_DIR=/tmp/uv-cache uv run scripts/prepare-math-audio.py --model-dir build/reading-research/piper --operators-only`.
+The model is maintainer-only public material; no model weights enter runtime.
+
+A targeted independent Sol review caught premature SDL-stop queue advancement.
+The repaired player requires normal-duration completion before continuing;
+early stop, deadline, Home/Next/mode/focus or device failure clears pending words.
+All five clips are validated before any word plays. Ordering covers subtraction,
+zero and 100; actual SDL tests cover interruption. Final targeted review found no
+remaining material issue. `uv run --frozen pytest tests/test_math_speech.py -q`
+passed 29 tests; the full suite passed **451 tests** on Linux with real local
+socket permissions (`UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q`).
+One sandbox-only AF_UNIX bind denial was resolved by running with permitted
+local socket access; production authentication guards were unchanged.
+
+A real signed full-app update attempt on a disposable overlay of the qualified
+0.3 VM exposed an archive-order failure: redundant relative interpreter aliases
+resolved through the canonical system link, so the resident tar data filter
+correctly rejected them. The build now validates the canonical `/usr/bin/python3`
+link, exact redundant aliases, entrypoint shebangs and pinned Python3.12 before
+removing only those aliases. Both image assembly paths share this normalization.
+The resident installer and its symlink/path guards are unchanged. A focused tar
+regression reproduces the old failure before normalization and installs afterward;
+unexpected links/shebangs fail before mutation. Independent Sol review approved
+the narrow fix. `uv run --frozen pytest tests/test_system_release.py -q`: **21 passed**.
+
+Fresh-install test-driver corrections included a read-only mount-point fix,
+serial-menu OCR, slow console password input verified by independent real parent
+login/sudo plus durable marker, and sparse caption OCR. The earlier launcher
+OCR timeout was reproduced on its actual screenshot: default Tesseract missed
+Math, while sparse segmentation recognized it; status was child/zero restarts/
+seen-frame true. Twofold OCR scaling also recognizes genuine old five-app
+captions. These changes affect the harness, never production recovery guards.
+All raw serial/audio/VM/password files stay private. Only explicitly selected
+synthetic screenshots/results are delivery evidence.
+
+
+### Actual signed 0.3 → 0.4 update VM (2026-10-05)
+
+The exact new updater (`b06b7ed5f0a422d35f96100ca97e54fe029f86ac165e75d136f85ddc3149bef2`,
+89,655,805 bytes; content `0de59fe202491fa9`) was signature-verified with the
+installed 0.3 public key and installed through its resident production updater.
+The original qualified `8776dfa5476b7156` base disk was mounted read-only, with
+all writes confined to a new disposable overlay. Only that overlay's OVMF
+variables were initialized for the test's changed virtual PCI topology; the
+qualified base and firmware checkpoint were never replaced.
+
+Passed: full application installation, all 18 songs and 101 number clips loaded,
+exact synthetic Paint/Typing checksums, exact parent YAML checksum, real
+supervised continuous child frames, independent parent return, explicit
+candidate acceptance, stored sequence 2 with older sequence refusal, and reboot
+back into a healthy supervised child session. The actual reboot screenshot
+shows six icons: the unchanged historical standard five-app YAML is recognized
+and augmented in memory by the approved config loader. Custom profiles are not
+rewritten or automatically augmented. This is a full-app update test, not merely
+a signature verification or installer-extraction test.
+
+The repeatable guest checks used `release_client.verify`, `update_bundle.run`,
+`sha256sum -c` over the saved child fixtures and parent config, production
+`toddlerbox-maintenance --action test`/`accept`, `boot_recovery.latest` observed
+and accepted state, `release_client.sequence_guard`, and a real QMP reboot.
+Private VM/serial/password files and synthetic backing disks remain outside
+public artifacts; selected screen/results evidence is retained separately.
+
+Additional actual Ubuntu 3.12.3/pygame-ce 2.5.8 guest verification played all
+five `8 - 3 = 5` clips through the native SDL backend in exact order, completed
+and unloaded normally, then rechecked unchanged Paint/Typing/config hashes.
+The isolated backend in this semantic sequencing check was SDL dummy; separate
+fresh-install GUI qualification checks virtual HDA PCM. The corresponding real
+SDL regression was added to the public suite (29 Math speech / 451 total).
+The first new-image GUI attempt passed Music but sampled arithmetic PCM at a
+fixed 0.45 seconds. Qualification now waits up to eight seconds for real recorded
+PCM, with verified silence before the tap; it does not lower the audible threshold
+or replace the actual HDA check. A subsequent retry stopped before boot because
+the hosted runner lacked `rg`; the confirmed-404 draft-tag guard now uses the
+available `grep` with the same required match. Neither issue changed runtime,
+image bytes, signed updater bytes, trust or recovery guards.
+
+
+### Qualified 0.4.0 fresh installer (2026-10-05)
+
+[Successful run 37252578740](https://github.com/famulare/ToddlerBox/actions/runs/37252578740)
+ran **451 tests successfully**, then installed the exact ISO into a new 16 GiB
+disposable disk. Built revision `4bee91b66acce2305d57792abb2ac33cfafc0f44`,
+content `0de59fe202491fa9`; qualification driver revision
+`466e5db85727f98065f9d492745217e99e198cf3`. Subsequent documentation/delivery
+commits are not represented as rebuilt image bytes.
+
+Actual platform: x86-64 Q35/UEFI/TCG, two CPUs, 4 GiB RAM, no NIC, virtual HDA
+and USB tablet. Passed: installer payload checksum and explicit virtual-disk
+erase confirmation; forced parent-password creation verified through independent
+serial login and sudo; unfinished-setup child gate; deliberate supervised setup;
+18-song scroll to New World Largo, Free Play and recorded HDA PCM; Math
+objects-first/silent reveal, requested number and equation PCM, and Home silence;
+all six activities; normal parent escape, visible parent login after a stopped
+launcher, watchdog replacement of the stopped PID with new healthy frames,
+completed-setup persistence and reboot into the six-app standalone Cage session
+without a child GNOME shell. Sync remains static/explicit-only with no timer.
+
+The actual repeatable driver command was:
+
+```sh
+uv run --frozen python scripts/qualify-release-vm.py --image-dir build/release-0.4 --output build/release-qa
+```
+
+Use the recorded driver revision, the checksum-identified ISO and the pinned
+`system/Dockerfile.tools` image; always choose a new output directory. The
+workflow and driver preserve existing qualified bases and never open physical
+disks. Raw VM, audio, serial and ephemeral password files are excluded.
+Selected public screenshots/results are retained as `qualification-evidence.zip`.
+
+Harness limits were corrected without changing runtime bytes: QMP reads and
+OCR subprocesses are bounded, OCR uses one worker to avoid host contention,
+and both original console OCR and upscaled sparse caption OCR are retained.
+The failed menu screenshot was a healthy GRUB menu; actual hosted Tesseract
+5.3.4 recognized it in the controlled single-worker check. Genuine old/new
+OCR driver code returned exactly identical text on that same retained input.
+An actual stalled synthetic QMP socket raised at the configured timeout.
+Early parent screenshots did not prove a usable greeter; final qualification
+waits for the visible parent login rather than relying on the mode file alone.
+
+ISO: **1,572,311,040 bytes**, SHA-256
+`b0e8e0652e51cb13506aa462b7a673ae93911dd16af77576ad3c71dce5805b01`.
+Updater: **89,655,805 bytes**, SHA-256
+`b06b7ed5f0a422d35f96100ca97e54fe029f86ac165e75d136f85ddc3149bef2`.
+The full candidate ISO was also downloaded and independently hashed locally.
+[Source/artifact record](docs/releases/installer-0de59fe202491fa9.json),
+[package manifest](docs/releases/packages-0de59fe202491fa9.tsv), and
+[signed-update VM record](docs/releases/update-vm-0de59fe202491fa9.json).
+Actual Ubuntu packages include kernel `6.8.0-142.142`, Python
+`3.12.3-0ubuntu2.1`, gh `2.45.0-1ubuntu0.3` and rclone
+`1.60.1+dfsg-3ubuntu0.24.04.6`.
+
+VM PCM checks and native five-clip sequencing do not establish human listening
+approval. HP Wi-Fi scan/connect/reconnect, touch edges/multiple fingers, trackpad
+tap/physical drag, speaker loudness/pronunciation and sleep/resume remain physical
+acceptance checks. Secure Boot is unsupported. Supplied hardware observations
+are sanitized in [the HP profile](docs/hp-hardware.md); raw uploads stay private.
+
+Selected final VM screenshots were inspected visually: actual GNOME parent
+login after normal and frozen-app escape; six icons after watchdog and reboot;
+Music's last song and Free Play; Math objects, settled numeral and equation.
+`math-revealed.png` was captured immediately after the click and still shows
+the previous frame; the later `math-speaking.png` shows the correct numeral
+and speaker, with actual PCM independently confirming the requested playback.
+Installer helper focused checks: `uv run --frozen pytest -q
+tests/test_installer_download.py` — **8 passed**.

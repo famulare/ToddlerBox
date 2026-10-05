@@ -13,6 +13,26 @@ remains available for recovery. Status, rollback and retry recovery are in the
 same program. See [parent maintenance](parent-maintenance.md) and
 [release signing](release-signing.md) for the exact boundaries.
 
+### Standard and custom launcher configurations
+
+The 0.4 update preserves `/etc/toddlerbox/config.yaml` exactly. The two exact
+historical standard five-app profiles display all six apps in the new order
+without rewriting that file. Custom commands, paths, ordering and omissions
+remain unchanged. New songs appear without configuration changes.
+To add Math to a custom launcher, use parent
+mode and `sudoedit /etc/toddlerbox/config.yaml` to add this entry under
+`launcher.apps`, after Reading:
+
+```yaml
+    - name: Math
+      icon_path: assets/icons/math/math.png
+      command: "python -m toddlerbox.math"
+```
+
+Order the six entries Paint, Photos, Music, Typing, Reading, Math for the standard
+two-row layout. A fresh 0.4 installation already has this configuration. Other
+parent settings and all child data remain unchanged.
+
 Older images without this embedded trust anchor use the historical manual route
 below, or reinstall the new appliance image after backing up child work.
 
