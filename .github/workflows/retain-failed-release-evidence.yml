@@ -28,6 +28,9 @@ jobs:
           test "$(jq -r .path run.json)" = .github/workflows/build-qualified-release.yml
           case "$(jq -r .conclusion run.json)" in failure|cancelled) ;; *) exit 1;; esac
           test "$(gh release view v0.4.0 --json isDraft --jq .isDraft)" = true
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends tesseract-ocr
+          uv sync --frozen --group dev --python /usr/bin/python3
           mkdir evidence
           gh run download "$RUN_ID" --name release-0.4-public-evidence --dir evidence
           uv run --no-project --python /usr/bin/python3 python - <<'PY'
@@ -43,5 +46,19 @@ jobs:
                       z.write(p,p.name);found.add(p.name)
           assert found
           print(sorted(found))
+          PY
+          uv run --frozen python - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          import os,subprocess
+          env=dict(os.environ,OMP_THREAD_LIMIT='1')
+          print(subprocess.check_output(['tesseract','--version'],text=True).splitlines()[0])
+          for p in Path('evidence').rglob('installer.png'):
+              for scale in (1,2):
+                  image=Image.open(p);q=Path('/tmp/installer-ocr.png')
+                  image.resize((image.width*scale,image.height*scale)).save(q)
+                  for psm in (3,11):
+                      text=subprocess.check_output(['tesseract',str(q),'stdout','--psm',str(psm)],stderr=subprocess.DEVNULL,text=True,timeout=20,env=env)
+                      print(scale,psm,repr(text))
           PY
           gh release upload v0.4.0 "failed-vm-$RUN_ID.zip" --clobber
