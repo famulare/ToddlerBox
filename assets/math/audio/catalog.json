@@ -726,5 +726,25 @@
       "frames": 39936,
       "sha256": "cfc0821f7bea2d04220cb09e3e053689ae339187de41e6e2301cb57032162b4b"
     }
+  ],
+  "operators": [
+    {
+      "id": "plus",
+      "text": "plus",
+      "frames": 28160,
+      "sha256": "66098384dcf7086187ca1bc6f1fd97026fa9a3aeff5c2ed78d211aa80c90b5e4"
+    },
+    {
+      "id": "minus",
+      "text": "minus",
+      "frames": 35328,
+      "sha256": "7ef75f1f7124f6f38335a813e40b4a39829eeaa54cb4318450bd0f978c5ec09a"
+    },
+    {
+      "id": "equals",
+      "text": "equals",
+      "frames": 33280,
+      "sha256": "05c581e4f7a3c8ae85b70b2d4c7f1425f7725664f883c45f5b62b99b69b00b34"
+    }
   ]
 }

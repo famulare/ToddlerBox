@@ -2,6 +2,10 @@
 
 `audio/` contains 101 offline recordings of complete English number names,
 zero through one hundred. These are synthetic speech, not family recordings.
+Three additional recordings say "plus", "minus" and "equals" using the same
+pinned voice. Arithmetic speech plays the two operands, operation, equals and
+answer in order. All five clips are checked before starting; early stops and
+device failures cancel the rest instead of skipping words.
 The application uses the existing SDL mixer and never runs a speech model.
 
 Preparation uses Piper 1.4.2 with the single US English female LJ Speech voice,

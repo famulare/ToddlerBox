@@ -44,6 +44,11 @@ def test_every_bundled_number_is_complete_bounded_pcm_with_exact_hash():
     assert bank.get(True) is None and bank.get(101) is None
     assert bank.entries[100]["text"] == "one hundred"
     assert bank.entries[42]["text"] == "forty two"
+    assert set(bank.operators) == {"plus", "minus", "equals"}
+    for name in bank.operators:
+        clip = bank.operator(name)
+        assert clip and 1000 <= clip.frames <= RATE * 6
+    assert bank.operator("../private") is None
 
 
 def synthetic_bank(root):
@@ -127,7 +132,7 @@ def test_number_reveal_is_silent_objects_stay_and_only_disclosed_number_can_spea
     for mode, a, b, result in (("addition", 8, 7, 15), ("subtraction", 23, 8, 15)):
         select(app, mode, a, b, revealed=True)
         tap(app, app.speech_rect.center)
-        app.player.play.assert_called_with(result)
+        app.player.play_equation.assert_called_with(app.example)
     tap(app, app.mode_rect.center)
     app.player.cancel.assert_called()
     app.player.reset_mock()
@@ -156,3 +161,86 @@ def test_speaker_is_visible_only_after_reveal_and_stays_clear_of_other_controls(
     assert pixels(app, app.speech_rect) != before
     assert app.rect.contains(app.speech_rect)
     assert all(not app.speech_rect.colliderect(r) for r in (app.home_rect, app.mode_rect, app.question_rect))
+
+
+@pytest.mark.parametrize("mode,a,b,expected", [
+    ("subtraction", 8, 3, ["number-8", "minus", "number-3", "equals", "number-5"]),
+    ("addition", 0, 100, ["number-0", "plus", "number-100", "equals", "number-100"]),
+    ("subtraction", 100, 100, ["number-100", "minus", "number-100", "equals", "number-0"]),
+])
+def test_equation_reads_all_five_words_in_order_and_finishes(mode, a, b, expected):
+    from toddlerbox.math.model import Example
+    audio = Mock()
+    audio.busy.return_value = False
+    bank = NumberBank(Mock())
+    now = [0.0]
+    player = NumberPlayer(Mock(), bank=bank, audio=audio, clock=lambda: now[0])
+    player.play_equation(Example(mode, a, b))
+    for _ in range(5):
+        now[0] += player.duration
+        player.update()
+    assert [call.args[0].path.stem for call in audio.play.call_args_list] == expected
+    assert player.deadline is None and player.queue == []
+
+
+def test_premature_sdl_stop_cancels_remaining_equation_words():
+    from toddlerbox.math.model import Example
+    audio = Mock()
+    audio.busy.return_value = False
+    player = NumberPlayer(Mock(), bank=NumberBank(Mock()), audio=audio, clock=lambda: 0)
+    player.play_equation(Example("subtraction", 8, 3))
+    player.update()
+    assert audio.play.call_count == 1 and not player.queue and player.deadline is None
+
+
+def test_equation_cancel_retry_and_timeout_never_leave_pending_words():
+    from toddlerbox.math.model import Example
+    audio = Mock()
+    bank = NumberBank(Mock())
+    now = [0]
+    player = NumberPlayer(Mock(), bank=bank, audio=audio, clock=lambda: now[0])
+    example = Example("addition", 8, 7)
+    player.play_equation(example)
+    assert len(player.queue) == 4
+    player.cancel()
+    player.update()
+    assert audio.play.call_count == 1 and not player.queue
+    player.play_equation(example)
+    now[0] = player.deadline + .1
+    player.update()
+    assert not player.queue and player.deadline is None
+    now[0] = 0
+    audio.play.side_effect = SpeechDeviceError
+    player.play_equation(example)
+    assert not player.queue and player.deadline is None
+    audio.play.side_effect = None
+    player.play_equation(example)
+    assert player.deadline is not None
+    player.play(7)
+    assert not player.queue
+
+
+def test_damaged_equation_word_does_not_play_partial_equation(tmp_path):
+    from toddlerbox.math.model import Example
+    import shutil
+    shutil.copytree(ROOT, tmp_path / "audio")
+    (tmp_path / "audio/minus.wav").write_bytes(b"invalid")
+    audio = Mock()
+    player = NumberPlayer(Mock(), bank=NumberBank(Mock(), tmp_path / "audio"), audio=audio)
+    player.play_equation(Example("subtraction", 8, 3))
+    audio.play.assert_not_called()
+    assert not player.queue and player.deadline is None
+    player.play(8)
+    audio.play.assert_called_once()
+
+
+def test_equation_home_and_mode_change_stop_real_sdl_and_clear_queue(app):
+    select(app, "addition", 8, 7, revealed=True)
+    tap(app, app.speech_rect.center)
+    assert pygame.mixer.music.get_busy() and len(app.player.queue) == 4
+    tap(app, app.mode_rect.center)
+    assert not pygame.mixer.music.get_busy() and not app.player.queue
+    select(app, "subtraction", 8, 3, revealed=True)
+    tap(app, app.speech_rect.center)
+    assert not tap(app, app.home_rect.center)
+    assert not pygame.mixer.music.get_busy() and not app.player.queue

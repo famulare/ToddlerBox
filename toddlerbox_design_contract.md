@@ -220,7 +220,8 @@ included in ToddlerBox 0.4.
 - Home, Next and one mode control; no left rail. Existing single-pointer cleanup,
   frame supervision and authenticated screen-only receipt remain in use.
 - No child work is written; save-current uses the existing no-work acknowledgement.
-- A speaker button reads the disclosed number/answer on deliberate tap only.
+- A speaker button reads the disclosed numeral in Numbers, or the complete
+  arithmetic equation ("eight minus three equals five") on deliberate tap only.
   No autoplay or speech-controlled revelation. Offline bounded 0–100 WAV clips
   stop on Home, Next, mode/focus changes; no runtime synthesis/network access.
 - `MATH_DESIGN.md` records sampling details, configuration and Mac launch commands.

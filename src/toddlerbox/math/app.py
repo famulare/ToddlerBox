@@ -180,7 +180,10 @@ class MathApp:
         elif pressed[0] == "mode":
             self.change_mode()
         elif pressed[0] == "speech":
-            self.player.play(self.example.result)
+            if self.example.mode == "numbers":
+                self.player.play(self.example.result)
+            else:
+                self.player.play_equation(self.example)
         elif pressed[0] == "reveal":
             self.reveal()
         return True
