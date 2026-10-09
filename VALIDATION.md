@@ -1,5 +1,148 @@
 > Evidence is chronological. Historical installer IDs and pending items below belong to their recorded checkpoints; the [final 0.3.0 section](#toddlerbox-030-appliance-qualification--2026-10-04) defines the current qualification and remaining limits. Previously qualified artifacts remain preserved.
 
+## Pending audio patch — 2026-10-09
+
+Issues #11 and #12 are implemented on `codex/audio-polish`, based on actual
+main `30edbfad89187e07b480418c328d6536593540c6`. This is application/system-source
+qualification only: no merge, signed update or installer build. The later USB
+setup extension below bumps the unreleased source version to 0.5.0.
+Published 0.4.0 and its qualified VM checkpoints remain unchanged.
+
+Toolchain: Linux x86-64; uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8 / SDL
+2.32.10, Pillow 12.3.0, pytest 9.1.1 and PyYAML 6.0.3; frozen project dependencies.
+The unchanged baseline passed 451 tests. Audio-only commit `ae90090` passed
+477 tests; the later USB extension below passes 506.
+An AF_UNIX socket test initially failed under the restrictive command sandbox;
+the identical test failed on the real unmodified baseline in that sandbox.
+The complete suite passes with the tool's network permission, including real
+Linux credential authentication; no production guard or test was weakened.
+
+Intended differences: song gain 0.25→1.0; Reading/Math gain 0.35→0.70;
+child-session startup master 0.80 with a bounded sink wait and unity ceiling;
+manual keys share a 0.70 gain budget and use a 600 ms quadratic release envelope.
+Existing custom gains are untouched unless the authenticated parent explicitly
+applies new audio defaults. That action durably retains the original root-owned
+configuration, preserves other settings and refuses child mode, malformed
+sections, symlink/hardlink paths and arbitrary destination arguments.
+
+Repeatable checks (baseline is a genuine `git archive`, never a reconstructed
+implementation):
+
+```sh
+mkdir -p build/audio-polish/baseline-source
+git archive 30edbfad89187e07b480418c328d6536593540c6 | tar -x -C build/audio-polish/baseline-source
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-audio-polish.py --baseline build/audio-polish/baseline-source --output build/audio-polish/pcm-final
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-sync-rendering.py --render build/audio-polish/baseline-source --output build/audio-polish/render-old --state baseline
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-sync-rendering.py --render . --output build/audio-polish/render-new --state baseline
+bash -n system/bin/toddlerbox-session
+sh -n system/bin/toddlerbox-volume
+git diff --check
+```
+
+Actual SDL disk-driver PCM peaks: song 5000→20000 (**4.0×**), speech
+6875→13906 (**2.02269×**, SDL gain quantization). The same real C4 sample rings
+for approximately 128 ms after release on baseline versus 580 ms on candidate,
+including disk-buffer timing. Synthetic song plus sixteen rapid overlapping
+real piano strikes peaks at 25604/32768 with **zero saturated samples** and
+maximum aggregate key gain 0.6875. All eighteen pinned songs and twenty-five
+key samples retain their bytes and satisfy the independent peak-headroom check.
+
+Independent Sol review found SDL's native fade-out could overwrite a channel
+budget on later mixer ticks. The final implementation replaces that mechanism
+with the event-loop envelope and reserves gain before starting a new note.
+Review confirmed the repair; 95 expanded focused tests passed with no further
+material findings. Regression checks cover mouse/raw-finger release, glissando,
+repeated notes, overlapping tails, eight held voices, oldest-tail replacement,
+natural completion, immediate cleanup, startup stalls and explicit parent opt-in.
+Controller escape/watchdog and save/IPC implementations are unchanged.
+
+Before/after rendering: all **20** existing render/save/decoder artifacts
+(six screens at two sizes, plus saved outputs) match byte-for-byte. Math's
+existing `scripts/check-math-followup.py` RUNNER was run with version `new` on
+both actual sources; all **40** PNGs match byte-for-byte, without masking any
+pixels. No child UI controls or media assets changed.
+
+Startup scale was checked against upstream WirePlumber **0.4.17** `wpctl.c`
+and `module-mixer-api.c`: wpctl selects cubic scale; 0.80 maps to 0.512 linear
+gain before hardware calibration. This is not physical-speaker evidence.
+Actual Ubuntu/PipeWire session startup, HP loudness/headphones, and the parent's
+choice of startup level remain for later installer qualification and listening.
+
+## Pending 0.5.0 USB setup extension — 2026-10-09
+
+Issue #13 extends PR #14 on `codex/audio-polish`, with actual audio-only baseline
+`ae900905da1447da293e11a0f945eee0e65bab97`. Source and uv lock metadata
+now specify **0.5.0**. No new installer, signed bundle, tag or release is published.
+The baseline desktop CLI required a package path and independent checksum;
+parent maintenance required a path and calculated its own checksum. Neither
+provided the accepted mounted-USB/adjacent-checksum selection flow.
+
+The new explicit flow discovers removable/USB mounts using Ubuntu lsblk, scans
+only their roots, displays volume/name/bytes, selects a sole candidate or asks
+for a numbered selection, and verifies exactly one adjacent checksum. A checksum
+cannot supply a path. This is transfer integrity under authenticated physical
+USB trust, not origin authentication. A stable private copy feeds the unchanged
+conservative importer. USB sources remain intact. A parent-mode recheck under
+the shared maintenance lock prevents a concurrent child transition at install.
+Successful receipts record full SHA-256 and accurate new-photo counts, and are
+shown separately from sync status. Results remain visible until dismissed.
+
+Commands:
+
+```sh
+UV_CACHE_DIR=/tmp/uv-cache uv lock
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q tests/test_usb_setup.py tests/test_drive_sync.py tests/test_appliance.py
+sh -n scripts/install-drive-setup-patch.sh
+git diff --check
+```
+
+**506 tests passed** (same frozen toolchain as the audio checkpoint; dependency
+versions unchanged). Synthetic regressions cover both naming conventions,
+multiple selection/cancel, malformed/ambiguous/mismatched/missing/incorrect
+checksums, symlink/hardlink refusal, source replacement/mutation, USB removal,
+disk reserve failure, stable import inputs, repeat/newer-work preservation,
+receipt accuracy, visible sanitized failure and final parent lock/guard ordering.
+Existing interrupted-import/no-overwrite tests also pass. Sol review identified
+three gaps (unavailable audio menu on a USB-only patch, missing setup status,
+and late parent-mode check); all were repaired. Final independent USB/Drive
+checks: **69 passed**, no further material findings.
+
+Actual Ubuntu 24.04 removable-media qualification used a **disposable qcow2
+VM overlay**, backing the preserved `build/appliance-qualified/disk.qcow2`,
+QEMU TCG/q35/qemu64, two CPUs, 2 GiB RAM and **no network**. A synthetic 16 MiB
+ext4 disk was attached as QEMU `usb-storage`, mounted at a synthetic `/media`
+path, and discovered by the guest's real lsblk. The guest installed the public
+source-checkout patch, then executed the production CLI with confirmation:
+first setup imported one synthetic PNG, repeat setup imported zero and reported
+already-installed, the full SHA receipt matched and appeared in status, and
+both USB transfer files remained. Invalid checksum and child-mode setup returned
+failure with visible messages. A second patch application and repeated setup
+also passed. Existing synthetic Paint/Typing files also passed their original SHA-256
+checks after setup. Guest kernel: 6.8.0-142-generic, Python 3.12.3 and util-linux
+lsblk 2.39.3; preserved base content ID `8776dfa5476b7156`. Actual output is
+shown below.
+
+![Actual Ubuntu VM USB setup result with synthetic transfer](images/drive-setup-usb.png)
+
+The VM used a direct-kernel privileged test console, not a fresh install or
+GNOME/polkit interaction test. Host code tested the same root guards; physical
+USB mounting, parent authentication UX and HP acceptance remain unverified.
+Only synthetic fixtures were used. The new overlay and logs are under
+`build/audio-polish/usb-vm/`; prior disks/checkpoints were not modified. An initial
+diagnostic used an older pre-appliance image and was replaced by a new overlay
+of the proper qualified appliance base before the successful run.
+
+Existing-install application is deliberately small and offline:
+`sudo sh scripts/install-drive-setup-patch.sh`, then
+`sudo toddlerbox-sync setup`. It durably backs up and replaces only the USB
+module, CLI and maintenance program, under parent mode and maintenance lock.
+It does not reset setup progress/data/credentials/device identity or replace the
+resident recovery gate/signed updater. Audio choices remain hidden on old app
+versions. This explicit trusted-checkout patch is not a signed release; future
+release packaging/installer qualification remains separate work.
+
 # Bootable system validation — 2026-10-02
 
 The [Reading qualification](#reading-application-qualification) below records

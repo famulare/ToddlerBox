@@ -23,8 +23,8 @@ def test_three_modes_and_previous_trial_configuration_remains_readable():
         assert original["math"]["mode"] == mode
 
 
-@pytest.mark.parametrize("value,expected", [(True, .35), (float("nan"), .35),
-                                            (float("inf"), .35), (10**400, 1), (-10**400, 0), (-1, 0), (2, 1), (.6, .6)])
+@pytest.mark.parametrize("value,expected", [(True, .70), (float("nan"), .70),
+                                            (float("inf"), .70), (10**400, 1), (-10**400, 0), (-1, 0), (2, 1), (.6, .6)])
 def test_parent_volume_is_finite_bounded(value, expected):
     assert options_from_config({"math": {"volume": value}}, Mock()).volume == expected
 

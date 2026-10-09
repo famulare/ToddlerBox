@@ -18,8 +18,17 @@ Authenticate as parent again and finish setup. Reboot during this test returns
 to unfinished parent setup. Finishing requires the successful recovery check;
 other hardware limitations can be accepted explicitly.
 
+In the pending 0.5.0 patch, the optional Drive check and **Set Up ToddlerBox Drive**
+find packages on mounted USB drives and verify their adjacent full checksums.
+No path/hash typing is needed, and the result stays visible until dismissed.
+This can be rerun after setup is complete without resetting progress or
+reinstalling; see [the existing-install patch instructions](drive-sync.md#rerun-usb-setup-without-reinstalling).
+
 The program offers:
 
+- In the pending audio patch, an explicit **Apply louder audio defaults** choice.
+  It preserves other settings and backs up the original configuration; ordinary
+  updates keep custom gains. See [audio controls](child-controls.md).
 - Status, including setup results, system services, disk space, update/recovery
   state, Drive's last successful completion and Ubuntu reboot requirement.
 - Check/install qualified public GitHub releases, accept a tested candidate,

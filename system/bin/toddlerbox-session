@@ -13,6 +13,7 @@ export TODDLERBOX_HEALTH_SOCKET=/run/toddlerbox-health.sock
 # One audio route for both activities; the child user manager owns the server.
 # Bound startup so an unavailable audio device cannot strand session recovery.
 timeout 8 systemctl --user start pipewire.socket pipewire-pulse.socket wireplumber.service || true
+timeout 2 /usr/local/libexec/toddlerbox-volume startup || true
 export SDL_AUDIODRIVER=pulseaudio
 # Cage owns the seat. Do not use -s (which enables virtual-terminal switching).
 # Inhibitors live only as long as the child session; parent GNOME has normal keys.

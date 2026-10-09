@@ -20,7 +20,7 @@ class Options:
                                   "short_u_cvc", "digraphs", "adjacent_consonants")
     letter_case: str = "lowercase"
     letter_audio: str = "sounds"
-    volume: float = 0.35
+    volume: float = 0.70
 
 
 def options_from_config(config: dict, logger) -> Options:
