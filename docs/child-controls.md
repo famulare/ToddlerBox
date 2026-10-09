@@ -20,16 +20,44 @@ deadline. Audio commands run as the child account and do not open an overlay.
 Parent mode uses GNOME's normal controls. Escape/watchdog processing never waits
 for volume commands.
 
-These are corrections to the system configuration. The actual HP output routing
-and loudness still need checking; moving notes alone do not prove audible output.
-App software gain remains the existing Music 0.25 / Reading 0.35. Increase system
-volume with the hardware keys after the patch, and select the intended speakers
-in parent Sound settings if necessary. Do not change app gains to hide an
-unidentified device-routing issue.
+The HP subsequently confirmed working media keys but insufficient loudness.
+The pending audio patch changes Music 0.25 → 1.0 and Reading/Math 0.35 → 0.70.
+These are signal-gain changes, not guaranteed perceived-loudness multipliers.
+No recordings, speech timing, or song dynamics change. Piano keys also gain
+headroom-aware amplification and a 600 ms release decay.
+
+Each new child session initializes the selected default sink to
+`audio.startup_volume` (default 0.80), then unmutes it. Setup retries for at most
+1.5 seconds with a two-second outer deadline; a missing/stalled sink cannot
+prevent child-session startup or independent recovery. Activity changes do not
+reset volume. Re-entering child mode, including recovery after a crash, restores
+the configured startup level. Parent GNOME keeps its own normal controls.
+
+WirePlumber 0.4.17 `wpctl` uses a cubic volume scale: 0.80 corresponds to roughly
+0.512 linear gain before hardware calibration. With the new app gains, this
+puts default speech near the old unity-master maximum and default songs near
+twice their old maximum. The unchanged master ceiling still lets speech reach
+about twice and songs four times their old maximum. Physical HP listening and
+output-device selection remain necessary.
+
+Updates preserve `/etc/toddlerbox/config.yaml`, including custom gains. After
+this patch is installed, choose **11 Apply louder audio defaults** in parent
+Setup & Maintenance, or run:
+
+```sh
+sudo toddlerbox-maintenance --action audio-defaults
+```
+
+This explicit opt-in sets only Music, Reading, Math and startup gains; it retains
+other settings and a durable, private original-config backup at
+`/var/lib/toddlerbox-system/audio-config-before.yaml`. It requires authenticated
+parent mode and refuses unsafe configuration paths. Start a new child session
+afterward. Parents can still edit these gains or startup level in the root-owned
+configuration. This patch is on a separate review branch; 0.4.0 is unchanged.
 
 ## Current appliance release
 
-ToddlerBox 0.3.0 includes these controls. Use **ToddlerBox Setup & Maintenance**
+ToddlerBox 0.4.0 includes tap-to-click and media keys. Use **ToddlerBox Setup & Maintenance**
 for later signed public updates; see [updates](updates.md). Hardware acceptance
 is still required because a VM has no HP trackpad or speakers.
 

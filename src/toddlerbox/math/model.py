@@ -13,7 +13,7 @@ class Options:
     max_number: int = 100
     low_number_weight: int = 12
     mode: str = "numbers"
-    volume: float = 0.35
+    volume: float = 0.70
 
 
 def options_from_config(config, logger) -> Options:
@@ -34,10 +34,10 @@ def options_from_config(config, logger) -> Options:
     if not isinstance(mode, str) or mode not in MODES:
         logger.info("Invalid Math mode; using default")
         mode = "numbers"
-    volume = raw.get("volume", 0.35)
+    volume = raw.get("volume", 0.70)
     if type(volume) not in (int, float) or (type(volume) is float and not math.isfinite(volume)):
         logger.info("Invalid Math volume; using default")
-        volume = 0.35
+        volume = 0.70
     return Options(**values, mode=mode, volume=max(0.0, min(1.0, volume)))
 
 

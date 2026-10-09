@@ -1,5 +1,72 @@
 > Evidence is chronological. Historical installer IDs and pending items below belong to their recorded checkpoints; the [final 0.3.0 section](#toddlerbox-030-appliance-qualification--2026-10-04) defines the current qualification and remaining limits. Previously qualified artifacts remain preserved.
 
+## Pending audio patch — 2026-10-09
+
+Issues #11 and #12 are implemented on `codex/audio-polish`, based on actual
+main `30edbfad89187e07b480418c328d6536593540c6`. This is application/system-source
+qualification only: no merge, version bump, signed update or installer build.
+Published 0.4.0 and its qualified VM checkpoints remain unchanged.
+
+Toolchain: Linux x86-64; uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8 / SDL
+2.32.10, Pillow 12.3.0, pytest 9.1.1 and PyYAML 6.0.3; frozen project dependencies.
+The unchanged baseline passed 451 tests. The final candidate passes 477 tests.
+An AF_UNIX socket test initially failed under the restrictive command sandbox;
+the identical test failed on the real unmodified baseline in that sandbox.
+The complete suite passes with the tool's network permission, including real
+Linux credential authentication; no production guard or test was weakened.
+
+Intended differences: song gain 0.25→1.0; Reading/Math gain 0.35→0.70;
+child-session startup master 0.80 with a bounded sink wait and unity ceiling;
+manual keys share a 0.70 gain budget and use a 600 ms quadratic release envelope.
+Existing custom gains are untouched unless the authenticated parent explicitly
+applies new audio defaults. That action durably retains the original root-owned
+configuration, preserves other settings and refuses child mode, malformed
+sections, symlink/hardlink paths and arbitrary destination arguments.
+
+Repeatable checks (baseline is a genuine `git archive`, never a reconstructed
+implementation):
+
+```sh
+mkdir -p build/audio-polish/baseline-source
+git archive 30edbfad89187e07b480418c328d6536593540c6 | tar -x -C build/audio-polish/baseline-source
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-audio-polish.py --baseline build/audio-polish/baseline-source --output build/audio-polish/pcm-final
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-sync-rendering.py --render build/audio-polish/baseline-source --output build/audio-polish/render-old --state baseline
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-sync-rendering.py --render . --output build/audio-polish/render-new --state baseline
+bash -n system/bin/toddlerbox-session
+sh -n system/bin/toddlerbox-volume
+git diff --check
+```
+
+Actual SDL disk-driver PCM peaks: song 5000→20000 (**4.0×**), speech
+6875→13906 (**2.02269×**, SDL gain quantization). The same real C4 sample rings
+for approximately 128 ms after release on baseline versus 580 ms on candidate,
+including disk-buffer timing. Synthetic song plus sixteen rapid overlapping
+real piano strikes peaks at 25604/32768 with **zero saturated samples** and
+maximum aggregate key gain 0.6875. All eighteen pinned songs and twenty-five
+key samples retain their bytes and satisfy the independent peak-headroom check.
+
+Independent Sol review found SDL's native fade-out could overwrite a channel
+budget on later mixer ticks. The final implementation replaces that mechanism
+with the event-loop envelope and reserves gain before starting a new note.
+Review confirmed the repair; 95 expanded focused tests passed with no further
+material findings. Regression checks cover mouse/raw-finger release, glissando,
+repeated notes, overlapping tails, eight held voices, oldest-tail replacement,
+natural completion, immediate cleanup, startup stalls and explicit parent opt-in.
+Controller escape/watchdog and save/IPC implementations are unchanged.
+
+Before/after rendering: all **20** existing render/save/decoder artifacts
+(six screens at two sizes, plus saved outputs) match byte-for-byte. Math's
+existing `scripts/check-math-followup.py` RUNNER was run with version `new` on
+both actual sources; all **40** PNGs match byte-for-byte, without masking any
+pixels. No child UI controls or media assets changed.
+
+Startup scale was checked against upstream WirePlumber **0.4.17** `wpctl.c`
+and `module-mixer-api.c`: wpctl selects cubic scale; 0.80 maps to 0.512 linear
+gain before hardware calibration. This is not physical-speaker evidence.
+Actual Ubuntu/PipeWire session startup, HP loudness/headphones, and the parent's
+choice of startup level remain for later installer qualification and listening.
+
 # Bootable system validation — 2026-10-02
 
 The [Reading qualification](#reading-application-qualification) below records

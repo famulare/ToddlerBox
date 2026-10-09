@@ -102,3 +102,18 @@ def test_shell_helper_refuses_unknown_actions_without_commands(tmp_path):
     helper=Path(__file__).parents[1]/'system/bin/toddlerbox-volume'
     result=subprocess.run(['/bin/sh',str(helper),'up; arbitrary-command'],capture_output=True)
     assert result.returncode==2 and result.stdout==result.stderr==b''
+
+
+def test_real_startup_helper_uses_only_versioned_python_module(tmp_path):
+    import os
+    import shlex
+    import subprocess
+    log = tmp_path / 'command'
+    fake = tmp_path / 'python'
+    fake.write_text('#!/bin/sh\nprintf "%s\\n" "$*" >"$VOLUME_TEST_LOG"\n')
+    fake.chmod(0o700)
+    source = (Path(__file__).parents[1]/'system/bin/toddlerbox-volume').read_text()
+    source = source.replace('/opt/toddlerbox/current/.venv/bin/python', shlex.quote(str(fake)))
+    subprocess.run(['/bin/sh','-s','--','startup'], input=source, text=True,
+                   env=dict(os.environ,VOLUME_TEST_LOG=str(log)),check=True)
+    assert log.read_text() == '-m toddlerbox.runtime.audio\n'

@@ -172,7 +172,10 @@ included in ToddlerBox 0.4.
 - Home/TERM/exceptions stop and unload audio. No audio plays on the launcher or automatically resumes after a crash.
 - Audio failure remains quiet, responsive and logged for the parent. Autoplay attempts each damaged track at most once until manual retry.
 - Controls use shared single-pointer ownership; the piano admits up to eight independent raw fingers.
-  Duplicate SDL mouse events from touch are ignored. Key release glides/decays, focus/Home clears voices.
+  Duplicate SDL mouse events from touch are ignored. Released keys decay for up to
+  600 ms; new notes preserve tails while space remains, then replace the oldest
+  release instead of a held key. Eight voices share a 0.70 gain budget, reserved
+  before playback, so the song stream retains headroom. Focus/Home clears all voices immediately.
 
 ## 4b. Reading App
 
@@ -187,7 +190,7 @@ included in ToddlerBox 0.4.
   A singleton deck supports replay; empty content returns Home quietly.
 - No scores, time limits, rewards, automatic progression, spaced repetition or usage history.
 - Parent YAML selects words/letters, word sets, letter sounds/names and case.
-- Default: all seven word sets, lowercase, software volume 0.35.
+- Default: all seven word sets, lowercase, software volume 0.70.
 - Bundled pack: 75 words, 26 letter-sound cards, 26 letter-name cards; no numerical content.
   In phonics mode `q` is presented as `qu`; a written unit can represent multiple sounds.
 - Main pictures appear after successful whole-word/name completion. Sound-unit completion alone does not reveal them.
@@ -258,6 +261,12 @@ data_root/
 - `reading.mode`, `reading.word_sets`, `reading.letter_case`, `reading.letter_audio`
 - `reading.volume`
 - `math.mode`, `math.max_number`, `math.low_number_weight`, `math.volume`
+- `audio.startup_volume`: child-session master level, default 0.80, finite 0–1.
+  Apply once at child-session entry after audio services start, bounded to two
+  seconds; no activity-entry volume resets. Media keys retain the 100% ceiling.
+  Song gain defaults to 1.0 and Math speech to 0.70. Existing parent gains are
+  preserved by updates; louder defaults require an explicit authenticated parent
+  action, with a durable original-config backup. Parent GNOME keeps ordinary controls.
 
 ## 7. Error handling
 

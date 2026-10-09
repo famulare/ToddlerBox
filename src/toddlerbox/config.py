@@ -31,6 +31,7 @@ def _with_math_standard_layout(apps):
     return apps  # Custom commands, ordering, paths and explicit omissions stay intact.
 
 DEFAULT_CONFIG: Dict[str, Any] = {
+    "audio": {"startup_volume": 0.80},
     "data_root": "/data",
     "launcher": {
         "apps": [
@@ -82,11 +83,11 @@ DEFAULT_CONFIG: Dict[str, Any] = {
             [255, 99, 71],
         ],
     },
-    "music": {"volume": 0.25, "autoplay": True, "latency_ms": 0},
+    "music": {"volume": 1.0, "autoplay": True, "latency_ms": 0},
     "reading": {"mode": "words", "word_sets": ["short_a_cvc", "short_e_cvc", "short_i_cvc", "short_o_cvc",
                                                "short_u_cvc", "digraphs", "adjacent_consonants"], "letter_case": "lowercase",
-                "letter_audio": "sounds", "volume": 0.35},
-    "math": {"mode": "numbers", "max_number": 100, "low_number_weight": 12, "volume": 0.35},
+                "letter_audio": "sounds", "volume": 0.70},
+    "math": {"mode": "numbers", "max_number": 100, "low_number_weight": 12, "volume": 0.70},
 }
 DEFAULT_CONFIG["launcher"]["apps"] = _with_math_standard_layout(DEFAULT_CONFIG["launcher"]["apps"])
 

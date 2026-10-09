@@ -20,6 +20,9 @@ other hardware limitations can be accepted explicitly.
 
 The program offers:
 
+- In the pending audio patch, an explicit **Apply louder audio defaults** choice.
+  It preserves other settings and backs up the original configuration; ordinary
+  updates keep custom gains. See [audio controls](child-controls.md).
 - Status, including setup results, system services, disk space, update/recovery
   state, Drive's last successful completion and Ubuntu reboot requirement.
 - Check/install qualified public GitHub releases, accept a tested candidate,

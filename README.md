@@ -264,10 +264,17 @@ Runtime configuration is read from `config.yaml` (repo root for dev) or `/etc/to
 - `paint.autosave_seconds`
 - `paint.palette`
 - `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
-- `music.volume` (0–1, default 0.25), `music.autoplay`, `music.latency_ms`
+- `music.volume` (0–1, default 1.0), `music.autoplay`, `music.latency_ms`
 - `reading.mode` (`words`, `letters`), `reading.word_sets`
 - `reading.letter_case` (`lowercase`, `uppercase`), `reading.letter_audio` (`sounds`, `names`)
-- `reading.volume` (0–1)
+- `reading.volume`, `math.volume` (0–1, default 0.70)
+- `audio.startup_volume` (0–1, default 0.80; child-session master level)
+
+The pending audio patch raises speech gain 2× and song gain 4× relative to
+0.4.0. Piano releases decay for up to 600 ms, with bounded overlap headroom.
+Existing configurations retain their chosen gains. After installing that patch,
+parents can explicitly apply the louder defaults; see [audio controls](docs/child-controls.md).
+No new installer or release is included in this patch branch.
 
 Reading settings are applied on activity entry. Word sets are `short_a_cvc`,
 `short_e_cvc`, `short_i_cvc`, `short_o_cvc`, `short_u_cvc`, `digraphs`, and

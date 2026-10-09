@@ -72,7 +72,13 @@ the integer WAV frame count.
 `keys/` contains 25 independently prepared C3–C5 two-second PCM notes from the
 same CC0 sampled piano. Eight owned SDL channels mix key touches alongside the
 unchanged music stream. No synthesis/dependency download occurs during play.
-Key release fades for 100ms; focus/Home stops owned voices. Free Play stops the
+Key release uses a bounded 600 ms quadratic envelope in the event loop;
+focus/Home immediately stops held and released voices. Tails occupy channels
+until finished; when all eight are busy, a new key replaces the oldest released
+tail, never another held key. The keys share a 0.70 channel-gain budget. Existing
+voices only become quieter as another key joins, preserving song headroom
+(pinned key peaks ≤0.5 and song peaks ≤0.65). No SDL fade-out can override this
+budget. Song gain defaults to 1.0. Free Play stops the
 song; its keyboard and samples are identical. Preparation:
 
 ```sh

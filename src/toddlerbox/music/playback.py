@@ -43,7 +43,7 @@ class MusicPlayer:
     """Bounded playlist and one audio-derived clock, independent of rendering."""
 
     def __init__(self, tracks: list[Track], logger, *, audio=None,
-                 volume: float = 0.25, autoplay: bool = True,
+                 volume: float = 1.0, autoplay: bool = True,
                  latency_ms: float = 0, clock: Callable[[], float] = time.monotonic):
         self.tracks = tracks
         self.logger = logger
@@ -57,7 +57,7 @@ class MusicPlayer:
                 logger.info(f"Invalid Music {name}; using default")
                 return default
             return max(low, min(high, number))
-        self.volume = setting(volume, 0.25, 0.0, 1.0, "volume")
+        self.volume = setting(volume, 1.0, 0.0, 1.0, "volume")
         self.latency_ms = setting(latency_ms, 0.0, -500.0, 500.0, "latency")
         self.autoplay = autoplay
         self.clock = clock

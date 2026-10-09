@@ -78,7 +78,7 @@ def test_manual_selection_cancels_pending_completion(player):
     now[0] += 10
     music.update()
     assert music.index == 2 and music.state == "playing"
-    assert audio.started == [("0",0.25),("2",0.25)]
+    assert audio.started == [("0",1.0),("2",1.0)]
 
 
 def test_bad_playlist_is_attempted_once_then_stops_until_manual_retry(player):
@@ -135,9 +135,9 @@ def test_latency_offset_and_no_backward_visual_jump(player):
 
 
 @pytest.mark.parametrize("value",[float("nan"),float("inf"),None,"invalid",True])
-def test_invalid_settings_use_quiet_defaults(value):
+def test_invalid_settings_use_valid_defaults(value):
     music = MusicPlayer([],Mock(),volume=value,latency_ms=value)
-    assert music.volume == 0.25
+    assert music.volume == 1.0
     assert music.latency_ms == 0
 
 
