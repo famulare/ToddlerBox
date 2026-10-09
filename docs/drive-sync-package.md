@@ -32,6 +32,11 @@ photos/library/<original filename>.jpg  # .jpeg and .png also supported, any cas
 
 Sizes above are illustrative. Hashes cover the exact bytes. The manifest lists
 EVERY archive file except itself. The archive's separate SHA-256 is required by
+The pending 0.5.0 parent USB flow reads an adjacent `PACKAGE.tar.gz.sha256`
+and automatically verifies the full checksum. The sidecar contains 64 hex
+digits alone or one `sha256sum` line with the exact archive basename. It checks
+transfer integrity, not origin: the authenticated parent trusts the selected
+physical USB transfer. That flow preserves both transfer files. Advanced use:
 `sudo toddlerbox-sync setup PACKAGE.tar.gz --sha256 EXPECTED`; pass `--consume`
 to remove the transfer archive only after installation succeeds. Keep the original
 Mac photo library and an independent backup. Deleting a transfer file is not

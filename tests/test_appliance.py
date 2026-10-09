@@ -29,6 +29,7 @@ def modules(monkeypatch):
 def test_audio_defaults_dispatch_requires_parent_guard_and_fixed_operation(modules, monkeypatch):
     maintenance = modules[3]
     calls = []
+    monkeypatch.setattr(maintenance, "audio_defaults_available", lambda:True)
     monkeypatch.setattr(maintenance, "guard", lambda **kwargs: calls.append(("guard", kwargs)))
     monkeypatch.setattr(maintenance, "command", lambda args, **kwargs: calls.append((args, kwargs)))
     maintenance.root_action("audio-defaults", [])
@@ -38,6 +39,15 @@ def test_audio_defaults_dispatch_requires_parent_guard_and_fixed_operation(modul
     with pytest.raises(ValueError):
         maintenance.root_action("audio-defaults", ["arbitrary-config-path"])
     assert len(calls) == 3  # Rejected arguments never execute a command.
+
+
+def test_usb_only_patch_does_not_execute_unavailable_audio_module(modules, monkeypatch):
+    maintenance = modules[3]
+    monkeypatch.setattr(maintenance, 'guard', lambda **kwargs:None)
+    monkeypatch.setattr(maintenance, 'audio_defaults_available', lambda:False)
+    monkeypatch.setattr(maintenance, 'command', lambda *a, **kw:pytest.fail('Missing module executed'))
+    with pytest.raises(ValueError, match='matching audio'):
+        maintenance.root_action('audio-defaults', [])
 
 
 @pytest.fixture

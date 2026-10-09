@@ -303,6 +303,19 @@ data_root/
 
 ## 9. Explicit private Drive copies
 
+- Parent setup discovers only mounted USB/removable roots on an explicit action;
+  no insertion-triggered or background scans. Show volume/package/size, select
+  the sole package or require selection among several, and verify the full
+  adjacent SHA-256 automatically before importing a stable private copy.
+- The authenticated parent confirms their Mac-prepared physical transfer.
+  A sidecar establishes integrity, not independently authenticated provenance;
+  signed software updates retain their separate trust boundary. Invalid,
+  ambiguous or filename-mismatched checksums cannot redirect import paths.
+- Preserve USB files, Mac originals and newer child work. Show accurate new-photo
+  counts, already-installed results or safe actionable failures until dismissed;
+  expose successful setup receipts separately from sync status. Setup can be
+  rerun on an existing installation without resetting first-boot progress.
+
 - Parent holds ctrl-alt-s for two seconds on one keyboard; no Shift required.
   One request per hold, rearmed by release. Ctrl+Alt+Home retains priority.
 - Authenticated receipt is a quiet 48px shooting star left of Home for 1.5 seconds,

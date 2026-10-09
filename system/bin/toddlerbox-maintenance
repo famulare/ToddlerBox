@@ -95,6 +95,10 @@ def ubuntu_updates(root=Path("/")):
             print("Reboot required." if (root / "var/run/reboot-required").exists() else "Check status before returning to child mode.")
 
 
+def audio_defaults_available():
+    return Path('/opt/toddlerbox/current/src/toddlerbox/runtime/audio.py').is_file()
+
+
 def root_action(action, arguments):
     guard(readonly=action == "status", allow_apt=action == "ubuntu", allow_recovery=action == "recover")
     if action == "check" and len(arguments) == 2:
@@ -117,6 +121,8 @@ def root_action(action, arguments):
     elif action == "ubuntu" and not arguments:
         ubuntu_updates()
     elif action == "audio-defaults" and not arguments:
+        if not audio_defaults_available():
+            raise ValueError("Install the matching audio application patch first")
         command(["/opt/toddlerbox/current/.venv/bin/python", "-m",
                  "toddlerbox.runtime.audio", "--apply-defaults"], timeout=10)
     elif action == "status" and not arguments:
@@ -174,13 +180,7 @@ def setup():
 
 
 def drive_import():
-    import hashlib
-    package = Path(input("Private setup package path: ").strip()).expanduser().absolute()
-    # The parent chooses their local package. Verify its unchanged bytes and let
-    # the existing importer validate every member/manifest; no manual hash typing.
-    with package.open("rb") as handle:
-        digest = hashlib.file_digest(handle, "sha256").hexdigest()
-    subprocess.run(["sudo", "toddlerbox-sync", "import", str(package), "--sha256", digest], check=True)
+    subprocess.run(["sudo", "/usr/local/sbin/toddlerbox-sync", "setup"], check=False)
 
 
 def ui(first_run=False):
@@ -193,13 +193,13 @@ def ui(first_run=False):
     while True:
         print("\nToddlerBox: 1 Setup  2 Status  3 Check updates  4 Install update  5 Accept tested update\n"
               "6 Rollback  7 Ubuntu updates  8 Drive  9 Report problem  10 Retry recovery\n"
-              "11 Apply louder audio defaults  0 Exit")
+              + ("11 Apply louder audio defaults  " if audio_defaults_available() else "") + "0 Exit")
         choice = input("> ").strip()
         if choice == "0":
             return
         if choice == "1":
             setup()
-        elif choice == "11":
+        elif choice == "11" and audio_defaults_available():
             if input("Replace Music/Reading/Math gains and startup volume with louder defaults? [y/N] ").lower() == "y":
                 try:
                     privileged("audio-defaults")
@@ -263,7 +263,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--first-run", action="store_true")
     parser.add_argument("--autostart", action="store_true")
-    parser.add_argument("--action", choices=("check", "finish", "test", "accept", "updates", "install", "rollback", "ubuntu", "status", "recover"))
+    parser.add_argument("--action", choices=("check", "finish", "test", "accept", "updates", "install", "rollback", "ubuntu", "status", "recover", "audio-defaults"))
     parser.add_argument("arguments", nargs="*")
     args = parser.parse_args()
     try:

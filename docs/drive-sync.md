@@ -55,10 +55,69 @@ Drive acceptance test must check both.
 Use **Set Up ToddlerBox Drive** in the parent desktop, or:
 
 ```sh
-sudo toddlerbox-sync setup family.toddlerbox-setup.tar.gz --sha256 EXPECTED
+sudo toddlerbox-sync setup
 sudo toddlerbox-sync run
 sudo toddlerbox-sync status
 ```
+
+![Actual Ubuntu USB setup with a synthetic package](images/drive-setup-usb.png)
+
+In the pending 0.5.0 patch, **Set Up ToddlerBox Drive** (or the command above)
+lists setup packages at mounted USB roots with volume name, filename and size.
+The sole package is selected automatically; multiple packages require a choice.
+It reads the adjacent `<package filename>.sha256`, verifies the full SHA-256,
+and asks you to confirm that this is the private package you prepared on the Mac.
+No path or checksum typing is needed. The terminal shows the import count,
+already-installed result or safe refusal until you press Enter. Sync Status
+includes the last successful setup receipt separately from sync results.
+
+Use either `*.toddlerbox-setup.tar.gz` or
+`toddlerbox-setup-YYYY-MM-DD.tar.gz`; place the package and checksum directly at
+the USB root and mount it in Ubuntu Files first. The checksum may contain only
+64 hexadecimal digits or one standard `sha256sum` line naming that exact
+basename. Missing, multiple, malformed, mismatched or incorrect checksums are
+refused. Checksum text never supplies an import path.
+
+This verifies **transfer integrity, not authenticated origin**: replacing both
+files can make them agree. You explicitly trust the physical transfer that you
+selected and confirmed after parent authentication. Software updates retain
+their separate signed-release trust boundary. Setup is offline and explicit:
+no insertion triggers or background scans. The verified package is staged
+privately before the existing conservative importer runs; source changes,
+removal and insufficient disk space fail safely. USB copies and Mac originals
+are preserved, as are existing child work, credentials and device identity on
+safe repeated setup.
+
+Advanced use retains the explicit checksum interface:
+
+```sh
+sudo toddlerbox-sync setup /path/to/family.toddlerbox-setup.tar.gz --sha256 EXPECTED
+```
+
+### Rerun USB setup without reinstalling
+
+On the current Ubuntu 24.04 appliance, enter parent mode and pull this public
+checkout's `codex/audio-polish` branch. From its root run:
+
+```sh
+sudo sh scripts/install-drive-setup-patch.sh
+sudo toddlerbox-sync setup
+```
+
+Then follow the USB selection/confirmation prompts. You can repeat this command
+or reopen **Set Up ToddlerBox Drive** even after first-boot setup is complete;
+there is no setup-progress reset or OS reinstall. To redo the broader checks,
+open **ToddlerBox Setup & Maintenance**, choose **1 Setup**, then choose to redo
+the optional Drive check.
+
+The source-checkout patch installs only the USB setup module, its CLI and parent
+maintenance program, with durable private backups. It requires parent mode and
+administrator authentication, performs no network/package installation and
+does not change the resident recovery gate, signed updater, child data or Drive
+configuration. This is an explicit developer patch from the public checkout you
+trust; it is not presented as a signed release. It does not install the separate
+audio application changes; their menu choice appears only when that module is
+available. The PR bumps source to 0.5.0, but no new release/installer is published.
 
 Setup verifies the private archive and imports photos only. Paint and Typing
 start empty on a clean image; later setup never overwrites their work. Add
