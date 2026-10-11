@@ -24,6 +24,9 @@ docker run --rm --read-only --tmpfs /tmp:rw,size=256m \
     -e SSL_CERT_FILE=/run/proxy-ca.pem -e UV_CACHE_DIR=/tmp/uv-cache \
     -e UV_PYTHON_DOWNLOADS=never \
     toddlerbox-image-tools sh -ec '/run/uv sync --frozen --no-dev --python /usr/bin/python3; /run/uv run --no-project --python /usr/bin/python3 /run/normalize_venv.py .venv'
+# Match configure-rootfs.sh: a private builder umask must not make public app
+# code unreadable to the child, and dependency locks must not be world writable.
+chmod -R a+rX,go-w "$release"
 # Root ownership is set in the archive, as for image-built app releases.
 tar --sort=name --owner=0 --group=0 -czf "$output/toddlerbox-app-$release_id.tar.gz" \
     -C "$output/releases" "$release_id"

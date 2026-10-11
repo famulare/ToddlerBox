@@ -62,7 +62,7 @@ sudo toddlerbox-sync status
 
 ![Actual Ubuntu USB setup with a synthetic package](images/drive-setup-usb.png)
 
-In the pending 0.5.0 patch, **Set Up ToddlerBox Drive** (or the command above)
+With the 0.5.0 setup patch, **Set Up ToddlerBox Drive** (or the command above)
 lists setup packages at mounted USB roots with volume name, filename and size.
 The sole package is selected automatically; multiple packages require a choice.
 It reads the adjacent `<package filename>.sha256`, verifies the full SHA-256,

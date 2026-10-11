@@ -21,7 +21,7 @@ Parent mode uses GNOME's normal controls. Escape/watchdog processing never waits
 for volume commands.
 
 The HP subsequently confirmed working media keys but insufficient loudness.
-The pending audio patch changes Music 0.25 → 1.0 and Reading/Math 0.35 → 0.70.
+The 0.5.0 update changes Music 0.25 → 1.0 and Reading/Math 0.35 → 0.70.
 These are signal-gain changes, not guaranteed perceived-loudness multipliers.
 No recordings, speech timing, or song dynamics change. Piano keys also gain
 headroom-aware amplification and a 600 ms release decay.

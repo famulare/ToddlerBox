@@ -267,3 +267,28 @@ def test_unexpected_links_or_entrypoints_fail_before_removal(tmp_path, unexpecte
     with pytest.raises(ValueError):
         normalizer()(release / ".venv")
     assert (binary / "python3").is_symlink()
+def test_app_builder_normalizes_private_workspace_modes(tmp_path):
+    import subprocess
+    release = tmp_path / 'release'
+    release.mkdir(mode=0o700)
+    source = release / 'app.py'
+    source.write_text('public application')
+    source.chmod(0o600)
+    executable = release / 'entrypoint'
+    executable.write_text('public executable')
+    executable.chmod(0o700)
+    lock = release / '.lock'
+    lock.write_text('')
+    lock.chmod(0o666)
+    outside = tmp_path / 'outside'
+    outside.write_text('not part of release')
+    outside.chmod(0o600)
+    (release / 'link').symlink_to(outside)
+    script = Path(__file__).parents[1] / 'system/build-app.sh'
+    command = next(line for line in script.read_text().splitlines() if line.startswith('chmod -R '))
+    subprocess.run(['bash', '-ec', command], env={'release': str(release)}, check=True)
+    assert release.stat().st_mode & 0o777 == 0o755
+    assert source.stat().st_mode & 0o777 == 0o644
+    assert executable.stat().st_mode & 0o777 == 0o755
+    assert lock.stat().st_mode & 0o777 == 0o644
+    assert outside.stat().st_mode & 0o777 == 0o600
