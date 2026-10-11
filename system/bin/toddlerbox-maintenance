@@ -123,7 +123,7 @@ def root_action(action, arguments):
     elif action == "audio-defaults" and not arguments:
         if not audio_defaults_available():
             raise ValueError("Install the matching audio application patch first")
-        command(["/opt/toddlerbox/current/.venv/bin/python", "-m",
+        command(["/opt/toddlerbox/current/.venv/bin/python", "-B", "-m",
                  "toddlerbox.runtime.audio", "--apply-defaults"], timeout=10)
     elif action == "status" and not arguments:
         print(json.dumps(report(), indent=2))

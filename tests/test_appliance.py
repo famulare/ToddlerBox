@@ -34,7 +34,7 @@ def test_audio_defaults_dispatch_requires_parent_guard_and_fixed_operation(modul
     monkeypatch.setattr(maintenance, "command", lambda args, **kwargs: calls.append((args, kwargs)))
     maintenance.root_action("audio-defaults", [])
     assert calls[0][0] == "guard"
-    assert calls[1] == (["/opt/toddlerbox/current/.venv/bin/python", "-m",
+    assert calls[1] == (["/opt/toddlerbox/current/.venv/bin/python", "-B", "-m",
                          "toddlerbox.runtime.audio", "--apply-defaults"], {"timeout":10})
     with pytest.raises(ValueError):
         maintenance.root_action("audio-defaults", ["arbitrary-config-path"])

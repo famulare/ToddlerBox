@@ -131,7 +131,7 @@ exit 1
         install('/qa', 3)
         observe_accept('candidate-0.5')
         print(qa.serial('''
-/opt/toddlerbox/current/.venv/bin/python - <<'INNER'
+/opt/toddlerbox/current/.venv/bin/python -B - <<'INNER'
 import importlib.metadata
 from pathlib import Path
 from toddlerbox.music.library import load_library
@@ -139,7 +139,20 @@ from unittest.mock import Mock
 assert importlib.metadata.version('ToddlerBox')=='0.5.0'
 assert len(load_library(Path('/opt/toddlerbox/current/assets/music'),Mock())[0])==18
 INNER
+PYTHONPATH=/usr/local/lib/toddlerbox-system python3 -B - <<'INNER'
+from pathlib import Path
+import json, runpy
+record=runpy.run_path('/usr/local/sbin/toddlerbox-install-release')['tree_record']
+Path('/root/qa-app-tree.json').write_text(json.dumps(record(Path('/opt/toddlerbox/current').resolve(),production=True),sort_keys=True))
+INNER
 toddlerbox-maintenance --action audio-defaults
+PYTHONPATH=/usr/local/lib/toddlerbox-system python3 -B - <<'INNER'
+from pathlib import Path
+import json, runpy
+record=runpy.run_path('/usr/local/sbin/toddlerbox-install-release')['tree_record']
+assert json.dumps(record(Path('/opt/toddlerbox/current').resolve(),production=True),sort_keys=True)==Path('/root/qa-app-tree.json').read_text()
+print('Audio Defaults preserved immutable release tree: PASS')
+INNER
 sha256sum /etc/toddlerbox/config.yaml >/root/qa-config.sha256
 toddlerbox-mode child
 '''), flush=True)
@@ -162,6 +175,7 @@ sha256sum -c /root/appliance-qa/creations.sha256
         icon=max(120,min(184,int(min(w,h)*.23))); gap=int(icon*.3)
         left=w//2-(3*icon+2*gap)//2; top=h//2-(2*icon+gap)//2
         qa.click(left+2*(icon+gap)+icon//2,top+icon//2)
+        qa.wait_text('Music', 'Autoplay')
         time.sleep(4)
         qa.wait_audio()
         qa.shot('music-0.5')
@@ -170,7 +184,7 @@ sha256sum -c /root/appliance-qa/creations.sha256
         print('QA: explicit rollback', flush=True)
         print(qa.serial('toddlerbox-maintenance --action rollback'), flush=True)
         print(qa.serial('''
-/opt/toddlerbox/current/.venv/bin/python -c "import importlib.metadata; assert importlib.metadata.version('ToddlerBox')=='0.4.0'"
+/opt/toddlerbox/current/.venv/bin/python -B -c "import importlib.metadata; assert importlib.metadata.version('ToddlerBox')=='0.4.0'"
 sha256sum -c /root/appliance-qa/creations.sha256
 test -f /usr/local/lib/toddlerbox-system/tbx_sync/usb_setup.py
 grep '^dns=default' /etc/NetworkManager/conf.d/90-toddlerbox-dns.conf
