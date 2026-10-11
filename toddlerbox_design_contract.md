@@ -223,6 +223,9 @@ included in ToddlerBox 0.4.
   artwork, with existing source/license records and PNG bytes retained.
 - Home, Next and one mode control; no left rail. Existing single-pointer cleanup,
   frame supervision and authenticated screen-only receipt remain in use.
+- Next targets the full button with safe padding into unused space, never only
+  the arrow glyph. Accept at most 32 pixels of release drift; other controls
+  retain their existing tolerance. Touch pressure does not gate activation.
 - No child work is written; save-current uses the existing no-work acknowledgement.
 - A speaker button reads the disclosed numeral in Numbers, or the complete
   arithmetic equation ("eight minus three equals five") on deliberate tap only.

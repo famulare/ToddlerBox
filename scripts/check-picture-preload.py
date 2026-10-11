@@ -29,6 +29,8 @@ def main():
     from PIL import Image, ImageDraw
     from toddlerbox.reading.app import ReadingApp
     from toddlerbox.photos.app import PhotosApp
+    from toddlerbox.math.app import MathApp
+    from toddlerbox.math.model import Example
 
     args.output.mkdir(parents=True, exist_ok=False)
     pygame.init()
@@ -94,6 +96,33 @@ def main():
         frames["original-photo-hashes"] = {path.name: hashlib.sha256(path.read_bytes()).hexdigest()
                                            for path in sorted(library.glob("*.png"))}
         photos.close()
+        cases = [("numbers", 0, 0), ("numbers", 1, 0), ("numbers", 21, 0), ("numbers", 100, 0),
+                 ("addition", 0, 0), ("addition", 8, 7), ("addition", 50, 50),
+                 ("subtraction", 23, 8), ("subtraction", 100, 0), ("subtraction", 100, 100)]
+        for width, height in ((800, 600), (1366, 768)):
+            screen = pygame.display.set_mode((width, height))
+            math = MathApp(screen, screen.get_rect(), pygame.time.Clock(), config=config,
+                           rng=random.Random(7), player=Mock())
+            for mode, a, b in cases:
+                math.mode, math.example = mode, Example(mode, a, b, "cat")
+                for revealed in (False, True):
+                    math.revealed = revealed
+                    math.render()
+                    capture(f"math-{width}-{mode}-{a}-{b}-{revealed}")
+            math.art.close()
+        taps = {}
+        for name, down_dx, up_dx in (("light-center", 0, 0), ("light-edge", 38, 38),
+                                     ("light-drift", 0, 28), ("drag", 0, 38)):
+            math = MathApp(screen, screen.get_rect(), pygame.time.Clock(), config=config,
+                           rng=random.Random(7), player=Mock())
+            before = math.example
+            x, y = math.next_rect.center
+            for kind, dx in ((pygame.FINGERDOWN, down_dx), (pygame.FINGERUP, up_dx)):
+                math.handle_event(pygame.event.Event(kind, x=(x+dx)/screen.get_width(),
+                                  y=y/screen.get_height(), touch_id=1, finger_id=1, pressure=.001))
+            taps[name] = before != math.example
+            math.art.close()
+        frames["math-next-taps"] = taps
         if hasattr(reading, "close"):
             reading.close()
             default.close()

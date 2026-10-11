@@ -1782,3 +1782,30 @@ and writes RGBA hashes, source hashes, PNG frames and drawing timings. Compare
 must match. Those two intentional differences must stay confined to the sidebar.
 No 0.5.1 signed update, ISO, VM boot qualification or hardware acceptance is
 claimed here; published main/stable 0.5.0 remains the known qualified release.
+
+
+The same proposed 0.5.1 patch now includes Math Next touch tolerance (#16).
+The actual 0.5.0 baseline targets the **whole 58×58 button**, not its 42×48
+arrow image, and reads no pressure value. An actual `.001`-pressure raw-touch
+center tap advances; a 38-pixel offset misses and a 28-pixel release drift
+fails the original 24-pixel tolerance. The new invisible target is 82×82,
+using 12 pixels of padding per edge only in unused space. Next alone accepts
+32 pixels of release drift, matching Reading; other controls stay at 24.
+The target does not overlap question, Home or object panels. Disabled Next
+and single-pointer/focus handling remain unchanged.
+
+The extended actual-old/new rendering/input harness now compares 49 exact
+RGBA frames (nine Reading/Photos, forty Math at 800×600 and 1366×768) plus
+12 original synthetic-photo hashes. All unaffected records match exactly.
+The intended `math-next-taps` difference is edge/drift acceptance: old
+`center=True, edge=False, drift=False, drag=False`; new
+`center=True, edge=True, drift=True, drag=False`. Pressure does not gate either
+version. The full frozen Linux suite passed **540 tests in 17.48 s**, with
+raw pressures 0/.001/.1/1, edges, drift, larger drags, outside presses and hidden
+Next. Independent scoped Sol review of the Math patch found no actionable
+findings. No physical pressure/device diagnosis, new VM qualification or
+published 0.5.1 bundle is claimed.
+
+Use the same comparison command above; the extended harness additionally
+excludes only `math-next-taps` from exact equality. The visible default Reading
+sidebar remains the sole intended rendering change; Math appearance is identical.

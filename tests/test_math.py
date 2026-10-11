@@ -227,6 +227,28 @@ def test_singleton_hides_next_but_modes_still_work(app):
     assert app.mode == "addition" and app.example.a == 0
 
 
+@pytest.mark.parametrize("pressure", [0, .001, .1, 1])
+@pytest.mark.parametrize("down_dx,up_dx,advances", [(0, 0, True), (38, 38, True),
+                                                  (0, 28, True), (0, 38, False),
+                                                  (45, 45, False)])
+def test_next_accepts_light_edge_taps_and_small_drift_but_rejects_drags(app, pressure, down_dx, up_dx, advances):
+    before = app.example
+    x, y = app.next_rect.center
+    for kind, dx in [(pygame.FINGERDOWN, down_dx), (pygame.FINGERUP, up_dx)]:
+        app.handle_event(pygame.event.Event(kind, x=(x+dx)/app.rect.w, y=y/app.rect.h,
+                                           pressure=pressure, touch_id=1, finger_id=1))
+    assert (app.example != before) == advances
+    assert app.pointer.owner is None
+
+
+def test_next_padding_does_not_overlap_other_controls_or_make_hidden_next_active(app):
+    assert not app.next_hit_rect.colliderect(app.question_rect)
+    assert not app.next_hit_rect.colliderect(app.home_rect)
+    assert not app.next_hit_rect.colliderect(app.body_rect)
+    app.options = Options(max_number=0)
+    assert app._target(app.next_hit_rect.center) is None
+
+
 def test_bounded_art_cache_and_all_missing_art_returns_home(app, tmp_path):
     for size in range(1,101):
         for name in app.art.sources:
