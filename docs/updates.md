@@ -1,5 +1,9 @@
 # Updates without reinstalling Ubuntu
 
+For the 0.5.0 audio update and the rerunnable USB setup/DNS patch, follow the
+[existing-install instructions](releases/v0.5.0.md). Pulling the checkout alone
+does not update the child application's versioned installation.
+
 ## Appliance installer and later releases
 
 Open **ToddlerBox Setup & Maintenance** from the parent desktop. Choose **Check
@@ -126,6 +130,11 @@ changes can be included in the same download. This historical bootstrap is retai
 release uses the parent setup and maintenance menu above.
 
 ## Build a bundle
+
+For an app-only Ubuntu update, reuse the image tools and build the frozen
+production environment with `bash system/build-app.sh build/app-update`.
+It normalizes the interpreter layout for the resident installer. This does
+not build an ISO or qualify a whole OS image.
 
 Use the pinned Ubuntu Cage build described in `VALIDATION.md`, then:
 
