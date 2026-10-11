@@ -22,11 +22,19 @@ files = {
     'system/tbx_sync/usb_setup.py': ('usr/local/lib/toddlerbox-system/tbx_sync/usb_setup.py', 0o644),
     'system/tbx_sync/cli.py': ('usr/local/lib/toddlerbox-system/tbx_sync/cli.py', 0o644),
     'system/bin/toddlerbox-maintenance': ('usr/local/sbin/toddlerbox-maintenance', 0o755),
+    'system/90-toddlerbox-dns.conf': ('etc/NetworkManager/conf.d/90-toddlerbox-dns.conf', 0o644),
 }
 # Read all selected public source bytes before touching installed software.
 payload = {name: (source / name).read_bytes() for name in files}
 for name in payload:
-    compile(payload[name], name, 'exec')
+    if name.endswith('.conf'):
+        import configparser
+        policy = configparser.ConfigParser()
+        policy.read_string(payload[name].decode())
+        if dict(policy['main']) != {'dns':'default', 'rc-manager':'file'}:
+            raise SystemExit('Invalid appliance DNS policy.')
+    else:
+        compile(payload[name], name, 'exec')
 with maintenance_lock():
     guard()
     backup = safe(Path('/'), STATE / ('drive-setup-patch-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')))
@@ -42,4 +50,5 @@ print('USB setup patch installed; original controls backed up privately.')
 print('Open Set Up ToddlerBox Drive again, or run: sudo toddlerbox-sync setup')
 print('Child work, Drive credentials, device identity and setup progress were not reset.')
 print('This patch does not install the separate audio application changes.')
+print('DNS policy is installed for the next boot. To apply now, restart NetworkManager in parent mode (Wi-Fi briefly reconnects).')
 PY

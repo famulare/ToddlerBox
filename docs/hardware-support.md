@@ -33,3 +33,9 @@ boots, Wi-Fi scan/connect/reconnect, sound and volume keys, trackpad taps/clicks
 touch edges/multiple fingers/drag, independent escape during a freeze,
 sleep/resume and one parent update/rollback. CPU/RAM/display/UEFI details can tune
 the VM; radio and touch hardware still require that physical checklist.
+
+The pending 0.5.0 image makes NetworkManager own DNS directly (`dns=default`,
+`rc-manager=file`), consistent with `/etc/resolv.conf` pointing at
+`/run/NetworkManager/resolv.conf`. It uses connection-provided DNS; no router or
+public DNS IP is baked in. The existing-install setup patch installs the same
+policy. This prevents the HP’s observed connected-Wi-Fi/failed-local-stub case.

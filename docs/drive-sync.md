@@ -110,14 +110,19 @@ there is no setup-progress reset or OS reinstall. To redo the broader checks,
 open **ToddlerBox Setup & Maintenance**, choose **1 Setup**, then choose to redo
 the optional Drive check.
 
-The source-checkout patch installs only the USB setup module, its CLI and parent
-maintenance program, with durable private backups. It requires parent mode and
+The source-checkout patch installs the USB setup module, its CLI, parent
+maintenance program and shared NetworkManager DNS policy, with durable private backups. It requires parent mode and
 administrator authentication, performs no network/package installation and
 does not change the resident recovery gate, signed updater, child data or Drive
 configuration. This is an explicit developer patch from the public checkout you
 trust; it is not presented as a signed release. It does not install the separate
 audio application changes; their menu choice appears only when that module is
 available. The PR bumps source to 0.5.0, but no new release/installer is published.
+
+The DNS policy avoids a broken local resolver stub and uses the active connection’s
+DNS servers, without hardcoded IPs. It takes effect on reboot. To apply immediately
+in parent mode, run `sudo systemctl restart NetworkManager`; Wi-Fi briefly reconnects.
+If you already applied the identical manual repair, no additional action is needed.
 
 Setup verifies the private archive and imports photos only. Paint and Typing
 start empty on a clean image; later setup never overwrites their work. Add

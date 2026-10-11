@@ -6,6 +6,7 @@
 - Raise default song gain 4× and Reading/Math speech gain 2×; initialize child-session master volume predictably, retaining keyboard-only controls and the unity ceiling.
 - Explicit authenticated parent opt-in applies louder defaults to existing installations while preserving other settings and backing up the original configuration.
 - Parent-initiated USB Drive setup finds packages, verifies adjacent full SHA-256 automatically, preserves stable transfer inputs and shows results until dismissed.
+- Fix connected Wi-Fi with broken DNS: NetworkManager uses connection-provided DNS directly; image and existing-install patch share the same policy.
 - Reapply the source-checkout USB setup patch without reinstalling; existing work and credentials remain intact.
 - Separate branch for user testing; minor version bumped to 0.5.0, with no signed update bundle or installer rebuild yet.
 

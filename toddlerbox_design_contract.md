@@ -352,3 +352,8 @@ data_root/
 - Volume-up/down/mute keys work in child mode without an on-screen overlay.
 - Audio commands are bounded and never block parent escape or health supervision.
 - Music and Reading share the child account audio service; parent GNOME keeps ordinary controls.
+
+Parent networking: NetworkManager owns the appliance resolver file and uses
+connection-provided DNS directly, with no implicit systemd-resolved stub or
+hardcoded server. The image and existing-install patch deploy the same policy.
+Changing this policy does not trigger sync or app/OS updates.

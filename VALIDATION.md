@@ -143,6 +143,41 @@ resident recovery gate/signed updater. Audio choices remain hidden on old app
 versions. This explicit trusted-checkout patch is not a signed release; future
 release packaging/installer qualification remains separate work.
 
+## Pending 0.5.0 DNS repair — 2026-10-10
+
+Actual before-change source: `e3bc57aaa4ffd97bfc69fe591d9b361e31265e8b`.
+The parent reported connected HP Wi-Fi, with DHCP gateway/DNS 192.168.0.1,
+while `/etc/resolv.conf` selected the unworking local stub 127.0.0.53.
+The parent confirmed Internet resolution works after the explicit NetworkManager
+policy `dns=default`, `rc-manager=file` and a NetworkManager restart.
+
+The image and existing-install parent patch now deploy the identical shared
+`system/90-toddlerbox-dns.conf`. The existing resolver symlink remains pointed at
+NetworkManager's generated file. DNS comes from connection settings/DHCP; no
+router or public IP is embedded. The guarded patch backs up any prior policy
+and writes it atomically, without automatically restarting networking. Apply
+on next boot, or explicitly restart NetworkManager in parent mode.
+
+**507 tests passed** with the frozen toolchain above; `test_dns_policy.py`
+executes the actual image installation line in a temporary root, verifies its
+bytes/permissions and the patch's shared destination. `bash -n` / `sh -n` and
+`git diff --check` pass. Independent Sol review found no material issues.
+
+The preserved disposable Ubuntu VM overlay ran the actual NetworkManager
+binary, whose vendor `10-dns-resolved.conf` supplies the old implicit stub policy.
+Before/after `NetworkManager --print-config` and an activated synthetic dummy
+connection show the override selects `dns=default`, `rc-manager=file` and writes
+connection-supplied `nameserver 192.0.2.53` into `/etc/resolv.conf`, without the
+127.0.0.53 stub. After a real guest reboot, without reapplying the patch,
+NetworkManager again selected the same policy and generated the same
+connection-provided DNS; `DNS_REBOOT_VM_PASS` is recorded in
+`dns-after-reboot.txt`. The test-only dummy needed a `/run` unmanaged-device override;
+that file is not in the public patch/image. This synthetic reserved IP is not an
+Internet DNS server. Logs are in `build/audio-polish/usb-vm/dns-*.txt`/`.conf`.
+No real cloud credentials or family data were used, no prior VM base was changed,
+and no installer or release was built. Physical HP resolution is parent-reported;
+builder evidence verifies resolver ownership/generation, not real Internet access.
+
 # Bootable system validation — 2026-10-02
 
 The [Reading qualification](#reading-application-qualification) below records

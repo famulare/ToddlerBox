@@ -274,7 +274,8 @@ The pending audio patch raises speech gain 2× and song gain 4× relative to
 0.4.0. Piano releases decay for up to 600 ms, with bounded overlap headroom.
 Existing configurations retain their chosen gains. After installing that patch,
 parents can explicitly apply the louder defaults; see [audio controls](docs/child-controls.md).
-The PR also prepares version 0.5.0 and automatic USB Drive setup. You can
+The PR also prepares version 0.5.0, automatic USB Drive setup, and an explicit
+NetworkManager DNS policy that fixes connected Wi-Fi with a broken local resolver. You can
 [install that setup patch and rerun it](docs/drive-sync.md#rerun-usb-setup-without-reinstalling)
 on the current appliance. No new installer or published release is included.
 

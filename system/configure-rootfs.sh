@@ -141,6 +141,7 @@ install -d /etc/systemd/journald.conf.d
 printf '[Journal]\nStorage=persistent\nSystemMaxUse=100M\nSystemKeepFree=500M\n' >/etc/systemd/journald.conf.d/toddlerbox.conf
 install -d /etc/NetworkManager/conf.d
 printf '[main]\nplugins=keyfile\n' >/etc/NetworkManager/conf.d/toddlerbox.conf
+install -m 0644 "$source_dir/90-toddlerbox-dns.conf" /etc/NetworkManager/conf.d/
 echo toddlerbox >/etc/hostname
 truncate -s 0 /etc/machine-id
 rm -f /var/lib/dbus/machine-id
