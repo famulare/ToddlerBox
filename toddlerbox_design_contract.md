@@ -110,7 +110,7 @@ included in ToddlerBox 0.4.
 - Strip supports drag/wheel scrolling
 - Tap-release on thumbnail selects image
 - Horizontal drag in main image area changes image index
-- EXIF orientation is applied consistently. One background worker prepares size-limited derivatives; a bounded thumbnail LRU avoids accumulating decoded images.
+- EXIF orientation is applied consistently. One background worker prepares size-limited derivatives; a bounded thumbnail LRU avoids accumulating decoded images. Preload visible rows first and nearby rows next, including during a held drag; disk decoding never runs in drawing or pointer handling.
 - Library refreshes on entry; source images over 40 million pixels are skipped with parent diagnostics.
 
 ## 4. Typing App
@@ -185,7 +185,8 @@ included in ToddlerBox 0.4.
 - A separate whole-word button reads the word; picture tap replays the whole word.
   Letter cards repeat the selected sound/name. Rapid sound taps interrupt without queuing voices.
 - A scrollable left rail switches between written-word selection and picture selection.
-  Picture selection deliberately exposes preview art; the default written rail keeps the main picture hidden.
+  Picture selection is the default and deliberately exposes preview art. Switching the rail never reveals the main picture.
+- Reading previews preload independently of the selected rail view. One bounded worker decodes validated art; SDL surface work stays on the main thread. Keep at most 96 small previews, prioritize visible/nearby cards and never wait for decoding during drawing or a held gesture.
 - Uniform random Next excludes the current card. Recent earlier cards may return.
   A singleton deck supports replay; empty content returns Home quietly.
 - No scores, time limits, rewards, automatic progression, spaced repetition or usage history.

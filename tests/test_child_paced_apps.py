@@ -119,18 +119,28 @@ def test_letter_sound_waits_for_deliberate_name_button_to_reveal(display):
 
 def test_rail_toggle_changes_actual_preview_pixels_without_revealing_main_picture(display):
     app, _ = reading(display)
+    assert app.rail_images
+    for _ in range(len(app.cards) + 2):
+        app._service_thumbnails()
+        if app._thumbnail_future is None:
+            break
+        app._thumbnail_future.result(timeout=5)
     app.render()
     rail_before = pixels(app.screen, app.rail)
     picture_before = pixels(app.screen, app.picture_rect)
-    tap(app, app.images_toggle.center)
+    tap(app, app.words_toggle.center)
     app.render()
     assert pixels(app.screen, app.rail) != rail_before
     assert pixels(app.screen, app.picture_rect) == picture_before
+    tap(app, app.images_toggle.center)
+    app.render()
+    assert pixels(app.screen, app.rail) == rail_before
     first, row = next(app._rail_rows())
     tap(app, row.center)
     assert app.card.id == first.id and not app.player.revealed
     tap(app, app.words_toggle.center)
     assert not app.rail_images
+    app.close()
 
 
 def test_rail_scroll_is_bounded_and_does_not_select_on_drag(display):

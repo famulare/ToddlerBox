@@ -42,8 +42,6 @@ paint:
 
 photos:
   thumb_batch: 1
-  thumb_idle_ms: 120
-  thumb_scroll_idle_ms: 120
   thumb_time_budget_ms: 5
 
 music:

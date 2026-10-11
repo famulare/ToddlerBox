@@ -212,7 +212,8 @@ See [the design and desktop instructions](MATH_DESIGN.md).
 - One large word or letter at a time; no automatic speech or advancement
 - Tap each letter/sound group at your own pace; it plays only that sound
 - Tap the smaller whole-word button to hear the word and reveal its picture
-- A scrollable left rail switches between selecting written words and pictures
+- A scrollable left rail opens with pictures and switches to written words on request
+- Picture previews preload in the background; Photos also warms upcoming rows within its bounded cache
 - Random Next excludes the current card; no scores, rewards, tests or learning history
 - 75 illustrated words across short vowels, digraphs and consonant blends, plus alphabet sounds/names
 - Defaults mix three-, four- and selected five-letter words; parent settings can narrow the deck

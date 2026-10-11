@@ -84,8 +84,11 @@ WAV containing the validated requested PCM slice. Untagged end events cannot
 reveal an old card after selection changes.
 
 `app.py` handles single-pointer controls, owned scrolling and the shared Home
-control, then reports frame health. Images and visible rail thumbnails are
-bounded by the finite checked-in pack. Cleanup runs in a `finally` path. Corrupt
+control, then reports frame health. The rail opens in picture view. One background
+worker decodes preview pixels with the catalogue's PNG bounds, and the main thread
+creates/scales SDL surfaces. Visible previews load first, then nearby previews;
+the cache holds at most 96 small images. Drawing never opens preview files or
+waits for the worker. Cleanup runs in a `finally` path. Corrupt
 cards/recordings yield parent logs and quiet child recovery; device failures allow
 a later deliberate retry. No child error dialogs or learning records are added.
 Independent parent escape and the controller watchdog remain the hang recovery

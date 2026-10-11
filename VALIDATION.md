@@ -1728,3 +1728,57 @@ PYCODE
 This exact identity assertion intentionally needs updating after a later
 stable release. The app source content ID remains `4c260c85b3afe225`; later
 qualification/publication documentation does not change the built payload.
+
+### Picture preloading — proposed 0.5.1, application checks (2026-10-11)
+
+Baseline is actual main `d64d66b2473dcbeaec1b8ee8913cfbf12564cfa0`, with
+the unchanged qualified 0.5.0 app source `5e4e0b43e2cd93aeba93291371c0c28ea9229f52`.
+Its frozen Linux suite previously passed 508 tests. The proposed patch passed
+**519 tests in 16.33 s**, including stalled Reading decoding while a finger
+remains held, one-job queue bounds, memory limits, offscreen Photos warming,
+preparation during held touch and actual rendered rail toggling. Scoped independent
+Sol review found no outstanding issues. Python 3.12.14, uv 0.12.19,
+pygame-ce 2.5.8/SDL 2.32.10, Pillow 12.3.0 and frozen dependencies were unchanged.
+
+Before changing input handling, synthetic five-gesture raw-touch tests in both
+Reading views and Photos' actual event loop reached exactly 1,000 px scrolling,
+without unintended selection or lost capture, including duplicate emulated mouse
+and a secondary finger release. The reported physical drag failure was **not
+reproduced**. Pointer ownership, focus/stall recovery, parent escape and watchdog
+code remain unchanged. This patch verifies preloading, not a physical input fix.
+
+Inspection of the actual pre-refactor Photos code at `68e7bc2` found that its
+pending cursor continued loading beyond preferred visible rows. The modern
+worker loaded only visible rows. The patch restores loading ahead within the
+existing 48-thumbnail default LRU (configurable bounded range 8–256), keeps one
+job, and permits background preparation during touch. Reading uses a separate
+one-job worker with PNG dimensions rechecked at 1024×1024, no SDL calls in the
+worker, and at most 96 56×56 previews. The normal 75-word deck fits completely.
+Word and picture views preload alike; picture view is the requested default.
+Legacy Photos idle-delay configuration is now ignored; no settings/work migration
+or source-photo replacement is performed.
+
+Real old/new code under identical dummy SDL inputs produced exactly equal RGBA
+hashes for **nine** loaded Reading/Photos frames at multiple scroll offsets, and
+identical SHA-256 for **12** generated source photos. The default-view rendering
+changed only within sidebar bounds `(32, 100, 248, 736)` at 1366×768; the main
+picture remained hidden. Old uncached Reading picture-frame drawing took
+11.8–21.3 ms in this run; preloaded drawing took 1.6–1.9 ms on this builder.
+These timings are not HP performance or audio/gesture qualification. The public
+overview `docs/images/picture-preload.png` uses bundled art and synthetic photos.
+
+Repeat with fresh output directories:
+
+```sh
+git archive d64d66b | tar -x -C BASELINE_DIRECTORY
+uv run --frozen python scripts/check-picture-preload.py BASELINE_DIRECTORY OLD_OUTPUT
+uv run --frozen python scripts/check-picture-preload.py . NEW_OUTPUT
+uv run --frozen pytest -q
+```
+
+The harness imports each checkout's actual app/decoder, prepares its previews,
+and writes RGBA hashes, source hashes, PNG frames and drawing timings. Compare
+`observables.json`: all entries except `default-picture-view` and `reading-default`
+must match. Those two intentional differences must stay confined to the sidebar.
+No 0.5.1 signed update, ISO, VM boot qualification or hardware acceptance is
+claimed here; published main/stable 0.5.0 remains the known qualified release.

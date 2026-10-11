@@ -270,6 +270,53 @@ def test_thumbnail_memory_is_bounded_and_evicted_items_reload(photo_app_factory)
     assert sum(item.thumb is not None for item in app.items) == 8
 
 
+def test_prewarm_prepares_offscreen_neighbours_with_bounded_cache(photo_app_factory):
+    app = photo_app_factory()
+    for i in range(20):
+        Image.new("RGB", (20, 20), (i * 10, 0, 0)).save(app.library_dir / f"{i:02}.png")
+    app.thumb_cache_limit = 8
+    app.relaunch(app.screen, app.screen_rect, app.clock)
+    _finish_preparation(app)
+    visible = set(app._visible_indices())
+    loaded = {i for i, item in enumerate(app.items) if item.thumb is not None}
+    assert visible <= loaded and loaded - visible
+    assert len(loaded) == 8
+    app._scroll_thumbnails(1000)
+    _finish_preparation(app)
+    assert all(app.items[i].thumb is not None for i in app._visible_indices())
+    assert sum(item.thumb is not None for item in app.items) == 8
+
+
+def test_thumbnail_preparation_continues_during_held_touch(monkeypatch, photo_app_factory):
+    app = photo_app_factory()
+    for i in range(20):
+        Image.new("RGB", (20, 20), "red").save(app.library_dir / f"{i:02}.png")
+    app.thumb_cache_limit = 8
+    app.relaunch(app.screen, app.screen_rect, app.clock)
+    _finish_preparation(app)
+    service = app._service_preparation
+    prepared_while_held = []
+
+    def observe(*args, **kwargs):
+        service(*args, **kwargs)
+        if app.pointer_down and app._future is not None and app._job_kind == "thumb":
+            prepared_while_held.append(app._job_key)
+
+    monkeypatch.setattr(app, "_service_preparation", observe)
+    monkeypatch.setattr(photos_module.health, "stopping", lambda: False)
+    x = app.strip_rect.centerx / app.screen_rect.w
+    def finger(kind, y):
+        return pygame.event.Event(kind, x=x, y=y/app.screen_rect.h, finger_id=1, touch_id=1)
+    batches = iter([
+        [finger(pygame.FINGERDOWN, 450), finger(pygame.FINGERMOTION, 50)],
+        [finger(pygame.FINGERUP, 50)], [pygame.event.Event(pygame.QUIT)],
+    ])
+    monkeypatch.setattr(pygame.event, "get", lambda: next(batches))
+    app.run(quit_on_exit=False)
+    assert prepared_while_held and app.scroll_y == 400
+    assert app.current_index == 0 and app.pointer_input.owner is None
+
+
 def test_slow_old_decode_cannot_replace_new_selection(monkeypatch, photo_app_factory):
     entered, release = threading.Event(), threading.Event()
     decode = photos_module._decode_photo

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — planned 0.5.1
+
+- Reading opens its selector in picture view and prepares bounded previews in the background instead of decoding in drawing.
+- Photos preloads visible and upcoming thumbnail rows within its existing cache budget, including during a held touch. Restore loading ahead of the viewport without returning disk decoding to the UI thread.
+- Physical touchscreen drag reliability still requires a retest; preloading alone is not claimed to resolve an unreproduced input-device failure.
+
 ## 0.5.0 - 2026-10-11
 
 - Released piano notes decay for up to 600 ms; bounded overlapping voices keep song headroom. Home/focus still stops all audio immediately.

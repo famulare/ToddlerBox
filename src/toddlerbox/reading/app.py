@@ -4,8 +4,11 @@ import os
 from pathlib import Path
 import random
 import time
+from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 
 import pygame
+from PIL import Image
 
 from toddlerbox.config import load_config
 from toddlerbox.paths import get_data_root
@@ -14,6 +17,7 @@ from toddlerbox.reading.playback import SpeechPlayer
 from toddlerbox.reading.selection import choose_next
 from toddlerbox.runtime import get_runtime_logger, health, control
 from toddlerbox.ui import theme
+from toddlerbox.ui.preload import preview_indices
 from toddlerbox.ui.common import (PointerInput, create_fullscreen_window, draw_home_button,
                                   is_escape_chord, is_primary_pointer_event, pointer_event_pos)
 
@@ -22,6 +26,16 @@ FOCUS_EVENTS = {getattr(pygame, "WINDOWFOCUSLOST", -1),
                 getattr(pygame, "APP_DIDENTERFOREGROUND", -3),
                 getattr(pygame, "APP_WILLENTERBACKGROUND", -4)}
 _last_card_id: str | None = None  # Only the current process; never learning history.
+
+
+def _thumbnail_pixels(path):
+    # Recheck the catalogue's bounds in the worker. SDL/display calls stay on
+    # the main thread; retain SDL's original scaling for identical thumbnails.
+    with Image.open(path) as image:
+        if image.format != "PNG" or not (1 <= image.width <= 1024 and 1 <= image.height <= 1024):
+            raise ValueError("Invalid Reading illustration")
+        image = image.convert("RGBA")
+        return image.tobytes(), image.size
 
 
 class ReadingApp:
@@ -38,8 +52,12 @@ class ReadingApp:
         self.pointer = PointerInput()
         self.pressed = None
         self.rail_offset = 0
-        self.rail_images = False
-        self.thumbnails = {}
+        self.rail_images = True
+        self.thumbnails = OrderedDict()
+        self._thumbnail_limit = 96  # The current complete deck fits in ~1.2 MiB.
+        self._thumbnail_executor = None
+        self._thumbnail_future = None
+        self._thumbnail_card = None
         self._scroll_y = None
         self.bad_images: set[str] = set()
         self.card = None
@@ -130,13 +148,6 @@ class ReadingApp:
         for card, row in self._rail_rows():
             theme.card(self.screen, row, selected=self.card is not None and card.id == self.card.id)
             if self.rail_images and card.image and card.id not in self.bad_images:
-                if card.id not in self.thumbnails:
-                    try:
-                        image = pygame.image.load(str(card.image)).convert_alpha()
-                        self.thumbnails[card.id] = pygame.transform.smoothscale(image, (56, 56))
-                    except (pygame.error, OSError):
-                        self.bad_images.add(card.id)
-                        self.logger.exception("Reading preview unavailable")
                 image = self.thumbnails.get(card.id)
                 if image is not None:
                     self.screen.blit(image, image.get_rect(center=row.center))
@@ -145,6 +156,43 @@ class ReadingApp:
             glyph = theme.ui_font(28).render(text, True, theme.INK)
             self.screen.blit(glyph, glyph.get_rect(center=row.center))
         self.screen.set_clip(old_clip)
+
+    def _service_thumbnails(self):
+        """Warm both rail views with one worker and no waiting in a frame."""
+        if self._thumbnail_future is not None:
+            if not self._thumbnail_future.done():
+                return
+            card = self._thumbnail_card
+            try:
+                pixels, size = self._thumbnail_future.result()
+                image = pygame.image.frombytes(pixels, size, "RGBA").convert_alpha()
+                self.thumbnails[card.id] = pygame.transform.smoothscale(image, (56, 56))
+                while len(self.thumbnails) > self._thumbnail_limit:
+                    self.thumbnails.popitem(last=False)
+            except Exception:
+                self.bad_images.add(card.id)
+                self.logger.exception("Reading preview unavailable")
+            self._thumbnail_future = None
+        visible = [i for i in range(len(self.cards))
+                   if pygame.Rect(self.rail.x, self.rail.y + i*76 - int(self.rail_offset),
+                                  self.rail.w, 68).colliderect(self.rail)]
+        candidates = preview_indices(len(self.cards), visible, self._thumbnail_limit)
+        for i in reversed(candidates):
+            if self.cards[i].id in self.thumbnails:
+                self.thumbnails.move_to_end(self.cards[i].id)
+        for i in candidates:
+            card = self.cards[i]
+            if card.image and card.id not in self.thumbnails and card.id not in self.bad_images:
+                if self._thumbnail_executor is None:
+                    self._thumbnail_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="reading-previews")
+                self._thumbnail_card = card
+                self._thumbnail_future = self._thumbnail_executor.submit(_thumbnail_pixels, card.image)
+                break
+
+    def close(self):
+        self.player.close()
+        if self._thumbnail_executor is not None:
+            self._thumbnail_executor.shutdown(wait=False, cancel_futures=True)
 
     def _prepare_word(self):
         units = self.card.units
@@ -302,6 +350,7 @@ class ReadingApp:
                 if not running or health.stopping():
                     break
                 self.player.update()
+                self._service_thumbnails()
                 if not self._available():
                     break
                 self.render()
@@ -311,7 +360,7 @@ class ReadingApp:
                 self.clock.tick(60)
         finally:
             _last_card_id = self.card.id if self.card else None
-            self.player.close()
+            self.close()
             self.pointer.reset()
             self.pressed = None
 
