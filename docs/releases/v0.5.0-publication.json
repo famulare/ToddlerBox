@@ -1,0 +1,15 @@
+{
+  "release": "https://github.com/famulare/ToddlerBox/releases/tag/v0.5.0",
+  "tag_commit": "5e4e0b43e2cd93aeba93291371c0c28ea9229f52",
+  "content": "4c260c85b3afe225",
+  "pr": 14,
+  "merge_commit": "988b193d61ecca77e3066557dc4ec658806631f3",
+  "publication_workflow": "https://github.com/famulare/ToddlerBox/actions/runs/38099186726",
+  "workflow_result": "success",
+  "bundle_bytes": 89362258,
+  "bundle_sha256": "ee6027bcae25cd5f5d257bbaa48fafd00f3497bcc4e358c3eab54fdeefd642b0",
+  "github_asset_digest_matches": true,
+  "anonymous_production_catalogue_signature_and_full_download": "passed",
+  "stable_sequence": 3,
+  "distribution": "existing-install update; no new ISO"
+}

@@ -1686,3 +1686,45 @@ credentials, private packages or signing key. HP speaker loudness remains a
 physical parent listening check; virtual PCM is not calibration. Full ISO,
 Wi-Fi radio, physical gestures, sleep/resume and unrelated hardware
 qualification are not claimed for this update-only release.
+
+
+0.5.0 publication completed after qualification: PR #14 merged as
+`988b193d61ecca77e3066557dc4ec658806631f3`; the [publication workflow](https://github.com/famulare/ToddlerBox/actions/runs/38099186726)
+succeeded. The public [v0.5.0 release](https://github.com/famulare/ToddlerBox/releases/tag/v0.5.0)
+tag resolves to the exact built revision `5e4e0b43e2cd93aeba93291371c0c28ea9229f52`.
+GitHub's update asset digest/size match the qualified bundle. Only after that
+verification did main's signed stable catalogue advance from sequence 2 to 3.
+The actual production `release_client.catalog` and `download` then fetched the
+public catalogue/signature and complete update **without authentication**;
+Ed25519, sequence, size and full SHA-256 checks passed. No GitHub login or
+manual hash check is required on the HP. Publication provenance is retained
+in `docs/releases/v0.5.0-publication.json`.
+
+Repeat the public-client check (network required, temporary synthetic state):
+
+```sh
+uv run --frozen python - <<'PYCODE'
+import hashlib, shutil, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, 'system')
+from boot_recovery import STATE, record
+from release_client import catalog, download
+with tempfile.TemporaryDirectory() as temporary:
+    root = Path(temporary)
+    (root / STATE).mkdir(parents=True)
+    (root / 'etc/toddlerbox').mkdir(parents=True)
+    shutil.copyfile('system/release-public-key.pem', root / 'etc/toddlerbox/release-public-key.pem')
+    record(root / STATE / 'release-sequence.json', {'sequence': 2})
+    v = catalog(root)
+    assert v['sequence'] == 3 and v['source'] == '4c260c85b3afe225'
+    target = root / STATE / 'downloads/update.pyz'
+    download(f"https://github.com/famulare/ToddlerBox/releases/download/{v['tag']}/{v['asset']}", target, v['bytes'], expected_size=v['bytes'])
+    with target.open('rb') as stream:
+        assert hashlib.file_digest(stream, 'sha256').hexdigest() == v['sha256']
+    print('Anonymous signed catalogue and full download: PASS')
+PYCODE
+```
+
+This exact identity assertion intentionally needs updating after a later
+stable release. The app source content ID remains `4c260c85b3afe225`; later
+qualification/publication documentation does not change the built payload.
