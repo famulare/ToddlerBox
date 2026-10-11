@@ -1809,3 +1809,52 @@ published 0.5.1 bundle is claimed.
 Use the same comparison command above; the extended harness additionally
 excludes only `math-next-taps` from exact equality. The visible default Reading
 sidebar remains the sole intended rendering change; Math appearance is identical.
+
+
+### Held piano — proposed 0.5.1 continuation (#18)
+
+Actual 0.5.0 baseline `d64d66b` plays each key's two-second WAV once. The
+new player uses prepared attack/loop derivatives of the same verified CC0
+instrument, queuing at most one short loop per voice. Held notes do not replay
+an attack; release keeps the existing bounded quadratic 600ms envelope. Peak
+0.5 and shared channel gain 0.70 preserve song headroom. Reading/Math gains,
+all songs/cues, and **443 existing WAV/PNG files** remain byte-identical.
+
+Repeatable actual SDL disk-driver comparison:
+
+```sh
+uv run --frozen python scripts/check-music-sustain.py --baseline BASELINE_DIRECTORY --output NEW_PCM_OUTPUT
+uv run --locked scripts/build-piano-sustains.py --output NEW_DERIVATIVE_OUTPUT
+uv run --frozen pytest -q
+```
+
+At a real 3.2-second hold, baseline C4 is silent (busy=0, late RMS=0);
+new C4 is busy and late RMS=**0.097388**, then releases in **568.9ms**.
+Eight held keys plus the real Mary arrangement continue together, maximum
+summed key gain **0.6875**, peak mixed PCM **19,772/32,768**, zero saturated
+samples and silence after close. All **51** derivative/manifest files reproduce
+byte-for-byte through the pinned NumPy 2.2.6 offline builder. No NumPy, synthesis,
+network access or background audio worker is introduced into runtime.
+
+Real SDL tests caught stop/queue behavior: stopping a sound can start its one
+queued successor. Cleanup now mutes before two bounded halts. Independent Sol
+review also reproduced a release-envelope restart swell after a drained queue;
+the fix applies the current envelope before playback and includes logical held
+voices in gain reservation. Actual short-loop stall and drained-held regressions
+verify both fixes. Mouse and finger holds beyond two seconds, release/cleanup,
+missing-loop atomic cache behavior, waveform wraps, peaks and eight-voice bounds
+are tested. Independent re-review found no outstanding issues.
+
+The final frozen Linux suite for app **0.5.1** passed **546 tests in 24.16s**.
+The package dependency graph is unchanged; future signed release sequence is 4,
+while public stable remains the qualified 0.5.0/sequence3. App content identity
+is `c7893108e7689564` (before later qualification documentation, which is excluded).
+
+On this builder, ffmpeg **7.1.5-0+deb13u1** `ebur128` measured sustained C4 at the existing .70
+gain about **−20.9 LUFS**, Reading's cat at .70 **−21.7 LUFS**. This establishes
+comparable recorded levels, not HP speaker calibration. Songs are intentionally
+unchanged: Mary at gain1 measures **−20.6 LUFS**, while a retained gain.25 would
+be substantially quieter. The actual installed Music gain check is deferred
+by the user until later. Do not reset Reading/Math or claim song loudness fixed
+before that evidence. No new signed bundle, ISO, VM or physical acceptance is
+claimed for this draft continuation.

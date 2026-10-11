@@ -205,6 +205,7 @@ See [the design and desktop instructions](MATH_DESIGN.md).
 - Play keys over a song without interrupting it, or choose Free Play
 - Select a song, pause/resume, or let autoplay continue through the collection
 - Home and parent recovery stop playback; unavailable audio remains quiet and responsive
+- Manual keys sustain while held and decay after release, without stopping the song (planned 0.5.1)
 - Offline audio, scores, notices and reproducible generation recipe in [assets/music](assets/music/README.md)
 
 ### Reading App

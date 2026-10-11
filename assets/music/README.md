@@ -69,9 +69,12 @@ the integer WAV frame count.
 
 ## Playable keyboard
 
-`keys/` contains 25 independently prepared C3–C5 two-second PCM notes from the
-same CC0 sampled piano. Eight owned SDL channels mix key touches alongside the
-unchanged music stream. No synthesis/dependency download occurs during play.
+`keys/` retains the 25 original C3–C5 two-second PCM notes. The proposed 0.5.1
+player uses new `keys/sustain/` attack and short looping PCM derivatives from
+the same verified CC0 piano: a held key continues sounding without replaying
+its percussive attack. Eight owned SDL channels mix touches alongside the
+unchanged music stream. At most one loop is queued per voice; no synthesis,
+NumPy dependency or download occurs during play.
 Key release uses a bounded 600 ms quadratic envelope in the event loop;
 focus/Home immediately stops held and released voices. Tails occupy channels
 until finished; when all eight are busy, a new key replaces the oldest released
@@ -84,6 +87,22 @@ song; its keyboard and samples are identical. Preparation:
 ```sh
 uv run --locked scripts/build-music.py --keys-only --output assets/music/keys
 ```
+
+Prepare/reproduce the 0.5.1 sustain derivatives separately:
+
+```sh
+uv run --locked scripts/build-piano-sustains.py --output assets/music/keys/sustain
+```
+
+The pinned offline builder retains each attack, finds positive-going loop
+boundaries near 64 nominal pitch periods, blends four periods at the wrap and
+crossfades the attack into that loop. A 0.14 loop-RMS target and 0.5 peak cap
+make held keys stronger and more consistent while retaining the shared gain
+budget. The manifest records every derivative hash, frame count, peak/RMS,
+source-instrument hash and builder identity. Original keys, songs, cues and
+Reading/Math recordings remain unchanged. Delayed-frame restarts apply the
+current release gain before playback; cleanup mutes and halts the one queued
+successor too, so Home/focus cannot leave a loop playing.
 
 The key manifest pins instrument/output hashes. This command does not regenerate
 or change the song WAVs/cues.

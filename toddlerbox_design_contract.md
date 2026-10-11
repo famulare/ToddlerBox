@@ -172,10 +172,14 @@ included in ToddlerBox 0.4.
 - Home/TERM/exceptions stop and unload audio. No audio plays on the launcher or automatically resumes after a crash.
 - Audio failure remains quiet, responsive and logged for the parent. Autoplay attempts each damaged track at most once until manual retry.
 - Controls use shared single-pointer ownership; the piano admits up to eight independent raw fingers.
+  Held keys sustain using bounded prepared loops, without repeating the attack
+  or pausing the song. No runtime synthesis or new runtime dependency.
   Duplicate SDL mouse events from touch are ignored. Released keys decay for up to
   600 ms; new notes preserve tails while space remains, then replace the oldest
   release instead of a held key. Eight voices share a 0.70 gain budget, reserved
   before playback, so the song stream retains headroom. Focus/Home clears all voices immediately.
+  A delayed frame must apply the release envelope before restarting a voice;
+  cleanup must also stop any queued successor. Reading/Math gains stay unchanged.
 
 ## 4b. Reading App
 

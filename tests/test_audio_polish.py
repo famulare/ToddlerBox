@@ -46,6 +46,108 @@ def test_release_rings_beyond_old_cutoff_and_cleanup_stops_tail(piano, finger):
     assert not voice.get_busy()
 
 
+@pytest.mark.parametrize("finger", [False, True])
+def test_key_sustains_beyond_original_sample_then_releases_for_600ms(piano, finger):
+    import time
+    rect = pygame.Rect(0, 0, 200, 100)
+    if finger:
+        def event(kind):
+            return pygame.event.Event(kind, x=.25, y=.5, touch_id=1, finger_id=2)
+        down, up = pygame.FINGERDOWN, pygame.FINGERUP
+    else:
+        def event(kind):
+            return pygame.event.Event(kind, pos=(50, 50), button=1, touch=False)
+        down, up = pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP
+    piano.event(event(down), rect)
+    slot, voice = next(iter(piano.voices.values()))
+    deadline = time.monotonic() + 2.3
+    while time.monotonic() < deadline:
+        piano.update()
+        assert voice.get_busy()
+        pygame.time.wait(20)
+    assert piano.active == {60} and voice.get_queue() is not None
+    piano.event(event(up), rect)
+    deadline = time.monotonic() + .16
+    while time.monotonic() < deadline:
+        piano.update()
+        pygame.time.wait(20)
+    assert voice.get_busy() and not piano.active
+    pygame.time.wait(500)
+    piano.update()
+    assert not voice.get_busy() and slot not in piano.tails
+
+
+def test_missing_sustain_does_not_leave_partial_sound_cache(piano, monkeypatch):
+    original = pygame.mixer.Sound
+    def fail_loop(filename):
+        if str(filename).endswith('-loop.wav'):
+            raise pygame.error('fixture missing loop')
+        return original(filename)
+    monkeypatch.setattr(pygame.mixer, 'Sound', fail_loop)
+    piano._play('mouse', 60)
+    piano._play('mouse', 60)
+    assert not piano.voices and not piano.sounds and not piano.sustains
+
+
+def test_stalled_release_restarts_at_decayed_gain_without_swell(piano):
+    now = [0.0]
+    piano.clock = lambda: now[0]
+    piano._play('key', 72)  # Short loop: an actual stall exhausts both buffers.
+    slot, channel = piano.voices['key']
+    piano._release('key')
+    pygame.time.wait(100)
+    now[0] = .1
+    piano.update()
+    previous = channel.get_volume()
+    pygame.time.wait(350)
+    now[0] = .45
+    assert not channel.get_busy()
+    played_at = []
+    class Probe:
+        def __getattr__(self, name):
+            return getattr(channel, name)
+        def play(self, *args):
+            played_at.append(channel.get_volume())
+            return channel.play(*args)
+    piano.channels[slot] = Probe()
+    piano.update()
+    assert len(played_at) == 1 and played_at[0] < .10
+    assert channel.get_volume() <= previous
+
+
+def test_drained_held_voices_still_reserve_shared_gain(piano):
+    piano._play('a', 60)
+    piano._play('b', 64)
+    for channel in piano.channels.values():
+        piano._stop_channel(channel)
+    assert not any(channel.get_busy() for channel in piano.channels.values())
+    reserved = piano._reserve_gain()
+    assert reserved <= .70 / 3
+    assert reserved + sum(piano.gains.values()) <= .70 + 1e-9
+
+
+def test_sustain_pcm_is_verified_bounded_and_has_continuous_wraps():
+    import hashlib, json, math
+    root = ROOT / 'assets/music/keys/sustain'
+    manifest = json.loads((root / 'manifest.json').read_text())
+    assert set(manifest['files']) == {f'{pitch}-{kind}.wav' for pitch in range(48,73)
+                                      for kind in ('attack', 'loop')}
+    for filename, metadata in manifest['files'].items():
+        path = root / filename
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == metadata['sha256']
+        with wave.open(str(path)) as wav:
+            assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (22050, 1, 2)
+            samples = array('h', wav.readframes(wav.getnframes()))
+        assert 0 < len(samples) < 22050 and max(abs(v) for v in samples) <= 16384
+        if filename.endswith('-loop.wav'):
+            rms = math.sqrt(sum(v*v for v in samples)/len(samples))/32768
+            assert .055 < rms <= .141
+            # The loop boundary is an original positive-going zero crossing,
+            # not a jump back to the note's percussive beginning.
+            steps = max(abs(b-a) for a,b in zip(samples, samples[1:]))
+            assert abs(samples[0]-samples[-1]) <= steps
+
+
 def test_glissando_and_repeated_note_keep_previous_release_channels(piano):
     piano._play("mouse", 60)
     first = piano.voices["mouse"][0]
