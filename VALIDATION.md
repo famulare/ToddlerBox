@@ -1620,3 +1620,69 @@ draft-only failure images were removed from the published assets after their
 inspection. Raw/private files and all earlier qualified VM checkpoints remain
 excluded and preserved. Only `main` remains among remote development branches.
 Later documentation commits preserve the original signed build identity.
+
+
+### Qualified 0.5.0 update-only release (2026-10-11)
+
+The built revision is `5e4e0b43e2cd93aeba93291371c0c28ea9229f52`, content ID `4c260c85b3afe225`.
+This is a signed existing-install update, **not a new ISO/fresh-install claim**.
+The separately qualified 0.4 installer and earlier VM bases are preserved.
+The final bundle is 89,362,258 bytes, SHA-256 `ee6027bcae25cd5f5d257bbaa48fafd00f3497bcc4e358c3eab54fdeefd642b0`;
+signed stable sequence 3 retains the existing public key.
+
+Actual baseline main `30edbfad89187e07b480418c328d6536593540c6`
+passed 451 tests. The final frozen Linux suite passed **508 tests in 15.56 s**;
+focused appliance/audio/release checks passed **104 tests**. Earlier recorded
+PCM/render/save comparisons remain applicable because no audio samples or
+child drawing code changed during packaging. Independent scoped Sol reviews
+resolved every finding; installer, authenticated IPC and recovery guards were
+not weakened.
+
+Repeatable commands:
+
+```sh
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+bash system/build-app.sh build/audio-polish/final2
+uv run --frozen python system/build-update.py --cage build/child-controls-qa/toddlerbox-cage --app build/audio-polish/final2/toddlerbox-app-4c260c85b3afe225.tar.gz --output build/audio-polish/final2/ToddlerBox-update.pyz
+uv run --frozen --with cryptography==46.0.3 python scripts/sign-release.py --bundle build/audio-polish/final2/ToddlerBox-update.pyz --tag v0.5.0 --sequence 3 --output build/audio-polish/final2/stable.json
+uv run --frozen python scripts/qualify-audio-update.py build/audio-polish/final2 build/audio-polish/final2-vm
+```
+
+Build/QA directories must be new for repetition; the last command requires the
+preserved qualified 0.3 appliance and published 0.4 baseline bundle. Ubuntu
+Python **3.12.3**, uv **0.12.19**, pygame-ce **2.5.8**, Pillow **12.3.0** and
+PyYAML **6.0.3** were used for the production app. No developer virtualenv is
+copied. The canonical interpreter links and permission policy match image
+assembly. Public app files are readable by the child and not writable by it.
+
+The actual no-NIC Ubuntu Q35/TCG guest used two CPUs, 2 GiB RAM, virtual HDA,
+and direct-kernel boot of a disposable overlay, with an independently
+authenticated synthetic parent account. It installed/accepted the signed 0.4
+baseline, applied the USB/DNS source patch, and installed the signed 0.5 bundle
+through the resident updater. Initial installation preserved config bytes;
+explicit Audio Defaults then updated only its intended parent settings and
+left the entire immutable app tree exactly unchanged. Native `wpctl` was
+asserted unmuted at **0.80**, and Music emitted actual virtual-HDA PCM.
+Independent Ctrl+Alt+Home returned to parent mode. Explicit rollback restored
+0.4; reinstall/acceptance of identical 0.5 bytes and a real guest reset/reboot
+restored a healthy supervised child session. Synthetic Paint/Typing SHA-256
+checks passed throughout; USB setup and DNS controls survived rollback.
+
+Two unpublished candidates were rejected during this work: private builder
+umask made app files unreadable, and root Audio Defaults/QA imports produced
+bytecode caches that the immutable-release guard correctly refused on
+reinstall. The builder now applies image-equivalent permissions; the parent
+command and QA diagnostics use `-B`. A real-script permission regression and
+native before/after full tree comparison verify the fixes. Failed VM logs and
+selected screenshots remain local; failed disposable disks were removed only
+after retaining their SHA-256 and diagnostics. Qualified bases were preserved;
+older WAV captures were compressed losslessly to bound workspace usage.
+
+USB setup and DNS use the explicitly authenticated rerunnable source patch:
+their destinations are outside the resident signed-update allowlist. That
+allowlist, resident boot gate and rollback protocol remain unchanged. Public
+artifacts contain only software/synthetic evidence; no family photos, Google
+credentials, private packages or signing key. HP speaker loudness remains a
+physical parent listening check; virtual PCM is not calibration. Full ISO,
+Wi-Fi radio, physical gestures, sleep/resume and unrelated hardware
+qualification are not claimed for this update-only release.

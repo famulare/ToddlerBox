@@ -1,0 +1,39 @@
+{
+  "version": "0.5.0",
+  "git": "5e4e0b43e2cd93aeba93291371c0c28ea9229f52",
+  "content": "4c260c85b3afe225",
+  "architecture": "x86-64",
+  "ubuntu": "24.04",
+  "distribution": "update-only; no new ISO",
+  "toolchain": {
+    "python": "3.12.3 (Ubuntu production)",
+    "uv": "0.12.19",
+    "pygame-ce": "2.5.8",
+    "Pillow": "12.3.0",
+    "PyYAML": "6.0.3"
+  },
+  "artifacts": {
+    "ToddlerBox-update.pyz": {
+      "bytes": 89362258,
+      "sha256": "ee6027bcae25cd5f5d257bbaa48fafd00f3497bcc4e358c3eab54fdeefd642b0"
+    }
+  },
+  "qualification_status": "passed",
+  "qualification": {
+    "platform": "Ubuntu24.04 x86-64 Q35 TCG, 2CPU 2GiB, no NIC, virtual HDA; direct-kernel boot of disposable qualified0.3 overlay",
+    "checks": [
+      "installed signed0.4 baseline and accepted genuine supervised child frames",
+      "source USB/DNS patch, signed0.5 install and acceptance",
+      "config bytes preserved by installer; explicit louder opt-in",
+      "native wpctl startup volume and actual HDA Music PCM",
+      "independent Ctrl+Alt+Home escape",
+      "explicit rollback to0.4 and signed0.5 reinstall",
+      "accepted0.5 reboot health and synthetic Paint/Typing exact SHA preservation",
+      "Audio Defaults preserves full immutable release tree types/modes/hashes/links; no root bytecode writes"
+    ],
+    "limits": [
+      "no new ISO/fresh installation or physical HP speaker calibration",
+      "USB/DNS remain separate trusted source patch; existing signed allowlist unchanged"
+    ]
+  }
+}
