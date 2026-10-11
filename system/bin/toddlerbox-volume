@@ -2,6 +2,7 @@
 # Runs as the child account; fixed commands only, no dialogs or desktop overlays.
 set -eu
 case "${1:-}" in
+    startup) exec /opt/toddlerbox/current/.venv/bin/python -m toddlerbox.runtime.audio ;;
     up) step='5%+' ;;
     down) step='5%-' ;;
     mute) exec /usr/bin/wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;

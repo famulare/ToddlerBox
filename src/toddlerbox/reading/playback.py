@@ -65,7 +65,7 @@ class SDLSpeech:
 
 
 class SpeechPlayer:
-    def __init__(self, logger, *, audio=None, volume=0.35, clock=time.monotonic):
+    def __init__(self, logger, *, audio=None, volume=0.70, clock=time.monotonic):
         self.logger = logger
         self.audio = SDLSpeech() if audio is None else audio
         self.volume, self.clock = volume, clock

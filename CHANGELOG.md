@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0 - 2026-10-11
+
+- Released piano notes decay for up to 600 ms; bounded overlapping voices keep song headroom. Home/focus still stops all audio immediately.
+- Raise default song gain 4× and Reading/Math speech gain 2×; initialize child-session master volume predictably, retaining keyboard-only controls and the unity ceiling.
+- Explicit authenticated parent opt-in applies louder defaults to existing installations while preserving other settings and backing up the original configuration.
+- Parent-initiated USB Drive setup finds packages, verifies adjacent full SHA-256 automatically, preserves stable transfer inputs and shows results until dismissed.
+- Fix connected Wi-Fi with broken DNS: NetworkManager uses connection-provided DNS directly; image and existing-install patch share the same policy.
+- Reapply the source-checkout USB setup patch without reinstalling; existing work and credentials remain intact.
+- Signed update-only release for existing Ubuntu appliances; separate authenticated source patch adds USB/DNS without expanding the resident updater's destinations. No new OS installer.
+
 ## 0.4.0 - 2026-10-05
 
 - Math approved after Mac testing and integrated as the sixth offline activity.

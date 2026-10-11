@@ -84,7 +84,7 @@ class NumberBank:
 
 
 class NumberPlayer:
-    def __init__(self, logger, *, volume=0.35, bank=None, audio=None, clock=time.monotonic):
+    def __init__(self, logger, *, volume=0.70, bank=None, audio=None, clock=time.monotonic):
         self.logger, self.volume, self.clock = logger, volume, clock
         self.bank = NumberBank(logger) if bank is None else bank
         self.audio = SDLSpeech() if audio is None else audio

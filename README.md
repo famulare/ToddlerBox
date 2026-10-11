@@ -1,6 +1,6 @@
 # ToddlerBox
 
-**ToddlerBox 0.4:** six offline activities, a two-row launcher, pictures-first Math
+**ToddlerBox 0.5:** six offline activities, a two-row launcher, pictures-first Math
 with deliberate math speech, and 18 short songs in a scrollable Music library.
 
 ToddlerBox is a minimalist, offline-first Linux "kid mode" designed for very young children.
@@ -264,10 +264,22 @@ Runtime configuration is read from `config.yaml` (repo root for dev) or `/etc/to
 - `paint.autosave_seconds`
 - `paint.palette`
 - `paint.max_archives`, `typing.max_archives`, `typing.max_archive_bytes`
-- `music.volume` (0–1, default 0.25), `music.autoplay`, `music.latency_ms`
+- `music.volume` (0–1, default 1.0), `music.autoplay`, `music.latency_ms`
 - `reading.mode` (`words`, `letters`), `reading.word_sets`
 - `reading.letter_case` (`lowercase`, `uppercase`), `reading.letter_audio` (`sounds`, `names`)
-- `reading.volume` (0–1)
+- `reading.volume`, `math.volume` (0–1, default 0.70)
+- `audio.startup_volume` (0–1, default 0.80; child-session master level)
+
+The 0.5.0 audio update raises speech gain 2× and song gain 4× relative to
+0.4.0. Piano releases decay for up to 600 ms, with bounded overlap headroom.
+Existing configurations retain their chosen gains. After installing the update,
+parents can explicitly apply the louder defaults; see [audio controls](docs/child-controls.md).
+Version 0.5.0 also adds automatic USB Drive setup and an explicit
+NetworkManager DNS policy that fixes connected Wi-Fi with a broken local resolver. You can
+[install that setup patch and rerun it](docs/drive-sync.md#rerun-usb-setup-without-reinstalling)
+on the current appliance. Follow the [0.5.0 update instructions](docs/releases/v0.5.0.md)
+for the signed application/audio update and the separate setup/DNS patch.
+There is no new ISO in this update-only release.
 
 Reading settings are applied on activity entry. Word sets are `short_a_cvc`,
 `short_e_cvc`, `short_i_cvc`, `short_o_cvc`, `short_u_cvc`, `digraphs`, and

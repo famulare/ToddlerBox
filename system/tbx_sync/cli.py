@@ -23,6 +23,10 @@ def service_state():
 
 def status(paths):
     value = load(paths.state/'status.json',{'state':'never-run','last_success':None})
+    receipt = load(paths.state/'setup-receipt.json')
+    if receipt:
+        value['last_setup'] = {key:receipt[key] for key in
+                              ('at','result','photos_imported','package_sha256') if key in receipt}
     unit = service_state()
     # Truthful even after an abrupt kill or a full disk prevented ExecStopPost
     # from updating the persistent record. Preserve its last success in memory.
@@ -62,6 +66,9 @@ def main():
     if os.geteuid()!=0:
         parser.error('Use sudo or the parent desktop entry')
     paths=Paths()
+    if args.command in {'setup', 'import'} and not args.package and not args.sha256 and not args.restore_directory and not args.consume:
+        from .usb_setup import main as usb_setup
+        raise SystemExit(usb_setup(paths))
     try:
         initialize(paths)
         if args.command=='finalize':

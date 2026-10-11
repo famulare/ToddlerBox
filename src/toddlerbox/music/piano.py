@@ -1,17 +1,48 @@
 """Bounded, independent sampled piano voices; never touch the song stream."""
 from pathlib import Path
+import time
 import pygame
 
 
 class Piano:
-    def __init__(self, keys, logger, *, library=None, volume=0.35):
+    def __init__(self, keys, logger, *, library=None, clock=time.monotonic):
         self.keys, self.logger = keys, logger
         self.library = library or Path(__file__).resolve().parents[3] / "assets/music/keys"
-        self.volume = volume
+        # Key samples peak below 0.5. A shared 0.70 budget leaves room for
+        # the song stream (peak <= 0.65), even with eight overlapping keys.
+        self.volume = 0.70
+        self.clock = clock
         self.sounds = {}
         self.pointers = {}  # Up to eight raw fingers, or the real mouse.
         self.voices = {}
         self.channels = {}  # Retain fading channels until activity cleanup.
+        self.tails = {}  # Insertion order makes the oldest release stealable first.
+        self.gains = {}
+
+    def update(self):
+        now = self.clock()
+        for slot, (released, gain) in list(self.tails.items()):
+            voice = self.channels[slot]
+            remaining = 1 - (now - released) / .6
+            if remaining <= 0 or not voice.get_busy():
+                voice.stop()
+                del self.tails[slot]
+            else:
+                voice.set_volume(gain * remaining * remaining)
+
+    def _reserve_gain(self):
+        busy = [slot for slot, voice in self.channels.items() if voice.get_busy()]
+        gain = self.volume / (len(busy) + 1)
+        for slot in busy:
+            # Never swell an existing voice as other keys finish their decay.
+            self.gains[slot] = min(self.gains[slot], gain)
+            if slot in self.tails:
+                released, previous = self.tails[slot]
+                self.tails[slot] = (released, min(previous, gain))
+            else:
+                self.channels[slot].set_volume(self.gains[slot])
+        self.update()
+        return gain
 
     def pitch_at(self, pos):
         for black in (True, False):
@@ -21,9 +52,12 @@ class Piano:
         return None
 
     def _release(self, token):
+        self.update()
         voice = self.voices.pop(token, None)
         if voice is not None:
-            voice[1].fadeout(100)
+            # SDL fadeout rewrites channel volume and can undo headroom limits.
+            # Own the short envelope in the normal event loop instead.
+            self.tails[voice[0]] = (self.clock(), self.gains[voice[0]])
 
     def _play(self, token, pitch):
         self._release(token)
@@ -36,11 +70,19 @@ class Piano:
             if pitch not in self.sounds:
                 self.sounds[pitch] = pygame.mixer.Sound(str(self.library / f"{pitch}.wav"))
             occupied = {voice[0] for voice in self.voices.values()}
-            slot = next((i for i in range(8) if i not in occupied), None)
+            self.update()
+            slot = next((i for i in range(8) if i not in occupied
+                         and (i not in self.channels or not self.channels[i].get_busy())), None)
+            if slot is None:
+                slot = next((i for i in self.tails if i not in occupied), None)
             if slot is not None:
+                self.tails.pop(slot, None)
                 voice = pygame.mixer.Channel(slot)
+                voice.stop()
+                gain = self._reserve_gain()
                 self.channels[slot] = voice
-                voice.set_volume(self.volume)
+                self.gains[slot] = gain
+                voice.set_volume(gain)
                 voice.play(self.sounds[pitch])
                 self.voices[token] = (slot, voice)
         except (pygame.error, OSError):
@@ -88,5 +130,7 @@ class Piano:
         for voice in self.channels.values():
             voice.stop()
         self.channels.clear()
+        self.tails.clear()
+        self.gains.clear()
         self.voices.clear()
         self.pointers.clear()

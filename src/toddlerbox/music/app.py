@@ -31,7 +31,7 @@ class MusicApp:
         library = Path(__file__).resolve().parents[3] / "assets" / "music"
         tracks, self.low, self.high = load_library(library, self.logger)
         self.player = MusicPlayer(tracks, self.logger, audio=audio,
-                                  volume=options.get("volume", 0.25),
+                                  volume=options.get("volume", 1.0),
                                   autoplay=bool(options.get("autoplay", True)),
                                   latency_ms=options.get("latency_ms", 0))
         self.pointer = PointerInput()
@@ -311,6 +311,7 @@ class MusicApp:
                 if not running or health.stopping():
                     break
                 self.player.update()
+                self.piano.update()
                 self.render()
                 control.before_flip(self.screen)
                 pygame.display.flip()

@@ -47,7 +47,7 @@ photos:
   thumb_time_budget_ms: 5
 
 music:
-  volume: 0.25
+  volume: 1.0
   autoplay: true
   latency_ms: 0
 
@@ -56,10 +56,14 @@ reading:
   word_sets: [short_a_cvc, short_e_cvc, short_i_cvc, short_o_cvc, short_u_cvc, digraphs, adjacent_consonants]
   letter_case: lowercase
   letter_audio: sounds
-  volume: 0.35
+  volume: 0.70
 
 math:
   mode: numbers
   max_number: 100
   low_number_weight: 12
-  volume: 0.35
+  volume: 0.70
+
+# Child-session master volume; media keys keep a 100% ceiling.
+audio:
+  startup_volume: 0.80
