@@ -3,6 +3,7 @@ from array import array
 from collections import Counter
 import hashlib
 import json
+import math
 from pathlib import Path
 import re
 import sys
@@ -11,6 +12,23 @@ import wave
 import pytest
 
 ASSETS = Path(__file__).resolve().parents[1] / "assets/music"
+
+
+def test_louder_song_pcm_has_stronger_body_and_retains_piano_headroom():
+    manifest = json.loads((ASSETS / "build-manifest.json").read_text())
+    assert manifest['body_gain'] == 2 and manifest['peak_ceiling'] == .60
+    for track in manifest['tracks']:
+        with wave.open(str(ASSETS / (track['id'] + '.wav'))) as audio:
+            assert (audio.getframerate(), audio.getnchannels(), audio.getsampwidth()) == (22050, 1, 2)
+            samples = array('h', audio.readframes(audio.getnframes()))
+        rms = math.sqrt(sum(v*v for v in samples)/len(samples))/32767
+        peak = max(abs(v) for v in samples)/32767
+        assert 1.5 < rms/track['pre_loudness_rms'] <= 2.01
+        assert peak <= .60002 and peak + .50*.70 < .96
+        assert len(samples) == track['frames']
+        cue = json.loads((ASSETS / (track['id']+'.json')).read_text())
+        assert len(samples)*1000/22050 == cue['duration_ms']
+        assert not any(samples[:22050])  # Original quiet intro is unchanged.
 
 
 def read_json(path):

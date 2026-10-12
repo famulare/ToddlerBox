@@ -64,7 +64,9 @@ melodies are Hot Cross Buns, London Bridge, Itsy Bitsy Spider, Old MacDonald,
 This Old Man, Hickory Dickory Dock, Pop Goes the Weasel, Bingo and Mulberry Bush.
 These are historical/traditional tunes, not recordings of recent commercial
 children's versions. New note events, sparse roots and piano performances are
-ToddlerBox MIT contributions; original six outputs remain unchanged.
+ToddlerBox MIT contributions. The 0.4 expansion retained the original six outputs;
+0.5.1 applies an offline body-gain/peak-limiting pass to all eighteen recordings
+without changing compositions, sources, cue timing or source-instrument samples.
 
 The classical motifs are Brahms's *Wiegenlied*, Op.49 No.4 (1868), Grieg's
 *Morning Mood* from *Peer Gynt* (1875; Suite Op.46), and Dvořák's Symphony No.9,

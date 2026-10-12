@@ -1858,3 +1858,36 @@ be substantially quieter. The actual installed Music gain check is deferred
 by the user until later. Do not reset Reading/Math or claim song loudness fixed
 before that evidence. No new signed bundle, ISO, VM or physical acceptance is
 claimed for this draft continuation.
+
+
+### Song-level continuation — proposed 0.5.1 (2026-10-11)
+
+The installed Music gain was confirmed **1.0**, resolving the saved-gain question.
+The patch now raises the actual eighteen song recordings. The offline renderer
+applies 2× body gain and smoothly interpolated 20ms peak-reduction gains. Each
+block's two endpoint gains are bounded by that block's peak; interpolation
+therefore cannot exceed the 0.60 ceiling. No hard clipping or runtime DSP/
+dependency is added. The source instrument, canonical scores, cues/catalog,
+frame counts, silence/tempo and Reading/Math recordings/settings stay unchanged.
+
+Compared to actual baseline WAVs, RMS increases **1.734–2.000×** across all
+18 tracks (about **4.8–6.0dB**). All eighteen generated WAVs and the build manifest
+reproduce byte-for-byte with `uv run --locked scripts/build-music.py --output NEW_OUTPUT`.
+The manifest records body gain, ceiling, block duration, input/output RMS,
+renderer version/hash and output hashes. Independent Sol review found no
+outstanding issues in the bound, interpolation, provenance or preserved timing.
+
+The actual old/new SDL sustain/overlap harness was rerun against the same
+`d64d66b` baseline. New eight-key-plus-song output peaks at **23,960/32,768**,
+with zero saturated samples, max shared key gain **0.6875**, healthy ongoing
+song playback and silence after close. Solo sustain/release remains unchanged:
+late RMS **0.097388**, tail **568.9ms**. The harness now explicitly allows only
+the intended eighteen louder song WAVs; **425** existing other WAV/PNG files
+remain exact, including Reading/Math and original key/instrument files.
+Repeat with `scripts/check-music-sustain.py` as above.
+
+The final frozen Linux suite passed **547 tests in 25.30s**. Added decoded-PCM
+checks independently verify stronger body RMS, peak/headroom, exact frame/cue
+duration and preserved intro silence. This is a digital loudness improvement;
+physical matching to Reading and hardware touch behavior still require retests.
+No signed 0.5.1 release or new VM/installer is claimed by this continuation.

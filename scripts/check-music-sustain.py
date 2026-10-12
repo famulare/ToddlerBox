@@ -101,15 +101,22 @@ def main():
                and row["post_close_silent"] for row in reports["candidate"].values())
     # Preserve existing recordings; only new attack/loop derivatives are added.
     unchanged = 0
+    changed_songs = 0
     import hashlib
     for folder in ("reading", "math", "music"):
         for path in (args.baseline / "assets" / folder).rglob("*"):
             if path.is_file():
                 current = root / path.relative_to(args.baseline)
                 if path.suffix in {".wav", ".png"}:
+                    if folder == "music" and path.parent == args.baseline / "assets/music" and path.suffix == ".wav":
+                        assert path.read_bytes() != current.read_bytes()
+                        changed_songs += 1
+                        continue
                     assert hashlib.sha256(path.read_bytes()).digest() == hashlib.sha256(current.read_bytes()).digest()
                     unchanged += 1
     reports["unchanged_existing_media"] = unchanged
+    assert changed_songs == 18
+    reports["intentionally_louder_songs"] = changed_songs
     (args.output / "results.json").write_text(json.dumps(reports, indent=2)+"\n")
     print(json.dumps(reports, indent=2))
 

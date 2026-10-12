@@ -6,7 +6,7 @@
 - Photos preloads visible and upcoming thumbnail rows within its existing cache budget, including during a held touch. Restore loading ahead of the viewport without returning disk decoding to the UI thread.
 - Math Next uses the whole button plus a small safe edge margin, and accepts the same 32-pixel release drift as Reading. No pressure threshold or appearance change.
 - Manual piano notes sustain while held, then decay for 600 ms after release. Bounded sampled loops give the sustained note a stronger, consistent level without changing Reading/Math audio.
-- Song loudness investigation is pending the installed Music gain; updates retain earlier parent settings. No song or speech recording has been altered.
+- Raise song body levels with offline 2× gain and smooth peak limiting, retaining piano headroom and original timing. Reading/Math recordings and settings remain unchanged.
 - Physical touchscreen drag reliability still requires a retest; preloading alone is not claimed to resolve an unreproduced input-device failure.
 
 ## 0.5.0 - 2026-10-11
