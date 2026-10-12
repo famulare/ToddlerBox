@@ -1,7 +1,8 @@
 # Updates without reinstalling Ubuntu
 
-For the 0.5.0 audio update and the rerunnable USB setup/DNS patch, follow the
-[existing-install instructions](releases/v0.5.0.md). Pulling the checkout alone
+For the current 0.5.1 application update, follow the
+[existing-install instructions](releases/v0.5.1.md). Earlier USB setup/DNS repair
+instructions remain in the [0.5.0 guide](releases/v0.5.0.md). Pulling the checkout alone
 does not update the child application's versioned installation.
 
 ## Appliance installer and later releases

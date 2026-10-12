@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — planned 0.5.1
+## 0.5.1 - 2026-10-12
 
 - Reading opens its selector in picture view and prepares bounded previews in the background instead of decoding in drawing.
 - Photos preloads visible and upcoming thumbnail rows within its existing cache budget, including during a held touch. Restore loading ahead of the viewport without returning disk decoding to the UI thread.

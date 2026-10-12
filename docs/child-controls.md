@@ -61,9 +61,9 @@ ToddlerBox 0.5.0 includes tap-to-click, media keys and the louder audio defaults
 for later signed public updates; see [updates](updates.md). Hardware acceptance
 is still required because a VM has no HP trackpad or speakers.
 
-The separate planned 0.5.1 patch sustains held piano notes using sampled loops,
+The 0.5.1 update sustains held piano notes using sampled loops,
 raises song body levels without changing speech, and silently prepares all keys
-before input. It has not been published or physically qualified. For deliberate
+before input. Physical HP speaker balance and touch responsiveness remain hardware checks. For deliberate
 parent testing, see the [quiet speaker check](parent-maintenance.md#parent-speaker-check).
 
 ## Historical repair for an older installation

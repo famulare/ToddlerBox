@@ -82,7 +82,7 @@ Software/public reports and private family data have separate handling.
 ## Parent speaker check
 
 In the parent GNOME desktop, select **Built-in Audio / Speakers** in Sound settings
-and start with the speaker volume low. The prepared 0.5.1 app provides an explicit,
+and start with the speaker volume low. The 0.5.1 app provides an explicit,
 quiet, one-second synthetic tone; it needs no network or extra Python packages:
 
 ```sh
