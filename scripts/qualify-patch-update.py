@@ -30,6 +30,10 @@ def main():
     resume = sys.argv[3:] == ["--resume"]
     if sys.argv[3:] and not resume:
         raise ValueError("Only --resume is accepted after candidate/output")
+    # Validate before provisioning or opening any disk writable. Qualified
+    # bases are never legitimate outputs, including through symlink aliases.
+    if out.parent != (ROOT / 'build').resolve() or not out.name.startswith('responsive-update-vm-'):
+        raise ValueError('Output must be a disposable build/responsive-update-vm-* directory')
     if out.exists() and not resume:
         raise ValueError('Use a new QA directory; preserve old evidence')
     out.mkdir(parents=True, exist_ok=resume)
@@ -244,7 +248,9 @@ sha256sum -c /root/appliance-qa/creations.sha256
             return math.sqrt(sum(v*v for v in values)/max(1,len(values))), size-start
         start_audio = (out/'audio.wav').stat().st_size
         time.sleep(3)
-        assert fresh_rms(start_audio)[0] < 5, 'Free Play must produce no fresh audible output'
+        energy, fresh_bytes = fresh_rms(start_audio)
+        print(f'Free Play PCM: {fresh_bytes} fresh bytes, RMS {energy}', flush=True)
+        assert fresh_bytes > 0 and energy < 5, 'Free Play needs captured fresh silence'
         keyx, keyy = rail+margin*2+(w-rail-margin*3)//2, h-margin-35
         module.command('input-send-event', {'events':[
             {'type':'abs','data':{'axis':'x','value':round(keyx*32767/(w-1))}},
@@ -259,7 +265,9 @@ sha256sum -c /root/appliance-qa/creations.sha256
         time.sleep(1)
         start_audio = (out/'audio.wav').stat().st_size
         time.sleep(1)
-        assert fresh_rms(start_audio)[0] < 5, 'Released piano must finish its decay'
+        energy, fresh_bytes = fresh_rms(start_audio)
+        print(f'Released piano PCM: {fresh_bytes} fresh bytes, RMS {energy}', flush=True)
+        assert fresh_bytes > 0 and energy < 5, 'Released piano needs captured fresh silence'
         qa.key('ctrl-alt-home', 2500)
         qa.mode('parent')
         print('QA: explicit rollback', flush=True)
@@ -281,13 +289,39 @@ grep '^dns=default' /etc/NetworkManager/conf.d/90-toddlerbox-dns.conf
         qa.shot('rebooted-0.5.1')
         qa.serial('sha256sum -c /root/appliance-qa/creations.sha256')
         # Escape remains independent even when the entire launcher is stopped.
-        qa.serial("pid=$(pgrep -u toddlerbox -f 'python.*toddlerbox.launcher'); test \"$(echo $pid | wc -w)\" = 1; kill -STOP $pid")
+        def freeze_launcher():
+            # wait_health alone can see the pre-reset status file. Require an
+            # actual current launcher, pinned by the production pidfd helper.
+            print(qa.serial("""
+PYTHONPATH=/usr/local/lib/toddlerbox-system python3 -B - <<'INNER'
+import os, signal, subprocess, time
+from pathlib import Path
+from controller import launcher_processes
+uid=int(subprocess.check_output(['id','-u','toddlerbox']))
+for attempt in range(90):
+    processes=launcher_processes(uid)
+    try:
+        if len(processes)==1:
+            pid,fd=next(iter(processes.items()))
+            signal.pidfd_send_signal(fd,signal.SIGSTOP)
+            Path('/root/qa-frozen-pid').write_text(str(pid))
+            print('Stopped current launcher',pid)
+            break
+    finally:
+        for fd in processes.values():os.close(fd)
+    time.sleep(1)
+else:
+    subprocess.run(['ps','-u','toddlerbox','-o','pid,args'])
+    raise AssertionError('No unique current launcher after boot')
+INNER
+""",timeout=180), flush=True)
+        freeze_launcher()
         qa.key('ctrl-alt-home', 2500)
         qa.mode('parent')
         qa.shot('stopped-app-parent-escape')
         qa.serial('toddlerbox-mode child')
         qa.wait_health()
-        qa.serial("pid=$(pgrep -u toddlerbox -f 'python.*toddlerbox.launcher'); test \"$(echo $pid | wc -w)\" = 1; echo $pid >/root/qa-frozen-pid; kill -STOP $pid")
+        freeze_launcher()
         qa.serial("for i in $(seq 1 90); do pid=$(pgrep -u toddlerbox -f 'python.*toddlerbox.launcher' || true); if test -n \"$pid\" && test \"$pid\" != \"$(cat /root/qa-frozen-pid)\"; then exit 0; fi; sleep 1; done; exit 1", timeout=150)
         qa.wait_health()
         qa.shot('watchdog-recovered-0.5.1')
