@@ -1,0 +1,51 @@
+{
+  "version": "0.5.1",
+  "git": "9370408dda85c5dbe5014affffac4e6cc0d64e64",
+  "content": "74c0a4981f4d0cb0",
+  "architecture": "x86-64",
+  "ubuntu": "24.04",
+  "distribution": "update-only; no new ISO",
+  "toolchain": {
+    "python": "3.12.3 (Ubuntu production)",
+    "uv": "0.12.19",
+    "pygame-ce": "2.5.8",
+    "Pillow": "12.3.0",
+    "PyYAML": "6.0.3"
+  },
+  "artifacts": {
+    "ToddlerBox-update.pyz": {
+      "bytes": 90878804,
+      "sha256": "93daf674ead23b132f6e03b5da37ea7c403c35682fc0592aabb6dbc8fd7196a9"
+    }
+  },
+  "qualification_status": "passed",
+  "qualification": {
+    "platform": "Ubuntu24.04 x86-64 Q35 TCG, 2CPU 2GiB, no NIC, virtual HDA; direct-kernel boot of disposable overlay on qualified0.5.0 checkpoint",
+    "checks": [
+      "signed0.5.1 update over qualified0.5.0 and genuine supervised acceptance",
+      "native Python3.12.3 bounded workers, durable saves and authenticated deferred IPC",
+      "full immutable release tree preserved by parent status; config bytes unchanged",
+      "explicit parent wpctl volume; song PCM and four-second held key/release through Cage",
+      "independent Ctrl+Alt+Home escape: stopped launcher exits and actual Parent greeter appears",
+      "explicit rollback to0.5.0; signed0.5.1 reinstall and accepted reboot",
+      "watchdog restarts a stopped launcher and recovers child frames",
+      "synthetic Paint/Typing exact SHA and config preservation through all transitions"
+    ],
+    "limits": [
+      "no new ISO/fresh installation or physical HP touch/speaker calibration",
+      "VM QMP pointer is emulated mouse input; real FINGER regressions covered separately",
+      "future-image ALSA/PulseAudio diagnostic packages not installed by this bundle",
+      "unchanged2s startup helper deadline expires under slowTCG for genuine0.5.0 and0.5.1; PCM checks use explicit parent80percent volume"
+    ]
+  },
+  "baseline": "d64d66b2473dcbeaec1b8ee8913cfbf12564cfa0",
+  "qualification_driver": "d6dd24754de6bcfaf7596df280313e0777498a10",
+  "software_checks": {
+    "linux_pytest": "587 passed",
+    "exact_paint_persistence_observable_records": 174,
+    "exact_fountain_event_snapshots": 3200,
+    "exact_unaffected_picture_frames": 49,
+    "original_synthetic_photo_hashes": 12,
+    "independent_review": "no outstanding production or final targeted QA findings"
+  }
+}

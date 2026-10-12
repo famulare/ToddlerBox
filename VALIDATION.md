@@ -1999,3 +1999,64 @@ routing. No new native update qualification, package-installed VM, signed 0.5.1
 bundle, ISO or public/stable release was produced in this pass. Existing qualified
 VM checkpoints and artifacts remain intact. The baseline's standalone controller,
 escape/watchdog, credentials and durable atomic-write guards are unchanged.
+
+### 0.5.1 signed update qualification (2026-10-12)
+
+The later release pass supersedes the preceding “no signed release” status.
+The exact built revision is `9370408dda85c5dbe5014affffac4e6cc0d64e64`,
+application/system content `74c0a4981f4d0cb0`, version 0.5.1 / sequence 4.
+Production toolchain: Ubuntu CPython 3.12.3, uv 0.12.19, pygame-ce 2.5.8,
+Pillow 12.3.0 and PyYAML 6.0.3. The signed bundle is 90,878,804 bytes, SHA-256
+`93daf674ead23b132f6e03b5da37ea7c403c35682fc0592aabb6dbc8fd7196a9`.
+The already-passing 587-test suite and baseline observable comparisons above
+remain applicable: subsequent commits change only release documentation and QA.
+
+`scripts/qualify-patch-update.py` uses a disposable overlay on the preserved
+qualified 0.5.0 checkpoint and qualified 0.3 backing disk. This is Ubuntu 24.04
+x86-64 Q35 software emulation, 2 CPUs / 2 GiB, no NIC and virtual Intel HDA,
+with direct kernel boot. It passed signed installation, actual supervised child
+acceptance, native production worker/durable-save/authenticated deferred-IPC
+checks, immutable release-tree preservation, song PCM, four-second held piano
+PCM and fresh captured silence before/after release. Free Play captured 532,480
+new bytes at RMS 0; released piano captured 176,128 new bytes at RMS 0.
+Rollback to 0.5.0, exact signed reinstall, acceptance and reboot passed. A stopped
+launcher exited on independent Ctrl+Alt+Home, active GDM displayed the actual
+Parent greeter, and a separate stopped launcher was restarted by the watchdog
+with healthy child frames. Synthetic Paint/Typing SHA and configuration bytes
+remained exact through these transitions. Previously qualified bases remain
+unchanged and read-only; no private family media or real Drive was involved.
+
+Qualification driver revision: `d6dd24754de6bcfaf7596df280313e0777498a10`.
+The accepted disposable checkpoint was resumed after QA-only corrections:
+verify selected Free Play pixels instead of cursor-obscured OCR; read only fresh
+PCM; wait for a pinned current launcher after reboot; wait for completed GDM
+restart and visible Parent login instead of capturing the outgoing frame.
+Independent Sol review cleared the recovery/PCM/output safeguards and a heredoc
+indentation finding. All literal shell diagnostics pass `bash -n`; their seven
+embedded Python heredocs parse. Protected qualified output paths are rejected
+before writable disk/provisioning access.
+
+Repeatable commands (preserve old checkpoints; use a new output directory):
+
+```sh
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/qualify-patch-update.py CANDIDATE_DIR build/responsive-update-vm-NEW
+# Continue only the exact accepted disposable candidate after a harness correction:
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/qualify-patch-update.py CANDIDATE_DIR build/responsive-update-vm-NEW --resume
+# Repeat visual recovery on that same candidate after all earlier checks completed:
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/qualify-patch-update.py CANDIDATE_DIR build/responsive-update-vm-NEW --resume-recovery
+```
+
+Limit: the unchanged two-second startup-audio helper can expire under this slow
+TCG environment. Genuine installed 0.5.0 and 0.5.1 have identical audio helper
+bytes; both reproduced that deadline. This pass explicitly set parent wpctl
+volume to 80% for PCM qualification and does not claim automatic startup volume
+was qualified. No timeout or production recovery guard was weakened. Physical
+HP touch latency and acoustic balance still need the parent's test (#15/#23);
+emulated pointer input is not touchscreen hardware evidence. Future-image ALSA
+and PulseAudio diagnostic packages are not installed by this bundle. This is an
+existing-install update, with no new ISO/fresh installation claim.
+
+Tag-specific signed manifests, qualified source record and checksum-identified
+public chunk transfer are under `docs/releases/v0.5.1-*` and
+`docs/builds/74c0a4981f4d0cb0-update-transfer.json`. Published download/catalogue
+checks are recorded separately in `docs/releases/v0.5.1-publication.json`.
