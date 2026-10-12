@@ -7,6 +7,8 @@ Provisioning changes only the disposable VM's synthetic parent password.
 Raw serial logs stay private; publish selected screenshots and results only.
 """
 import base64
+from array import array
+import math
 import importlib.util
 import json
 import os
@@ -24,16 +26,20 @@ spec.loader.exec_module(module)
 
 
 def main():
-    candidate, out = (Path(p).resolve() for p in sys.argv[1:])
-    if out.exists():
+    candidate, out = (Path(p).resolve() for p in sys.argv[1:3])
+    resume = sys.argv[3:] == ["--resume"]
+    if sys.argv[3:] and not resume:
+        raise ValueError("Only --resume is accepted after candidate/output")
+    if out.exists() and not resume:
         raise ValueError('Use a new QA directory; preserve old evidence')
-    out.mkdir(parents=True)
+    out.mkdir(parents=True, exist_ok=resume)
     qa = module.Qualification.__new__(module.Qualification)
     qa.out, qa.name = out, 'toddlerbox-patch-update-qa'
     qa.password, qa.authenticated = secrets.token_hex(10), False
     os.environ['TODDLERBOX_VM_DIR'] = str(out)
     boot = ROOT / 'build/audio-polish/usb-vm'
-    qa.docker('run', '--rm', '--network=none', '-v', f'{ROOT}/build/appliance-qualified:/base:ro',
+    if not resume:
+        qa.docker('run', '--rm', '--network=none', '-v', f'{ROOT}/build/appliance-qualified:/base:ro',
               '-v', f'{ROOT}/build/audio-polish/final2-vm:/known:ro',
               '-v', f'{out}:/vm', 'toddlerbox-image-tools', 'bash', '-ec',
               f'qemu-img create -f qcow2 -F qcow2 -b /known/target.qcow2 /vm/target.qcow2; chown {os.getuid()}:{os.getgid()} /vm/target.qcow2')
@@ -119,12 +125,34 @@ exit 1
             qa.until(conn, rb'\r?\nPROVISIONED\r?\n', 60)
         qa.stop()
         start()
-        qa.serial('sha256sum /etc/toddlerbox/config.yaml >/root/qa-config.sha256; toddlerbox-mode parent')
-        qa.mode('parent')
-        qa.serial("/opt/toddlerbox/current/.venv/bin/python -B -c \"import importlib.metadata; assert importlib.metadata.version('ToddlerBox')=='0.5.0'\"")
-        print('QA: qualified 0.5 baseline; install signed 0.5.1', flush=True)
-        install('/qa', 4)
-        observe_accept('candidate-0.5.1')
+        if resume:
+            print('QA: resume exact accepted checkpoint after harness-only correction', flush=True)
+            qa.serial("""
+mkdir -p /qa
+mountpoint -q /qa || mount -t 9p -o trans=virtio,version=9p2000.L,ro qa /qa
+PYTHONPATH=/usr/local/lib/toddlerbox-system python3 -B - <<'INNER'
+from pathlib import Path
+from release_client import verify
+from update_bundle import sha
+from boot_recovery import latest
+v=verify(Path('/qa/stable.json').read_bytes(),Path('/qa/stable.json.sig').read_bytes(),Path('/etc/toddlerbox/release-public-key.pem').read_bytes())
+assert sha(Path('/qa/ToddlerBox-update.pyz'))==v['sha256']
+state=latest(Path('/'))[1]
+assert state['status']=='accepted' and state['bundle']==v['sha256']
+assert state['source']['content']==v['source'] and Path('/opt/toddlerbox/current').resolve().name==v['source']
+INNER
+sha256sum -c /root/appliance-qa/creations.sha256
+sha256sum -c /root/qa-config.sha256
+toddlerbox-mode parent
+""")
+            qa.mode('parent')
+        else:
+            qa.serial('sha256sum /etc/toddlerbox/config.yaml >/root/qa-config.sha256; toddlerbox-mode parent')
+            qa.mode('parent')
+            qa.serial("/opt/toddlerbox/current/.venv/bin/python -B -c \"import importlib.metadata; assert importlib.metadata.version('ToddlerBox')=='0.5.0'\"")
+            print('QA: qualified 0.5 baseline; install signed 0.5.1', flush=True)
+            install('/qa', 4)
+            observe_accept('candidate-0.5.1')
         print(qa.serial("cat /qa/native-checks.py >/tmp/tbx-native-checks.py; chmod 0444 /tmp/tbx-native-checks.py; /opt/toddlerbox/current/.venv/bin/python -B /tmp/tbx-native-checks.py", timeout=180), flush=True)
         print(qa.serial('''
 /opt/toddlerbox/current/.venv/bin/python -B - <<'INNER'
@@ -197,28 +225,41 @@ sha256sum -c /root/appliance-qa/creations.sha256
         until = time.monotonic() + 20
         while time.monotonic() < until:
             visible = qa.text()
-            if 'free play' in visible and 'autoplay' not in visible:
+            picture = Image.open(qa.shot('free-play-state'))
+            from toddlerbox.ui import theme
+            selected = picture.getpixel((margin+10, h-margin-166+9))[:3] == theme.SELECTED
+            if selected and 'autoplay' not in visible:
                 break
             time.sleep(.5)
         else:
             qa.shot('free-play-not-entered')
             raise AssertionError('Free Play UI did not activate')
         qa.shot('free-play-0.5.1')
-        until = time.monotonic() + 8
-        while time.monotonic() < until and qa.rms(.5) >= 5:
-            time.sleep(.25)
-        assert qa.rms(.5) < 5, 'Free Play must be quiet before a deliberate key' 
+        def fresh_rms(start):
+            path = out/'audio.wav';size=path.stat().st_size
+            with path.open('rb') as stream:
+                stream.seek(max(start, size-96000))
+                values = array('h', stream.read())
+            if sys.byteorder != 'little':values.byteswap()
+            return math.sqrt(sum(v*v for v in values)/max(1,len(values))), size-start
+        start_audio = (out/'audio.wav').stat().st_size
+        time.sleep(3)
+        assert fresh_rms(start_audio)[0] < 5, 'Free Play must produce no fresh audible output'
         keyx, keyy = rail+margin*2+(w-rail-margin*3)//2, h-margin-35
         module.command('input-send-event', {'events':[
             {'type':'abs','data':{'axis':'x','value':round(keyx*32767/(w-1))}},
             {'type':'abs','data':{'axis':'y','value':round(keyy*32767/(h-1))}},
             {'type':'btn','data':{'down':True,'button':'left'}}]})
+        start_audio = (out/'audio.wav').stat().st_size
         time.sleep(4)
-        assert qa.rms(.5) > 10, 'Held piano must still sound after four seconds'
+        energy, fresh_bytes = fresh_rms(start_audio)
+        assert fresh_bytes > 96000 and energy > 10, 'Held piano must still sound after four seconds'
         qa.shot('held-piano-0.5.1')
         module.command('input-send-event', {'events':[{'type':'btn','data':{'down':False,'button':'left'}}]})
-        time.sleep(1.5)
-        assert qa.rms(.5) < 5, 'Released piano must finish its decay'
+        time.sleep(1)
+        start_audio = (out/'audio.wav').stat().st_size
+        time.sleep(1)
+        assert fresh_rms(start_audio)[0] < 5, 'Released piano must finish its decay'
         qa.key('ctrl-alt-home', 2500)
         qa.mode('parent')
         print('QA: explicit rollback', flush=True)
