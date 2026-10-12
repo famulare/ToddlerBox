@@ -185,9 +185,29 @@ sha256sum -c /root/appliance-qa/creations.sha256
         # Free Play and a four-second manual hold: actual supervised Cage input
         # and guest HDA output, separate from headless native worker tests.
         margin = max(12, min(24, w//44)); rail = max(170, min(236, round(w*.23)))
-        qa.click(rail//2, h-margin-137)
-        time.sleep(1)
-        assert qa.rms(.5) < 5, 'Free Play must be quiet before a deliberate key'
+        # Deliberate slow mouse tap under TCG; verify the resulting UI state
+        # rather than assuming the QMP click has already reached the app.
+        module.command('input-send-event', {'events':[
+            {'type':'abs','data':{'axis':'x','value':round((rail//2)*32767/(w-1))}},
+            {'type':'abs','data':{'axis':'y','value':round((h-margin-137)*32767/(h-1))}}]})
+        time.sleep(.5)
+        module.command('input-send-event', {'events':[{'type':'btn','data':{'down':True,'button':'left'}}]})
+        time.sleep(.5)
+        module.command('input-send-event', {'events':[{'type':'btn','data':{'down':False,'button':'left'}}]})
+        until = time.monotonic() + 20
+        while time.monotonic() < until:
+            visible = qa.text()
+            if 'free play' in visible and 'autoplay' not in visible:
+                break
+            time.sleep(.5)
+        else:
+            qa.shot('free-play-not-entered')
+            raise AssertionError('Free Play UI did not activate')
+        qa.shot('free-play-0.5.1')
+        until = time.monotonic() + 8
+        while time.monotonic() < until and qa.rms(.5) >= 5:
+            time.sleep(.25)
+        assert qa.rms(.5) < 5, 'Free Play must be quiet before a deliberate key' 
         keyx, keyy = rail+margin*2+(w-rail-margin*3)//2, h-margin-35
         module.command('input-send-event', {'events':[
             {'type':'abs','data':{'axis':'x','value':round(keyx*32767/(w-1))}},
