@@ -2060,3 +2060,15 @@ Tag-specific signed manifests, qualified source record and checksum-identified
 public chunk transfer are under `docs/releases/v0.5.1-*` and
 `docs/builds/74c0a4981f4d0cb0-update-transfer.json`. Published download/catalogue
 checks are recorded separately in `docs/releases/v0.5.1-publication.json`.
+
+Publication completed: PR #17 merged at `45b48c42c862b124eae9d2134f1daf141b10b805`.
+GitHub Actions run `38196036458` authenticated/reassembled the exact artifact and
+verified all draft assets. Published tag `v0.5.1` resolves exactly to built
+revision `9370408dda85c5dbe5014affffac4e6cc0d64e64`; GitHub's bundle digest
+matches the qualified SHA above. Stable promotion was performed only after the
+release became public. The actual production release client then fetched the
+anonymous main catalogue/signature with sequence floor3, verified sequence4,
+and downloaded all90,878,804 bytes with the exact SHA. No GitHub login or manual
+hash checking is needed on the appliance. Scope remains update-only; #19's
+future clean-image diagnostic package check and #15/#23 physical input retests
+remain open.
