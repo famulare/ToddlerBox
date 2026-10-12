@@ -13,6 +13,10 @@ import pygame
 from toddlerbox.ui import theme
 
 
+# Deferred durable save: the normal UI loop polls it without waiting on storage.
+SAVE_PENDING = object()
+
+
 class AppChannel:
     def __init__(self, address: str, *, clock=time.monotonic):
         self.address, self.clock = address, clock
@@ -26,6 +30,7 @@ class AppChannel:
             raise
         self.received_at = float('-inf')
         self.serviced: list[bytes] = []
+        self.pending_saves = {}
 
     def report_frame(self):
         try:
@@ -33,7 +38,25 @@ class AppChannel:
         except OSError:
             pass
 
+    def _save_result(self, nonce, callback, deadline):
+        try:
+            result = False if self.clock() >= deadline else (True if callback is None else callback())
+        except Exception:
+            result = False
+        if result is SAVE_PENDING and self.clock() < deadline:
+            return False
+        try:
+            self.socket.sendto(b'save-result:' + nonce + (b':ok' if result is True and self.clock() < deadline else b':failed'), self.address)
+        except OSError:
+            pass
+        return True
+
     def service(self, save_current=None):
+        if not hasattr(self, "pending_saves"):
+            self.pending_saves = {}
+        for nonce, (callback, deadline) in list(self.pending_saves.items()):
+            if self._save_result(nonce, callback, deadline):
+                del self.pending_saves[nonce]
         for _ in range(16):
             try:
                 message, ancillary, flags, _ = self.socket.recvmsg(128, socket.CMSG_SPACE(12))
@@ -52,17 +75,17 @@ class AppChannel:
                 nonce = message[13:]
                 if len(nonce) != 32 or any(c not in b'0123456789abcdef' for c in nonce):
                     continue
-                if nonce in self.serviced:
+                if nonce in self.serviced or nonce in self.pending_saves:
                     continue
                 self.serviced = (self.serviced + [nonce])[-16:]
-                try:
-                    saved = save_current is None or save_current() is True
-                except Exception:
-                    saved = False
-                try:
-                    self.socket.sendto(b'save-result:' + nonce + (b':ok' if saved else b':failed'), self.address)
-                except OSError:
-                    pass
+                deadline = self.clock() + 5.0
+                if len(self.pending_saves) >= 16:
+                    try:
+                        self.socket.sendto(b'save-result:' + nonce + b':failed', self.address)
+                    except OSError:
+                        pass
+                elif not self._save_result(nonce, save_current, deadline):
+                    self.pending_saves[nonce] = (save_current, deadline)
 
     def close(self):
         self.socket.close()

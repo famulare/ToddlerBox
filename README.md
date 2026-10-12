@@ -283,6 +283,12 @@ on the current appliance. Follow the [0.5.0 update instructions](docs/releases/v
 for the signed application/audio update and the separate setup/DNS patch.
 There is no new ISO in this update-only release.
 
+The separate 0.5.1 review branch prepares picture preloading, more forgiving Math
+Next taps, sustained/louder piano and songs, responsive durable Paint/Typing
+transitions, and a [parent speaker check](docs/parent-maintenance.md#parent-speaker-check).
+It is not yet a qualified public update or installer. Physical picture scrolling
+and fountain-pen responsiveness still need an HP retest.
+
 Reading settings are applied on activity entry. Word sets are `short_a_cvc`,
 `short_e_cvc`, `short_i_cvc`, `short_o_cvc`, `short_u_cvc`, `digraphs`, and
 `adjacent_consonants`. List multiple sets to mix them with equal chance per word.

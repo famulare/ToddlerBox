@@ -50,3 +50,5 @@ python3-pil
 pipewire
 pipewire-pulse
 wireplumber
+alsa-utils
+pulseaudio-utils

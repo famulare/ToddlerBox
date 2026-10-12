@@ -125,7 +125,7 @@ def test_focus_reset_discards_already_fetched_pointer_events(app, monkeypatch):
          pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=app.canvas_rect.center)],
         [pygame.event.Event(pygame.QUIT)],
     ])
-    monkeypatch.setattr(pygame.event, "get", lambda: next(batches))
+    monkeypatch.setattr(pygame.event, "get", lambda: next(batches, []))
     app._run()
     assert app.undo_stack == []
 
@@ -187,3 +187,73 @@ def test_failed_background_save_keeps_canvas_dirty_for_retry(app):
     app._finish_pending_save()
     assert app._saved_revision != app._canvas_revision
     assert app._autosave_latest()
+
+
+def test_bucket_matches_every_large_row_and_undo_keeps_exact_pixels(app):
+    app.current_tool = 'bucket'
+    app.current_color = (36, 80, 180)
+    app._handle_pointer_down(app.canvas_rect.center)
+    assert pygame.image.tobytes(app.canvas_surface, 'RGB') == bytes(app.current_color) * (app.canvas_rect.width * app.canvas_rect.height)
+    app._undo()
+    assert pygame.image.tobytes(app.canvas_surface, 'RGB') == b'\xff' * (app.canvas_rect.width * app.canvas_rect.height * 3)
+    app._redo()
+    assert app.canvas_surface.get_at((0, app.canvas_rect.height - 1))[:3] == app.current_color
+
+
+def test_bucket_is_exact_color_four_connected_and_keeps_diagonal_islands():
+    image = pygame.Surface((3, 3))
+    image.fill('white')
+    for point in ((0, 1), (1, 0), (1, 2), (2, 1)):
+        image.set_at(point, (128, 128, 128))
+    _bucket_fill(image, (1, 1), (36, 80, 180))
+    assert image.get_at((1, 1))[:3] == (36, 80, 180)
+    for point in ((0, 0), (0, 2), (2, 0), (2, 2)):
+        assert image.get_at(point)[:3] == (255, 255, 255)
+    assert image.get_at((0, 1))[:3] == (128, 128, 128)
+
+
+@pytest.mark.parametrize('colorkey', [None, (0, 240, 240)])
+def test_bucket_preserves_exact_mapped_alpha_barrier(colorkey):
+    image = pygame.Surface((1, 3), pygame.SRCALPHA)
+    image.set_colorkey(colorkey)
+    for y, alpha in enumerate((255, 120, 255)):
+        image.set_at((0, y), (0, 240, 240, alpha))
+    _bucket_fill(image, (0, 0), (17, 25, 39))
+    assert tuple(image.get_at((0, 0))) == (17, 25, 39, 255)
+    assert tuple(image.get_at((0, 1))) == (0, 240, 240, 120)
+    assert tuple(image.get_at((0, 2))) == (0, 240, 240, 255)
+
+
+@pytest.mark.parametrize('depth', [8, 16, 24, 32])
+def test_bucket_fills_whole_uniform_surface_at_all_opaque_depths(depth):
+    image = pygame.Surface((17, 9), depth=depth)
+    image.fill((0, 120, 240))
+    _bucket_fill(image, (8, 4), (17, 25, 39))
+    expected = image.unmap_rgb(image.map_rgb((17, 25, 39)))
+    assert all(image.get_at((x, y)) == expected for x in range(17) for y in range(9))
+
+
+def test_bucket_fills_restored_opaque_png_as_it_does_a_fresh_canvas(app):
+    from toddlerbox.paint.app import _load_canvas_image
+    path = app.paint_dir / 'saved.png'
+    image = pygame.Surface(app.canvas_rect.size)
+    image.fill((0, 120, 240))
+    pygame.draw.line(image, (128, 128, 128), (100, 0), (100, image.get_height() - 1))
+    pygame.image.save(image, str(path))
+    loaded = _load_canvas_image(path, app.canvas_rect.size)
+    assert loaded.get_masks()[3]  # Real baseline restore format; no UI change.
+    _bucket_fill(loaded, (30, 30), (17, 25, 39))
+    assert loaded.get_at((0, 0))[:3] == (17, 25, 39)
+    assert loaded.get_at((100, 30))[:3] == (128, 128, 128)
+    assert loaded.get_at((101, 30))[:3] == (0, 120, 240)
+
+
+def test_fountain_direction_cache_is_bounded_and_uses_deltas_not_positions():
+    from toddlerbox.paint.app import _fountain_width_for_direction, _fountain_width_for_delta
+    _fountain_width_for_delta.cache_clear()
+    first = _fountain_width_for_direction(32, (10, 20), (13, 22))
+    second = _fountain_width_for_direction(32, (300, 400), (303, 402))
+    assert first == second and _fountain_width_for_delta.cache_info().hits == 1
+    for delta in range(800):
+        _fountain_width_for_direction(32, (0, 0), (delta, 1))
+    assert _fountain_width_for_delta.cache_info().currsize == 512

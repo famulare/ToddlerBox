@@ -79,7 +79,9 @@ included in ToddlerBox 0.4.
 - Atomic PNG replacement with file and directory fsync
 - Existing `latest.png` is restored on app start; Home and termination attempt a save
 - New clears only after successful archive; failures before replacement preserve the previous file. Directory-fsync failure after replacement reports uncertain durability of the new visible file.
-- Periodic saves use one background snapshot and skip unchanged canvases. Input reset never postpones an outstanding save deadline.
+- Periodic saves use one immutable background snapshot and skip unchanged canvases. Input reset never postpones an outstanding save deadline.
+- New/Recall archive snapshots off the display thread and gate editing/repeated transitions until the archive is durable. At most one transition and one current-save snapshot share a single writer; queued old snapshots cannot overtake final saves. Home keeps rendering while its newest save completes.
+- Fill preserves exact colors and four-neighbour boundaries. Opaque restored PNGs behave like fresh canvases; translucent/non-production pixel formats retain conservative exact handling. Fountain optimizations must preserve all input points and rendered geometry.
 - Archive limits are nondestructive capacities: Paint defaults to 100 and clamps zero to one. Full capacity refuses replacement without clearing work; quarantined corrupt files are excluded.
 
 ### 2.4 Recall UX
@@ -148,6 +150,7 @@ included in ToddlerBox 0.4.
 
 - Current document: `data_root/typing/current.json`, saved every five seconds and on Home
 - Current text, rich styling, and cursor are restored on app start
+- Current saves and New/Recall archives use bounded immutable snapshots in one writer. New/Recall gate editing until archive durability; Home continues rendering until successful current save. Failure preserves the current document and archived work.
 - Archives: `data_root/typing/archive/*.json`; legacy `sessions.jsonl` remains readable
 - Each record stores:
   - `timestamp`
@@ -365,3 +368,11 @@ Parent networking: NetworkManager owns the appliance resolver file and uses
 connection-provided DNS directly, with no implicit systemd-resolved stub or
 hardcoded server. The image and existing-install patch deploy the same policy.
 Changing this policy does not trigger sync or app/OS updates.
+
+Prepared 0.5.1 persistence behavior: authenticated save-current requests may remain
+pending while the normal UI loop polls storage, for at most five seconds. An ACK
+means the current revision/payload is durably committed, never merely submitted.
+Receipts and health frames continue during pending saves. No signal handler does
+IO; supervised TERM attempts serialized final saving before shutdown acknowledgement.
+Parent speaker diagnostics are deliberate, bounded, quiet, and separate from the
+child UI; no diagnostic raises volume or runs automatically.

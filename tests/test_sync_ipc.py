@@ -178,3 +178,48 @@ def test_kernel_supplied_credentials_reject_unprivileged_datagram(tmp_path):
             saves=[];channel.service(lambda:saves.append(True))
             assert channel.received_at==float('-inf') and not saves
         finally:channel.close()
+
+
+def test_deferred_save_keeps_frames_and_receipts_live_and_acks_only_durable_success():
+    from toddlerbox.runtime.control import SAVE_PENDING
+    clock = [10]
+    app = channel(clock)
+    nonce = b'c' * 32
+    ready = [False]
+    calls = []
+    def save():
+        calls.append(clock[0])
+        return True if ready[0] else SAVE_PENDING
+    app.socket.incoming = [packet(b'save-current:' + nonce)]
+    app.service(save)
+    assert not app.socket.sent
+    clock[0] = 11
+    app.socket.incoming = [packet(b'sync-received'), packet(b'save-current:' + nonce)]
+    app.service(save)
+    assert app.received_at == 11 and not app.socket.sent
+    ready[0] = True
+    app.service(save)
+    assert app.socket.sent == [(b'save-result:' + nonce + b':ok', app.address)]
+    assert not app.pending_saves
+    app.service(save)
+    assert len(app.socket.sent) == 1
+
+
+def test_deferred_save_is_bounded_and_expires_without_late_success():
+    from toddlerbox.runtime.control import SAVE_PENDING
+    clock = [10]
+    app = channel(clock)
+    calls = []
+    def save():
+        calls.append(True)
+        return SAVE_PENDING
+    app.socket.incoming = [packet(b'save-current:' + f'{n:032x}'.encode()) for n in range(17)]
+    app.service(save)
+    app.service(save)
+    assert len(app.pending_saves) == 16 and len(app.socket.sent) == 1
+    before = len(calls)
+    clock[0] = 15
+    app.service(save)
+    assert not app.pending_saves and len(calls) == before
+    assert len(app.socket.sent) == 17
+    assert all(message.endswith(b':failed') for message, _ in app.socket.sent)

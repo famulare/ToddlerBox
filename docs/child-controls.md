@@ -53,13 +53,18 @@ other settings and a durable, private original-config backup at
 `/var/lib/toddlerbox-system/audio-config-before.yaml`. It requires authenticated
 parent mode and refuses unsafe configuration paths. Start a new child session
 afterward. Parents can still edit these gains or startup level in the root-owned
-configuration. This patch is on a separate review branch; 0.4.0 is unchanged.
+configuration. These controls shipped in 0.5.0; existing custom settings remain preserved.
 
 ## Current appliance release
 
-ToddlerBox 0.4.0 includes tap-to-click and media keys. Use **ToddlerBox Setup & Maintenance**
+ToddlerBox 0.5.0 includes tap-to-click, media keys and the louder audio defaults. Use **ToddlerBox Setup & Maintenance**
 for later signed public updates; see [updates](updates.md). Hardware acceptance
 is still required because a VM has no HP trackpad or speakers.
+
+The separate planned 0.5.1 patch sustains held piano notes using sampled loops,
+raises song body levels without changing speech, and silently prepares all keys
+before input. It has not been published or physically qualified. For deliberate
+parent testing, see the [quiet speaker check](parent-maintenance.md#parent-speaker-check).
 
 ## Historical repair for an older installation
 

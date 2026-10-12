@@ -72,12 +72,14 @@ def test_typing_restores_current_work_and_style_after_exit(screen):
     assert (reopened.cursor_row, reopened.cursor_col) == (1, 5)
 
 
-def test_typing_periodic_save_precedes_forced_interruption(screen):
+def test_typing_periodic_snapshot_is_flushed_on_forced_exception_cleanup(screen):
     app = TypingApp(screen=screen)
     app._insert_char("A")
     app.last_autosave = 0
     def interrupt_after_frame():
-        assert app.current_path.exists()
+        # The UI may present before the new asynchronous save is durable.
+        # Exception cleanup must drain it and serialize the newest final save.
+        assert app._save_pending is not None or app.current_path.exists()
         raise RuntimeError("simulated interruption")
     # Render once at startup, then stop after a completed event-loop iteration.
     original = app._render
@@ -90,7 +92,7 @@ def test_typing_periodic_save_precedes_forced_interruption(screen):
         original()
     app._render = render
     with pytest.raises(RuntimeError):
-        app._run()
+        app.run(quit_on_exit=False)
     assert TypingApp(screen=screen).text_lines == ["A"]
 
 

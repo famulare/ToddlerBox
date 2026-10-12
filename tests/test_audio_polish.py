@@ -84,6 +84,9 @@ def test_missing_sustain_does_not_leave_partial_sound_cache(piano, monkeypatch):
             raise pygame.error('fixture missing loop')
         return original(filename)
     monkeypatch.setattr(pygame.mixer, 'Sound', fail_loop)
+    piano.sounds.clear()
+    piano.sustains.clear()
+    assert not piano.prepare()
     piano._play('mouse', 60)
     piano._play('mouse', 60)
     assert not piano.voices and not piano.sounds and not piano.sustains

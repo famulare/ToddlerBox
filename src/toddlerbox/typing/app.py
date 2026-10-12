@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 from heapq import nlargest
@@ -250,6 +251,32 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
         pass
     return recent
 
+def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, options: dict) -> None:
+    directory = typing_dir / "archive"
+    try:
+        max_archives = max(0, int(options.get("max_archives", 200)))
+        max_bytes = max(0, int(options.get("max_archive_bytes", 256 * 1024 * 1024)))
+    except (TypeError, ValueError, OverflowError):
+        max_archives, max_bytes = 200, 256 * 1024 * 1024
+    # Archives are children's work, not a disposable cache. Refuse a
+    # new archive at capacity, leaving New/Recall and current work intact.
+    count, total_bytes = 0, len(payload)
+    if sessions_path.exists():
+        total_bytes += sessions_path.stat().st_size
+    for archive in directory.glob("*.json"):
+        count += 1
+        total_bytes += archive.stat().st_size
+        if count >= max_archives or total_bytes > max_bytes:
+            break
+    if count >= max_archives or total_bytes > max_bytes:
+        raise OSError("Typing archive capacity reached")
+    if not has_archive_reserve(typing_dir, len(payload)):
+        raise OSError("Typing archive reserve reached")
+    directory.mkdir(exist_ok=True)
+    sync_directory(typing_dir)
+    write_bytes(directory / f"{time.time_ns()}.json", payload)
+
+
 
 class TypingApp:
     def __init__(
@@ -270,6 +297,12 @@ class TypingApp:
         self.autosave_interval = max(1, int(self.config.get("typing", {}).get("autosave_seconds", 5)))
         self._saved_payload: bytes | None = None
         self._save_blocked = False
+        self._save_worker = None
+        self._save_pending = None
+        self._save_failed = False
+        self._transition_request = None
+        self._transition_pending = None
+        self._exit_requested = False
         self._layout_key = None
         self._layout_revision = 0
         self._visual_lines: List[VisualLine] = []
@@ -575,6 +608,7 @@ class TypingApp:
                 "size": self.current_text_size, "style": self.text_style}
 
     def _save_current(self) -> bool:
+        self._finish_pending_save(wait=True)
         if self._save_blocked:
             return False
         payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
@@ -586,7 +620,94 @@ class TypingApp:
             self.logger.exception("Typing current document save failed")
             return False
         self._saved_payload = payload
+        self._save_failed = False
         return True
+
+    def _finish_pending_save(self, *, wait: bool = False) -> None:
+        if self._save_pending is None:
+            return
+        payload, future = self._save_pending
+        if not wait and not future.done():
+            return
+        self._save_pending = None
+        try:
+            future.result()
+        except Exception:
+            self._save_failed = True
+            self.logger.exception("Typing background save failed; document remains dirty")
+        else:
+            self._save_failed = False
+            self._saved_payload = payload
+
+    def _request_autosave(self) -> None:
+        self._finish_pending_save()
+        if self._save_blocked or self._save_pending is not None:
+            return
+        payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
+        if payload == self._saved_payload:
+            return
+        if self._save_worker is None:
+            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="typing-save")
+        self._save_failed = False
+        self._save_pending = (payload, self._save_worker.submit(write_bytes, self.current_path, payload))
+
+    def _save_for_control(self):
+        self._finish_pending_save()
+        if self._save_blocked:
+            return False
+        if self._save_failed:
+            self._save_failed = False  # Consume one failure; a new explicit request can retry.
+            return False
+        if json.dumps(self._record(), ensure_ascii=False).encode("utf-8") == self._saved_payload:
+            return True
+        self._request_autosave()
+        return control.SAVE_PENDING
+
+    def _begin_transition(self, kind: str, item=None) -> None:
+        if self._transition_request is not None or self._transition_pending is not None or self._exit_requested:
+            return
+        self._transition_request = (kind, _clone_rich_lines(item.rich_lines) if item is not None else None)
+
+    def _service_transition(self) -> None:
+        self._finish_pending_save()
+        if self._save_pending is not None:
+            return
+        if self._transition_pending is not None:
+            kind, lines, future = self._transition_pending
+            if not future.done():
+                return
+            self._transition_pending = None
+            try:
+                future.result()
+            except Exception:
+                self.logger.exception("Typing transition failed; preserving current document")
+                return
+            # Never clear or replace work until its archive is durably committed.
+            if kind == "new":
+                self._clear_text()
+            else:
+                self._set_recalled_lines(lines)
+            self._request_autosave()
+        if self._transition_request is None:
+            return
+        kind, lines = self._transition_request
+        self._transition_request = None
+        record = {"version": 1, "timestamp": datetime.now().isoformat(timespec="seconds"),
+                  "rich_lines": _serialize_rich_lines(self.rich_lines)}
+        payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
+        if self._save_worker is None:
+            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="typing-save")
+        future = self._save_worker.submit(_archive_payload, self.typing_dir, self.sessions_path,
+                                          payload, self.config.get("typing", {}).copy())
+        self._transition_pending = (kind, lines, future)
+
+    def _poll_exit(self) -> bool:
+        if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
+            return False
+        saved = self._save_for_control()
+        if saved is False:
+            self._exit_requested = False
+        return saved is True
 
     def _restore_current(self) -> None:
         if not self.current_path.exists():
@@ -631,34 +752,9 @@ class TypingApp:
         }
         payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
         try:
-            directory = self.typing_dir / "archive"
-            options = self.config.get("typing", {})
-            try:
-                max_archives = max(0, int(options.get("max_archives", 200)))
-                max_bytes = max(0, int(options.get("max_archive_bytes", 256 * 1024 * 1024)))
-            except (TypeError, ValueError, OverflowError):
-                max_archives, max_bytes = 200, 256 * 1024 * 1024
-            # Archives are children's work, not a disposable cache. Refuse a
-            # new archive at capacity, leaving New/Recall and current work intact.
-            count, total_bytes = 0, len(payload)
-            if self.sessions_path.exists():
-                total_bytes += self.sessions_path.stat().st_size
-            for archive in directory.glob("*.json"):
-                count += 1
-                total_bytes += archive.stat().st_size
-                if count >= max_archives or total_bytes > max_bytes:
-                    break
-            if count >= max_archives or total_bytes > max_bytes:
-                self.logger.warning("Typing archive capacity reached; keeping current document")
-                return False
-            if not has_archive_reserve(self.typing_dir, len(payload)):
-                self.logger.warning("Typing archive reserve reached; keeping current document")
-                return False
-            directory.mkdir(exist_ok=True)
-            sync_directory(self.typing_dir)
-            write_bytes(directory / f"{time.time_ns()}.json", payload)
+            _archive_payload(self.typing_dir, self.sessions_path, payload, self.config.get("typing", {}).copy())
         except OSError:
-            self.logger.warning("Typing session archive write failed")
+            self.logger.warning("Typing session archive write failed; keeping current document")
             return False
         return True
 
@@ -996,14 +1092,21 @@ class TypingApp:
                 return idx
         return None
 
-    def _apply_recall(self, index: int) -> None:
+    def _apply_recall(self, index: int, *, defer_saves: bool = False) -> None:
         item = self.recall_items[index]
         if item.is_current:
             self.recall_open = False
             return
+        if defer_saves:
+            self._begin_transition("recall", item)
+            return
         if not self._archive_session():
             return
-        self.rich_lines = _clone_rich_lines(item.rich_lines)
+        self._set_recalled_lines(item.rich_lines)
+        self._save_current()
+
+    def _set_recalled_lines(self, lines) -> None:
+        self.rich_lines = _clone_rich_lines(lines)
         self._sync_all_text_lines()
         self.undo_stack = []
         self.cursor_row = max(0, len(self.rich_lines) - 1)
@@ -1012,7 +1115,6 @@ class TypingApp:
         self._cursor_x_target_dirty = True
         self.text_scroll_y = 0
         self.recall_open = False
-        self._save_current()
 
     def _wrap_preview_lines(self, text: str, max_width: int, max_lines: int) -> List[str]:
         if not text:
@@ -1075,7 +1177,7 @@ class TypingApp:
                 and self.recall_drag_distance < DRAG_THRESHOLD
                 and self._recall_index_at_pos(pos) == self.recall_pressed_index
             ):
-                self._apply_recall(self.recall_pressed_index)
+                self._apply_recall(self.recall_pressed_index, defer_saves=True)
             self.recall_drag_last_y = None
             self.recall_pressed_index = None
             self.recall_drag_distance = 0
@@ -1185,14 +1287,23 @@ class TypingApp:
         if self.recall_open:
             self._draw_recall_overlay()
 
-        control.before_flip(self.screen, self._save_current)
+        control.before_flip(self.screen, self._save_for_control)
         pygame.display.flip()
 
     def run(self, *, quit_on_exit: bool = True) -> None:
         try:
             self._run()
         finally:
+            if self._transition_pending is not None:
+                try:
+                    self._transition_pending[2].result()
+                except Exception:
+                    self.logger.exception("Typing archive did not finish at shutdown")
+                self._service_transition()
+            self._transition_request = None
             self._save_current()
+            if self._save_worker is not None:
+                self._save_worker.shutdown(wait=False, cancel_futures=True)
             if quit_on_exit:
                 pygame.quit()
 
@@ -1213,19 +1324,23 @@ class TypingApp:
                     ignore_remaining_input = True
                     continue
                 if event.type == pygame.QUIT:
-                    running = not self._save_current()
-                    if not running:
-                        break
+                    self._exit_requested = True
                 if ignore_remaining_input:
                     continue
                 if not self.pointer_input.accept(event):
+                    continue
+                if self._transition_request is not None or self._transition_pending is not None or self._exit_requested:
+                    if is_primary_pointer_event(event, is_down=True):
+                        pos = pointer_event_pos(event, self.screen_rect)
+                        if pos is not None and self.home_button.hit(pos):
+                            self._exit_requested = True
                     continue
                 if self.recall_open:
                     self._handle_recall_event(event)
                     continue
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        running = not self._save_current()
+                        self._exit_requested = True
                     elif event.key == pygame.K_BACKSPACE:
                         op = self._delete_backward()
                         if op:
@@ -1272,11 +1387,10 @@ class TypingApp:
                     if pos is None:
                         continue
                     if self.home_button.hit(pos):
-                        running = not self._save_current()
+                        self._save_failed = False
+                        self._exit_requested = True
                     elif self.new_button.hit(pos):
-                        if self._archive_session():
-                            self._clear_text()
-                            self._save_current()
+                        self._begin_transition("new")
                     elif self.undo_button.hit(pos):
                         self._undo()
                     elif self.recall_button.hit(pos):
@@ -1301,8 +1415,11 @@ class TypingApp:
                     break
 
             if time.monotonic() - self.last_autosave >= self.autosave_interval:
-                self._save_current()
+                self._request_autosave()
                 self.last_autosave = time.monotonic()
+            self._service_transition()
+            if self._poll_exit():
+                break
             self._render()
             health.frame_complete()
             self.clock.tick(60)

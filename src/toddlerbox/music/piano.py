@@ -9,7 +9,7 @@ class Piano:
         self.keys, self.logger = keys, logger
         self.library = library or Path(__file__).resolve().parents[3] / "assets/music/keys"
         # Key samples peak below 0.5. A shared 0.70 budget leaves room for
-        # the song stream (peak <= 0.65), even with eight overlapping keys.
+        # the song stream (peak <= 0.60), even with eight overlapping keys.
         self.volume = 0.70
         self.clock = clock
         self.sounds = {}
@@ -20,6 +20,33 @@ class Piano:
         self.tails = {}  # Insertion order makes the oldest release stealable first.
         self.gains = {}
         self.slot_sustains = {}
+        self.prepare()
+
+    def prepare(self):
+        """Load the fixed 25-key bank silently on the UI thread before input.
+
+        Fifty small, shipped WAVs are the entire preparation budget. Publish
+        each attack/loop pair together; an unavailable key never performs file
+        IO on a touch. Calling this explicitly retries unavailable pairs.
+        """
+        try:
+            if not pygame.mixer.get_init():
+                pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+            pygame.mixer.set_num_channels(max(8, pygame.mixer.get_num_channels()))
+        except pygame.error:
+            self.logger.exception("Piano preparation unavailable")
+            return False
+        for pitch in range(48, 73):
+            if pitch in self.sounds:
+                continue
+            try:
+                attack = pygame.mixer.Sound(str(self.library / "sustain" / f"{pitch}-attack.wav"))
+                sustain = pygame.mixer.Sound(str(self.library / "sustain" / f"{pitch}-loop.wav"))
+            except (pygame.error, OSError):
+                self.logger.exception("Piano sound unavailable")
+                continue
+            self.sounds[pitch], self.sustains[pitch] = attack, sustain
+        return len(self.sounds) == 25
 
     @staticmethod
     def _stop_channel(voice):
@@ -87,16 +114,12 @@ class Piano:
 
     def _play(self, token, pitch):
         self._release(token)
-        if pitch is None:
+        if pitch is None or pitch not in self.sounds:
             return
         try:
             if not pygame.mixer.get_init():
                 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
             pygame.mixer.set_num_channels(max(8, pygame.mixer.get_num_channels()))
-            if pitch not in self.sounds:
-                attack = pygame.mixer.Sound(str(self.library / "sustain" / f"{pitch}-attack.wav"))
-                sustain = pygame.mixer.Sound(str(self.library / "sustain" / f"{pitch}-loop.wav"))
-                self.sounds[pitch], self.sustains[pitch] = attack, sustain
             occupied = {voice[0] for voice in self.voices.values()}
             self.update()
             slot = next((i for i in range(8) if i not in occupied
