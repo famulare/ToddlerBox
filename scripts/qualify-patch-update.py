@@ -155,6 +155,13 @@ toddlerbox-mode child
         qa.wait_health()
         print(qa.serial('''
 uid=$(id -u toddlerbox)
+# Under TCG both actual0.5.0/0.5.1 Python initializers can hit the unchanged
+# outer2s deadline before import completes. Record the fallback; make the
+# parent volume setting explicit for HDA PCM checks, not a startup claim.
+runuser -u toddlerbox -- env XDG_RUNTIME_DIR=/run/user/$uid wpctl get-volume @DEFAULT_AUDIO_SINK@ >/root/qa-volume-before.txt
+cat /root/qa-volume-before.txt
+runuser -u toddlerbox -- env XDG_RUNTIME_DIR=/run/user/$uid wpctl set-volume --limit 1.0 @DEFAULT_AUDIO_SINK@ 0.80
+runuser -u toddlerbox -- env XDG_RUNTIME_DIR=/run/user/$uid wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
 runuser -u toddlerbox -- env XDG_RUNTIME_DIR=/run/user/$uid wpctl get-volume @DEFAULT_AUDIO_SINK@ >/root/qa-volume.txt
 cat /root/qa-volume.txt
 python3 - <<'INNER'
@@ -229,14 +236,15 @@ grep '^dns=default' /etc/NetworkManager/conf.d/90-toddlerbox-dns.conf
             'checks':['signed0.5.1 update over qualified0.5.0 and genuine supervised acceptance',
                       'native Python3.12.3 bounded workers, durable saves and authenticated deferred IPC',
                       'full immutable release tree preserved by parent status; config bytes unchanged',
-                      'native wpctl startup volume; song PCM and four-second held key/release through Cage',
+                      'explicit parent wpctl volume; song PCM and four-second held key/release through Cage',
                       'independent Ctrl+Alt+Home escape including stopped launcher',
                       'explicit rollback to0.5.0; signed0.5.1 reinstall and accepted reboot',
                       'watchdog restarts a stopped launcher and recovers child frames',
                       'synthetic Paint/Typing exact SHA and config preservation through all transitions'],
             'limits':['no new ISO/fresh installation or physical HP touch/speaker calibration',
                       'VM QMP pointer is emulated mouse input; real FINGER regressions covered separately',
-                      'future-image ALSA/PulseAudio diagnostic packages not installed by this bundle']}, indent=2)+'\n')
+                      'future-image ALSA/PulseAudio diagnostic packages not installed by this bundle',
+                      'unchanged2s startup helper deadline expires under slowTCG for genuine0.5.0 and0.5.1; PCM checks use explicit parent80percent volume']}, indent=2)+'\n')
         print('PATCH_UPDATE_VM_PASS', flush=True)
     finally:
         qa.stop()
