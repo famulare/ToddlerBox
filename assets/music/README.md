@@ -44,7 +44,11 @@ with a 1 ms margin, average the stereo channels, then average pairs of 44100 Hz
 frames for two-tap low-pass decimation to 22050 Hz. Rendering interpolates the
 nearest SFZ key-zone sample by semitone ratio, applies attack/velocity/release,
 and mixes in float64. A single collection gain caps the maximum at 0.65 if
-needed, preserving the score's dynamics and the relative track balance. PCM is
+needed, preserving the score's dynamics and the relative track balance. For
+0.5.1, an offline 2× body boost follows this mix. Smooth 20 ms gain ramps use
+the peaks of both adjoining blocks, bounding final peaks to 0.60 without
+hard clipping. This increases average song levels while leaving headroom for
+manual keys, with no runtime processing. PCM is
 rounded to signed 16-bit with no randomized effects or dither. Sample and
 renderer input hashes, gain, output hashes, peaks, RMS, frame counts and event
 counts are recorded in the build manifest.
@@ -69,15 +73,18 @@ the integer WAV frame count.
 
 ## Playable keyboard
 
-`keys/` contains 25 independently prepared C3–C5 two-second PCM notes from the
-same CC0 sampled piano. Eight owned SDL channels mix key touches alongside the
-unchanged music stream. No synthesis/dependency download occurs during play.
+`keys/` retains the 25 original C3–C5 two-second PCM notes. The proposed 0.5.1
+player uses new `keys/sustain/` attack and short looping PCM derivatives from
+the same verified CC0 piano: a held key continues sounding without replaying
+its percussive attack. Eight owned SDL channels mix touches alongside the
+unchanged music stream. At most one loop is queued per voice; no synthesis,
+NumPy dependency or download occurs during play.
 Key release uses a bounded 600 ms quadratic envelope in the event loop;
 focus/Home immediately stops held and released voices. Tails occupy channels
 until finished; when all eight are busy, a new key replaces the oldest released
 tail, never another held key. The keys share a 0.70 channel-gain budget. Existing
 voices only become quieter as another key joins, preserving song headroom
-(pinned key peaks ≤0.5 and song peaks ≤0.65). No SDL fade-out can override this
+(pinned key peaks ≤0.5 and song peaks ≤0.60). No SDL fade-out can override this
 budget. Song gain defaults to 1.0. Free Play stops the
 song; its keyboard and samples are identical. Preparation:
 
@@ -85,10 +92,27 @@ song; its keyboard and samples are identical. Preparation:
 uv run --locked scripts/build-music.py --keys-only --output assets/music/keys
 ```
 
+Prepare/reproduce the 0.5.1 sustain derivatives separately:
+
+```sh
+uv run --locked scripts/build-piano-sustains.py --output assets/music/keys/sustain
+```
+
+The pinned offline builder retains each attack, finds positive-going loop
+boundaries near 64 nominal pitch periods, blends four periods at the wrap and
+crossfades the attack into that loop. A 0.14 loop-RMS target and 0.5 peak cap
+make held keys stronger and more consistent while retaining the shared gain
+budget. The manifest records every derivative hash, frame count, peak/RMS,
+source-instrument hash and builder identity. Original key files, scores, cues and
+Reading/Math recordings remain unchanged. Delayed-frame restarts apply the
+current release gain before playback; cleanup mutes and halts the one queued
+successor too, so Home/focus cannot leave a loop playing.
+
 The key manifest pins instrument/output hashes. This command does not regenerate
 or change the song WAVs/cues.
 
 The song list scrolls by touch drag, trackpad or mouse wheel inside its clipped
 rail; dragging never selects a song. Free Play, Pause and Autoplay stay pinned.
-New songs retain the same two-octave keyboard and soft CC0 piano. Existing six
-song WAVs/cues, instrument and playable-key samples remain byte-identical.
+The 0.4 expansion retained the first six recordings while adding twelve songs.
+The 0.5.1 loudness pass changes all eighteen WAV levels; scores, cues, note
+timings, instrument samples and original playable-key files remain identical.

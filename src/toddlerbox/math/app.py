@@ -40,6 +40,9 @@ class MathApp:
         self.speech_rect = pygame.Rect(self.mode_rect.right+16, 16, 58, 58)
         self.question_rect = pygame.Rect(24, 98, self.rect.w-128, 108)
         self.next_rect = pygame.Rect(self.rect.right-80, 123, 58, 58)
+        # A fingertip can land just outside the drawn card. Expand only into
+        # unused space; keep the icon/layout and other controls unchanged.
+        self.next_hit_rect = self.next_rect.inflate(24, 24).clip(self.rect)
         self.body_rect = pygame.Rect(24, 226, self.rect.w-48, self.rect.h-250)
         self.arrow = theme.arrow("right", (42, 48))
         self.next_example()
@@ -143,7 +146,7 @@ class MathApp:
                 return name
         if self.revealed and self.speech_rect.collidepoint(pos):
             return "speech"
-        if self.can_next and self.next_rect.collidepoint(pos):
+        if self.can_next and self.next_hit_rect.collidepoint(pos):
             return "next"
         return None  # Objects and frames deliberately have no touch action.
 
@@ -170,7 +173,8 @@ class MathApp:
             self.pressed = self._target(pos), pos
             return True
         pressed, self.pressed = self.pressed, None
-        if pressed is None or pressed[0] != self._target(pos) or (pygame.Vector2(pos)-pressed[1]).length() > 24:
+        tolerance = 32 if pressed is not None and pressed[0] == "next" else 24
+        if pressed is None or pressed[0] != self._target(pos) or (pygame.Vector2(pos)-pressed[1]).length() > tolerance:
             return True
         if pressed[0] == "home":
             self.player.cancel()

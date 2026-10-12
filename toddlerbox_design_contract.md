@@ -79,7 +79,9 @@ included in ToddlerBox 0.4.
 - Atomic PNG replacement with file and directory fsync
 - Existing `latest.png` is restored on app start; Home and termination attempt a save
 - New clears only after successful archive; failures before replacement preserve the previous file. Directory-fsync failure after replacement reports uncertain durability of the new visible file.
-- Periodic saves use one background snapshot and skip unchanged canvases. Input reset never postpones an outstanding save deadline.
+- Periodic saves use one immutable background snapshot and skip unchanged canvases. Input reset never postpones an outstanding save deadline.
+- New/Recall archive snapshots off the display thread and gate editing/repeated transitions until the archive is durable. At most one transition and one current-save snapshot share a single writer; queued old snapshots cannot overtake final saves. Home keeps rendering while its newest save completes.
+- Fill preserves exact colors and four-neighbour boundaries. Opaque restored PNGs behave like fresh canvases; translucent/non-production pixel formats retain conservative exact handling. Fountain optimizations must preserve all input points and rendered geometry.
 - Archive limits are nondestructive capacities: Paint defaults to 100 and clamps zero to one. Full capacity refuses replacement without clearing work; quarantined corrupt files are excluded.
 
 ### 2.4 Recall UX
@@ -110,7 +112,7 @@ included in ToddlerBox 0.4.
 - Strip supports drag/wheel scrolling
 - Tap-release on thumbnail selects image
 - Horizontal drag in main image area changes image index
-- EXIF orientation is applied consistently. One background worker prepares size-limited derivatives; a bounded thumbnail LRU avoids accumulating decoded images.
+- EXIF orientation is applied consistently. One background worker prepares size-limited derivatives; a bounded thumbnail LRU avoids accumulating decoded images. Preload visible rows first and nearby rows next, including during a held drag; disk decoding never runs in drawing or pointer handling.
 - Library refreshes on entry; source images over 40 million pixels are skipped with parent diagnostics.
 
 ## 4. Typing App
@@ -148,6 +150,7 @@ included in ToddlerBox 0.4.
 
 - Current document: `data_root/typing/current.json`, saved every five seconds and on Home
 - Current text, rich styling, and cursor are restored on app start
+- Current saves and New/Recall archives use bounded immutable snapshots in one writer. New/Recall gate editing until archive durability; Home continues rendering until successful current save. Failure preserves the current document and archived work.
 - Archives: `data_root/typing/archive/*.json`; legacy `sessions.jsonl` remains readable
 - Each record stores:
   - `timestamp`
@@ -172,10 +175,14 @@ included in ToddlerBox 0.4.
 - Home/TERM/exceptions stop and unload audio. No audio plays on the launcher or automatically resumes after a crash.
 - Audio failure remains quiet, responsive and logged for the parent. Autoplay attempts each damaged track at most once until manual retry.
 - Controls use shared single-pointer ownership; the piano admits up to eight independent raw fingers.
+  Held keys sustain using bounded prepared loops, without repeating the attack
+  or pausing the song. No runtime synthesis or new runtime dependency.
   Duplicate SDL mouse events from touch are ignored. Released keys decay for up to
   600 ms; new notes preserve tails while space remains, then replace the oldest
   release instead of a held key. Eight voices share a 0.70 gain budget, reserved
   before playback, so the song stream retains headroom. Focus/Home clears all voices immediately.
+  A delayed frame must apply the release envelope before restarting a voice;
+  cleanup must also stop any queued successor. Reading/Math gains stay unchanged.
 
 ## 4b. Reading App
 
@@ -185,7 +192,8 @@ included in ToddlerBox 0.4.
 - A separate whole-word button reads the word; picture tap replays the whole word.
   Letter cards repeat the selected sound/name. Rapid sound taps interrupt without queuing voices.
 - A scrollable left rail switches between written-word selection and picture selection.
-  Picture selection deliberately exposes preview art; the default written rail keeps the main picture hidden.
+  Picture selection is the default and deliberately exposes preview art. Switching the rail never reveals the main picture.
+- Reading previews preload independently of the selected rail view. One bounded worker decodes validated art; SDL surface work stays on the main thread. Keep at most 96 small previews, prioritize visible/nearby cards and never wait for decoding during drawing or a held gesture.
 - Uniform random Next excludes the current card. Recent earlier cards may return.
   A singleton deck supports replay; empty content returns Home quietly.
 - No scores, time limits, rewards, automatic progression, spaced repetition or usage history.
@@ -222,6 +230,9 @@ included in ToddlerBox 0.4.
   artwork, with existing source/license records and PNG bytes retained.
 - Home, Next and one mode control; no left rail. Existing single-pointer cleanup,
   frame supervision and authenticated screen-only receipt remain in use.
+- Next targets the full button with safe padding into unused space, never only
+  the arrow glyph. Accept at most 32 pixels of release drift; other controls
+  retain their existing tolerance. Touch pressure does not gate activation.
 - No child work is written; save-current uses the existing no-work acknowledgement.
 - A speaker button reads the disclosed numeral in Numbers, or the complete
   arithmetic equation ("eight minus three equals five") on deliberate tap only.
@@ -357,3 +368,11 @@ Parent networking: NetworkManager owns the appliance resolver file and uses
 connection-provided DNS directly, with no implicit systemd-resolved stub or
 hardcoded server. The image and existing-install patch deploy the same policy.
 Changing this policy does not trigger sync or app/OS updates.
+
+Prepared 0.5.1 persistence behavior: authenticated save-current requests may remain
+pending while the normal UI loop polls storage, for at most five seconds. An ACK
+means the current revision/payload is durably committed, never merely submitted.
+Receipts and health frames continue during pending saves. No signal handler does
+IO; supervised TERM attempts serialized final saving before shutdown acknowledgement.
+Parent speaker diagnostics are deliberate, bounded, quiet, and separate from the
+child UI; no diagnostic raises volume or runs automatically.

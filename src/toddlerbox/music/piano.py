@@ -9,29 +9,82 @@ class Piano:
         self.keys, self.logger = keys, logger
         self.library = library or Path(__file__).resolve().parents[3] / "assets/music/keys"
         # Key samples peak below 0.5. A shared 0.70 budget leaves room for
-        # the song stream (peak <= 0.65), even with eight overlapping keys.
+        # the song stream (peak <= 0.60), even with eight overlapping keys.
         self.volume = 0.70
         self.clock = clock
         self.sounds = {}
+        self.sustains = {}
         self.pointers = {}  # Up to eight raw fingers, or the real mouse.
         self.voices = {}
         self.channels = {}  # Retain fading channels until activity cleanup.
         self.tails = {}  # Insertion order makes the oldest release stealable first.
         self.gains = {}
+        self.slot_sustains = {}
+        self.prepare()
+
+    def prepare(self):
+        """Load the fixed 25-key bank silently on the UI thread before input.
+
+        Fifty small, shipped WAVs are the entire preparation budget. Publish
+        each attack/loop pair together; an unavailable key never performs file
+        IO on a touch. Calling this explicitly retries unavailable pairs.
+        """
+        try:
+            if not pygame.mixer.get_init():
+                pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
+            pygame.mixer.set_num_channels(max(8, pygame.mixer.get_num_channels()))
+        except pygame.error:
+            self.logger.exception("Piano preparation unavailable")
+            return False
+        for pitch in range(48, 73):
+            if pitch in self.sounds:
+                continue
+            try:
+                attack = pygame.mixer.Sound(str(self.library / "sustain" / f"{pitch}-attack.wav"))
+                sustain = pygame.mixer.Sound(str(self.library / "sustain" / f"{pitch}-loop.wav"))
+            except (pygame.error, OSError):
+                self.logger.exception("Piano sound unavailable")
+                continue
+            self.sounds[pitch], self.sustains[pitch] = attack, sustain
+        return len(self.sounds) == 25
+
+    @staticmethod
+    def _stop_channel(voice):
+        # SDL's finished callback can start the single queued Sound on stop.
+        # Mute first, halt it, then halt that queued successor as well. There
+        # is never more than one successor and only this thread enqueues it.
+        voice.set_volume(0)
+        voice.stop()
+        voice.stop()
 
     def update(self):
         now = self.clock()
-        for slot, (released, gain) in list(self.tails.items()):
+        held = {voice[0] for voice in self.voices.values()}
+        for slot in held | set(self.tails):
             voice = self.channels[slot]
-            remaining = 1 - (now - released) / .6
-            if remaining <= 0 or not voice.get_busy():
-                voice.stop()
-                del self.tails[slot]
-            else:
-                voice.set_volume(gain * remaining * remaining)
+            gain = self.gains[slot]
+            if slot in self.tails:
+                released, gain = self.tails[slot]
+                remaining = 1 - (now - released) / .6
+                if remaining <= 0:
+                    self._stop_channel(voice)
+                    del self.tails[slot]
+                    continue
+                gain *= remaining * remaining
+            # A delayed frame can exhaust the queued loop. Apply the effective
+            # envelope BEFORE restart; a released note must never swell again.
+            voice.set_volume(gain)
+            # Keep at most one short loop queued. It sustains a healthy held
+            # note without replaying its attack or interrupting the song.
+            if not voice.get_busy():
+                voice.play(self.slot_sustains[slot])
+            if voice.get_queue() is None:
+                voice.queue(self.slot_sustains[slot])
 
     def _reserve_gain(self):
-        busy = [slot for slot, voice in self.channels.items() if voice.get_busy()]
+        self.update()
+        owned = {voice[0] for voice in self.voices.values()} | set(self.tails)
+        busy = [slot for slot, voice in self.channels.items() if slot in owned or voice.get_busy()]
         gain = self.volume / (len(busy) + 1)
         for slot in busy:
             # Never swell an existing voice as other keys finish their decay.
@@ -61,14 +114,12 @@ class Piano:
 
     def _play(self, token, pitch):
         self._release(token)
-        if pitch is None:
+        if pitch is None or pitch not in self.sounds:
             return
         try:
             if not pygame.mixer.get_init():
                 pygame.mixer.init(frequency=44100, size=-16, channels=2, buffer=512)
             pygame.mixer.set_num_channels(max(8, pygame.mixer.get_num_channels()))
-            if pitch not in self.sounds:
-                self.sounds[pitch] = pygame.mixer.Sound(str(self.library / f"{pitch}.wav"))
             occupied = {voice[0] for voice in self.voices.values()}
             self.update()
             slot = next((i for i in range(8) if i not in occupied
@@ -78,12 +129,14 @@ class Piano:
             if slot is not None:
                 self.tails.pop(slot, None)
                 voice = pygame.mixer.Channel(slot)
-                voice.stop()
+                self._stop_channel(voice)
                 gain = self._reserve_gain()
                 self.channels[slot] = voice
                 self.gains[slot] = gain
+                self.slot_sustains[slot] = self.sustains[pitch]
                 voice.set_volume(gain)
                 voice.play(self.sounds[pitch])
+                voice.queue(self.sustains[pitch])
                 self.voices[token] = (slot, voice)
         except (pygame.error, OSError):
             self.logger.exception("Piano sound unavailable")
@@ -128,9 +181,10 @@ class Piano:
 
     def close(self):
         for voice in self.channels.values():
-            voice.stop()
+            self._stop_channel(voice)
         self.channels.clear()
         self.tails.clear()
         self.gains.clear()
+        self.slot_sustains.clear()
         self.voices.clear()
         self.pointers.clear()

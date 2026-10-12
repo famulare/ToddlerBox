@@ -29,6 +29,7 @@ from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.ui import theme
+from toddlerbox.ui.preload import preview_indices
 from toddlerbox.ui.common import (
     Button,
     PointerInput,
@@ -300,8 +301,6 @@ class PhotosApp:
         self.current_index = 0
         self.current_image: Optional[pygame.Surface] = None
         photo_config = self.config.get("photos", {})
-        self.thumb_idle_ms = int(photo_config.get("thumb_idle_ms", 400))
-        self.thumb_scroll_idle_ms = int(photo_config.get("thumb_scroll_idle_ms", 700))
         self.thumb_cache_limit = max(8, min(256, int(photo_config.get("thumb_cache_limit", 48))))
         self._thumb_lru: OrderedDict[int, None] = OrderedDict()
         self._failed_thumbs: set[int] = set()
@@ -428,8 +427,9 @@ class PhotosApp:
             if self._main_ready_key != key:
                 self._submit_preparation("main", key, _decode_photo, self.items[self.current_index].path, self.main_rect.size, True)
             elif thumbnails:
-                indices = self._visible_indices() if prefer_indices is None else prefer_indices
-                for idx in indices:
+                indices = (preview_indices(len(self.items), self._visible_indices(), self.thumb_cache_limit)
+                           if prefer_indices is None else prefer_indices)
+                for idx in reversed(indices):
                     if idx in self._thumb_lru:
                         self._thumb_lru.move_to_end(idx)
                 for idx in indices:
@@ -554,8 +554,6 @@ class PhotosApp:
         try:
             running = True
             self._render()
-            last_input_ms = pygame.time.get_ticks()
-            last_scroll_ms = last_input_ms
             last_frame_time = time.monotonic()
             while running and not health.stopping():
                 now = time.monotonic()
@@ -580,17 +578,6 @@ class PhotosApp:
                         continue
                     if not self.pointer_input.accept(event):
                         continue
-                    if event.type in {
-                        pygame.MOUSEMOTION,
-                        pygame.MOUSEBUTTONDOWN,
-                        pygame.MOUSEBUTTONUP,
-                        pygame.MOUSEWHEEL,
-                        pygame.KEYDOWN,
-                        getattr(pygame, "FINGERDOWN", None),
-                        getattr(pygame, "FINGERUP", None),
-                        FINGERMOTION,
-                    }:
-                        last_input_ms = pygame.time.get_ticks()
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         running = False
                         break
@@ -627,7 +614,6 @@ class PhotosApp:
                         if self.strip_drag_last_y is not None:
                             dy = pos[1] - self.strip_drag_last_y
                             self._scroll_thumbnails(-dy)
-                            last_scroll_ms = pygame.time.get_ticks()
                             self.strip_drag_distance += abs(dy)
                             self.strip_drag_last_y = pos[1]
                     elif is_primary_pointer_event(event, is_down=False):
@@ -659,17 +645,14 @@ class PhotosApp:
                     elif event.type == pygame.MOUSEWHEEL:
                         if self.strip_rect.collidepoint(pygame.mouse.get_pos()):
                             self._scroll_thumbnails(-event.y * SCROLL_STEP)
-                            last_scroll_ms = pygame.time.get_ticks()
                     elif event.type == pygame.MOUSEBUTTONDOWN and event.button in {4, 5}:
                         if self.strip_rect.collidepoint(event.pos):
                             self._scroll_thumbnails(-SCROLL_STEP if event.button == 4 else SCROLL_STEP)
-                            last_scroll_ms = pygame.time.get_ticks()
 
                 self._render()
-                now_ms = pygame.time.get_ticks()
-                scroll_active = now_ms - last_scroll_ms < self.thumb_scroll_idle_ms
-                active_input = now_ms - last_input_ms < self.thumb_idle_ms
-                self._service_preparation(thumbnails=not scroll_active and not active_input)
+                # Preparation is already bounded and asynchronous. Keep warming
+                # upcoming rows while a finger is held instead of pausing it.
+                self._service_preparation()
                 self.clock.tick(60)
                 health.frame_complete()
 

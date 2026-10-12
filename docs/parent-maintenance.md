@@ -18,7 +18,7 @@ Authenticate as parent again and finish setup. Reboot during this test returns
 to unfinished parent setup. Finishing requires the successful recovery check;
 other hardware limitations can be accepted explicitly.
 
-In the pending 0.5.0 patch, the optional Drive check and **Set Up ToddlerBox Drive**
+Since 0.5.0, the optional Drive check and **Set Up ToddlerBox Drive**
 find packages on mounted USB drives and verify their adjacent full checksums.
 No path/hash typing is needed, and the result stays visible until dismissed.
 This can be rerun after setup is complete without resetting progress or
@@ -26,7 +26,7 @@ reinstalling; see [the existing-install patch instructions](drive-sync.md#rerun-
 
 The program offers:
 
-- In the pending audio patch, an explicit **Apply louder audio defaults** choice.
+- Since 0.5.0, an explicit **Apply louder audio defaults** choice.
   It preserves other settings and backs up the original configuration; ordinary
   updates keep custom gains. See [audio controls](child-controls.md).
 - Status, including setup results, system services, disk space, update/recovery
@@ -78,3 +78,27 @@ Drive remains explicit-only (`ctrl-alt-s`, held two seconds, or parent sync acti
 Setup, updates and network connection do not trigger it. Its account-wide read
 scope and private credentials are explained in [Drive privacy](drive-sync-privacy.md).
 Software/public reports and private family data have separate handling.
+
+## Parent speaker check
+
+In the parent GNOME desktop, select **Built-in Audio / Speakers** in Sound settings
+and start with the speaker volume low. The 0.5.1 app provides an explicit,
+quiet, one-second synthetic tone; it needs no network or extra Python packages:
+
+```sh
+/opt/toddlerbox/current/.venv/bin/python -B -m toddlerbox.runtime.audio_check
+```
+
+Run without `sudo`, so playback uses the parent's audio session. Press Enter to
+play or Ctrl+C to cancel. Playback has a five-second deadline and removes its
+private temporary WAV afterward. A successful exit establishes that PipeWire
+accepted playback; listening establishes speaker output. It does not establish
+child-session routing, music loudness or physical touchscreen behavior. Test
+Reading, Math and Music separately after returning to child mode.
+
+Future images include `alsa-utils` (`speaker-test`, `aplay`, `alsamixer`) and
+`pulseaudio-utils` (`pactl`, `paplay`) explicitly. Existing installs already have
+`pw-play` and do not need those packages for this check. App updates do not install
+new Ubuntu packages; adding optional diagnostic packages is a separate parent
+operation when networking is available. Never run a looping full-volume test or
+raise system volume automatically to diagnose a quiet speaker.

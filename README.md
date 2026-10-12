@@ -205,6 +205,7 @@ See [the design and desktop instructions](MATH_DESIGN.md).
 - Play keys over a song without interrupting it, or choose Free Play
 - Select a song, pause/resume, or let autoplay continue through the collection
 - Home and parent recovery stop playback; unavailable audio remains quiet and responsive
+- Manual keys sustain while held and decay after release, without stopping the song (0.5.1)
 - Offline audio, scores, notices and reproducible generation recipe in [assets/music](assets/music/README.md)
 
 ### Reading App
@@ -212,7 +213,8 @@ See [the design and desktop instructions](MATH_DESIGN.md).
 - One large word or letter at a time; no automatic speech or advancement
 - Tap each letter/sound group at your own pace; it plays only that sound
 - Tap the smaller whole-word button to hear the word and reveal its picture
-- A scrollable left rail switches between selecting written words and pictures
+- A scrollable left rail opens with pictures and switches to written words on request
+- Picture previews preload in the background; Photos also warms upcoming rows within its bounded cache
 - Random Next excludes the current card; no scores, rewards, tests or learning history
 - 75 illustrated words across short vowels, digraphs and consonant blends, plus alphabet sounds/names
 - Defaults mix three-, four- and selected five-letter words; parent settings can narrow the deck
@@ -280,6 +282,13 @@ NetworkManager DNS policy that fixes connected Wi-Fi with a broken local resolve
 on the current appliance. Follow the [0.5.0 update instructions](docs/releases/v0.5.0.md)
 for the signed application/audio update and the separate setup/DNS patch.
 There is no new ISO in this update-only release.
+
+Version 0.5.1 adds picture preloading, more forgiving Math Next taps,
+sustained/louder piano and songs, responsive durable Paint/Typing transitions,
+and a [parent speaker check](docs/parent-maintenance.md#parent-speaker-check).
+Use the normal parent updater; see [0.5.1 instructions](docs/releases/v0.5.1.md).
+Physical picture scrolling and fountain-pen responsiveness still need an HP retest.
+This is an existing-install update; no new OS installer is required.
 
 Reading settings are applied on activity entry. Word sets are `short_a_cvc`,
 `short_e_cvc`, `short_i_cvc`, `short_o_cvc`, `short_u_cvc`, `digraphs`, and

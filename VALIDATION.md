@@ -1728,3 +1728,335 @@ PYCODE
 This exact identity assertion intentionally needs updating after a later
 stable release. The app source content ID remains `4c260c85b3afe225`; later
 qualification/publication documentation does not change the built payload.
+
+### Picture preloading — proposed 0.5.1, application checks (2026-10-11)
+
+Baseline is actual main `d64d66b2473dcbeaec1b8ee8913cfbf12564cfa0`, with
+the unchanged qualified 0.5.0 app source `5e4e0b43e2cd93aeba93291371c0c28ea9229f52`.
+Its frozen Linux suite previously passed 508 tests. The proposed patch passed
+**519 tests in 16.33 s**, including stalled Reading decoding while a finger
+remains held, one-job queue bounds, memory limits, offscreen Photos warming,
+preparation during held touch and actual rendered rail toggling. Scoped independent
+Sol review found no outstanding issues. Python 3.12.14, uv 0.12.19,
+pygame-ce 2.5.8/SDL 2.32.10, Pillow 12.3.0 and frozen dependencies were unchanged.
+
+Before changing input handling, synthetic five-gesture raw-touch tests in both
+Reading views and Photos' actual event loop reached exactly 1,000 px scrolling,
+without unintended selection or lost capture, including duplicate emulated mouse
+and a secondary finger release. The reported physical drag failure was **not
+reproduced**. Pointer ownership, focus/stall recovery, parent escape and watchdog
+code remain unchanged. This patch verifies preloading, not a physical input fix.
+
+Inspection of the actual pre-refactor Photos code at `68e7bc2` found that its
+pending cursor continued loading beyond preferred visible rows. The modern
+worker loaded only visible rows. The patch restores loading ahead within the
+existing 48-thumbnail default LRU (configurable bounded range 8–256), keeps one
+job, and permits background preparation during touch. Reading uses a separate
+one-job worker with PNG dimensions rechecked at 1024×1024, no SDL calls in the
+worker, and at most 96 56×56 previews. The normal 75-word deck fits completely.
+Word and picture views preload alike; picture view is the requested default.
+Legacy Photos idle-delay configuration is now ignored; no settings/work migration
+or source-photo replacement is performed.
+
+Real old/new code under identical dummy SDL inputs produced exactly equal RGBA
+hashes for **nine** loaded Reading/Photos frames at multiple scroll offsets, and
+identical SHA-256 for **12** generated source photos. The default-view rendering
+changed only within sidebar bounds `(32, 100, 248, 736)` at 1366×768; the main
+picture remained hidden. Old uncached Reading picture-frame drawing took
+11.8–21.3 ms in this run; preloaded drawing took 1.6–1.9 ms on this builder.
+These timings are not HP performance or audio/gesture qualification. The public
+overview `docs/images/picture-preload.png` uses bundled art and synthetic photos.
+
+Repeat with fresh output directories:
+
+```sh
+git archive d64d66b | tar -x -C BASELINE_DIRECTORY
+uv run --frozen python scripts/check-picture-preload.py BASELINE_DIRECTORY OLD_OUTPUT
+uv run --frozen python scripts/check-picture-preload.py . NEW_OUTPUT
+uv run --frozen pytest -q
+```
+
+The harness imports each checkout's actual app/decoder, prepares its previews,
+and writes RGBA hashes, source hashes, PNG frames and drawing timings. Compare
+`observables.json`: all entries except `default-picture-view` and `reading-default`
+must match. Those two intentional differences must stay confined to the sidebar.
+No 0.5.1 signed update, ISO, VM boot qualification or hardware acceptance is
+claimed here; published main/stable 0.5.0 remains the known qualified release.
+
+
+The same proposed 0.5.1 patch now includes Math Next touch tolerance (#16).
+The actual 0.5.0 baseline targets the **whole 58×58 button**, not its 42×48
+arrow image, and reads no pressure value. An actual `.001`-pressure raw-touch
+center tap advances; a 38-pixel offset misses and a 28-pixel release drift
+fails the original 24-pixel tolerance. The new invisible target is 82×82,
+using 12 pixels of padding per edge only in unused space. Next alone accepts
+32 pixels of release drift, matching Reading; other controls stay at 24.
+The target does not overlap question, Home or object panels. Disabled Next
+and single-pointer/focus handling remain unchanged.
+
+The extended actual-old/new rendering/input harness now compares 49 exact
+RGBA frames (nine Reading/Photos, forty Math at 800×600 and 1366×768) plus
+12 original synthetic-photo hashes. All unaffected records match exactly.
+The intended `math-next-taps` difference is edge/drift acceptance: old
+`center=True, edge=False, drift=False, drag=False`; new
+`center=True, edge=True, drift=True, drag=False`. Pressure does not gate either
+version. The full frozen Linux suite passed **540 tests in 17.48 s**, with
+raw pressures 0/.001/.1/1, edges, drift, larger drags, outside presses and hidden
+Next. Independent scoped Sol review of the Math patch found no actionable
+findings. No physical pressure/device diagnosis, new VM qualification or
+published 0.5.1 bundle is claimed.
+
+Use the same comparison command above; the extended harness additionally
+excludes only `math-next-taps` from exact equality. The visible default Reading
+sidebar remains the sole intended rendering change; Math appearance is identical.
+
+
+### Held piano — proposed 0.5.1 continuation (#18)
+
+Actual 0.5.0 baseline `d64d66b` plays each key's two-second WAV once. The
+new player uses prepared attack/loop derivatives of the same verified CC0
+instrument, queuing at most one short loop per voice. Held notes do not replay
+an attack; release keeps the existing bounded quadratic 600ms envelope. Peak
+0.5 and shared channel gain 0.70 preserve song headroom. Reading/Math gains,
+all songs/cues, and **443 existing WAV/PNG files** remain byte-identical.
+
+Repeatable actual SDL disk-driver comparison:
+
+```sh
+uv run --frozen python scripts/check-music-sustain.py --baseline BASELINE_DIRECTORY --output NEW_PCM_OUTPUT
+uv run --locked scripts/build-piano-sustains.py --output NEW_DERIVATIVE_OUTPUT
+uv run --frozen pytest -q
+```
+
+At a real 3.2-second hold, baseline C4 is silent (busy=0, late RMS=0);
+new C4 is busy and late RMS=**0.097388**, then releases in **568.9ms**.
+Eight held keys plus the real Mary arrangement continue together, maximum
+summed key gain **0.6875**, peak mixed PCM **19,772/32,768**, zero saturated
+samples and silence after close. All **51** derivative/manifest files reproduce
+byte-for-byte through the pinned NumPy 2.2.6 offline builder. No NumPy, synthesis,
+network access or background audio worker is introduced into runtime.
+
+Real SDL tests caught stop/queue behavior: stopping a sound can start its one
+queued successor. Cleanup now mutes before two bounded halts. Independent Sol
+review also reproduced a release-envelope restart swell after a drained queue;
+the fix applies the current envelope before playback and includes logical held
+voices in gain reservation. Actual short-loop stall and drained-held regressions
+verify both fixes. Mouse and finger holds beyond two seconds, release/cleanup,
+missing-loop atomic cache behavior, waveform wraps, peaks and eight-voice bounds
+are tested. Independent re-review found no outstanding issues.
+
+The final frozen Linux suite for app **0.5.1** passed **546 tests in 24.16s**.
+The package dependency graph is unchanged; future signed release sequence is 4,
+while public stable remains the qualified 0.5.0/sequence3. App content identity
+is `c7893108e7689564` (before later qualification documentation, which is excluded).
+
+On this builder, ffmpeg **7.1.5-0+deb13u1** `ebur128` measured sustained C4 at the existing .70
+gain about **−20.9 LUFS**, Reading's cat at .70 **−21.7 LUFS**. This establishes
+comparable recorded levels, not HP speaker calibration. Songs are intentionally
+unchanged: Mary at gain1 measures **−20.6 LUFS**, while a retained gain.25 would
+be substantially quieter. The actual installed Music gain check is deferred
+by the user until later. Do not reset Reading/Math or claim song loudness fixed
+before that evidence. No new signed bundle, ISO, VM or physical acceptance is
+claimed for this draft continuation.
+
+
+### Song-level continuation — proposed 0.5.1 (2026-10-11)
+
+The installed Music gain was confirmed **1.0**, resolving the saved-gain question.
+The patch now raises the actual eighteen song recordings. The offline renderer
+applies 2× body gain and smoothly interpolated 20ms peak-reduction gains. Each
+block's two endpoint gains are bounded by that block's peak; interpolation
+therefore cannot exceed the 0.60 ceiling. No hard clipping or runtime DSP/
+dependency is added. The source instrument, canonical scores, cues/catalog,
+frame counts, silence/tempo and Reading/Math recordings/settings stay unchanged.
+
+Compared to actual baseline WAVs, RMS increases **1.734–2.000×** across all
+18 tracks (about **4.8–6.0dB**). All eighteen generated WAVs and the build manifest
+reproduce byte-for-byte with `uv run --locked scripts/build-music.py --output NEW_OUTPUT`.
+The manifest records body gain, ceiling, block duration, input/output RMS,
+renderer version/hash and output hashes. Independent Sol review found no
+outstanding issues in the bound, interpolation, provenance or preserved timing.
+
+The actual old/new SDL sustain/overlap harness was rerun against the same
+`d64d66b` baseline. New eight-key-plus-song output peaks at **23,960/32,768**,
+with zero saturated samples, max shared key gain **0.6875**, healthy ongoing
+song playback and silence after close. Solo sustain/release remains unchanged:
+late RMS **0.097388**, tail **568.9ms**. The harness now explicitly allows only
+the intended eighteen louder song WAVs; **425** existing other WAV/PNG files
+remain exact, including Reading/Math and original key/instrument files.
+Repeat with `scripts/check-music-sustain.py` as above.
+
+The final frozen Linux suite passed **547 tests in 25.30s**. Added decoded-PCM
+checks independently verify stronger body RMS, peak/headroom, exact frame/cue
+duration and preserved intro silence. This is a digital loudness improvement;
+physical matching to Reading and hardware touch behavior still require retests.
+No signed 0.5.1 release or new VM/installer is claimed by this continuation.
+
+## Prepared 0.5.1 PR #17 — installed-machine follow-up, 2026-10-12
+
+The additional repairs start from feature HEAD `2b240543977521cfff72d8e09e63599c1ecfddce`;
+main remains `d64d66b2473dcbeaec1b8ee8913cfbf12564cfa0` (fetched again after testing).
+The genuine main archive at `build/scroll-check/baseline` is the old-code input,
+not a reconstructed renderer. Final tested application/system content ID is
+`5115a817707db812`; this is a source identity, **not a built/qualified release**.
+Toolchain remains uv 0.12.19, CPython 3.12.14, pygame-ce 2.5.8 / SDL 2.32.10,
+Pillow 12.3.0, pytest 9.1.1 and PyYAML 6.0.3. Synthetic fixtures only.
+
+Evidence reconciliation:
+
+- #15's installed 0.5.0 GNOME-injected drags all completed correctly. Picture rows
+  had occasional longer frames, supporting removal of render-time decoding but
+  not establishing the cause of the reported physical interrupted drag. Keep
+  #15 open for physical touchscreen/Cage retesting. The requested preload and
+  Reading picture default are present.
+- #16 reproduces rejection of 26 px drift with both endpoints inside the old
+  button. The already-tested Next-only 32 px tolerance addresses this; no new
+  pressure rule is needed. The whole button remains targeted.
+- #18 confirms Music gain 1.0 and a held second finger with no busy channel after
+  three seconds. Sampled loops already address that defect; louder songs remain
+  necessary. Reading/Math gains and files remain unchanged.
+- #19 adds explicit `alsa-utils` and `pulseaudio-utils` future-image packages,
+  plus a stdlib parent speaker check using already-installed `pw-play`. It
+  prompts deliberately, plays one second at 5% peak with fades, times out in five
+  seconds and cleans its private temporary WAV even on failure. No volume change,
+  child UI, scheduled check or apt requirement on existing installs.
+- #20 replaces Python pixel walks with C-built exact-color masks and run searches,
+  retaining four-neighbour connectivity. Palette/RGB565 and translucent surfaces
+  use the genuine old mapped-pixel fallback. A newly reproduced pygame signed
+  `map_rgb`/unsigned `PixelArray` mismatch formerly filled only the seed on opaque
+  restored PNGs; these now fill the correct connected region. Restore format and
+  resampling remain unchanged; no transparency flattening or color tolerance.
+- #21 keeps PNG encoding/JSON writes/fsync out of interactive New/Recall/Home
+  paths. One writer per activity, at most one transition and one current snapshot;
+  current editing/repeated transitions are gated while the immutable archive
+  commits. Only successful archive durability permits clearing/replacement.
+  Older current snapshots cannot overtake final saves. Async current-save ACKs
+  poll on the UI thread with a five-second bound and unchanged credentials/nonce
+  checks. Failures remain failures, and a new explicit request can retry after
+  storage recovers. PNG encoder/compression bytes may differ from the old SDL
+  synchronous writer; decoded painting pixels and Typing JSON are preserved.
+- #22 silently prepares all 25 piano attack/loop pairs on the UI thread before
+  touch input. No startup notes; no SDL worker thread; missing pairs never repeat
+  file IO on touches. 50 shipped files total 428,494 bytes, about 1.63 MiB decoded.
+- New #23 tracks physical fountain lag, mainly the fountain pen. Published 0.4.0
+  and 0.5.0 Paint source files are byte-identical. Exact relative-direction caching
+  (512 entries) and omitting already-painted internal caps reduce redundant work
+  without dropping points or changing stroke geometry. Physical cause remains
+  unqualified; do not infer a hardware resolution from software timing.
+
+Results:
+
+- Final frozen Linux suite: **587 passed in 27.87 s**. The first full pass found
+  one old test that assumed a periodic save was durable before the next render.
+  That is intentionally changed by asynchronous saving. The regression now
+  verifies a snapshot is queued before the forced exception and that real `run`
+  cleanup drains it, durably saving/restoring the exact document. No production
+  guard was relaxed. Existing focus-batch test permits extra frames for async
+  quit; its input-discard assertion remains.
+- Independent Sol persistence/fill review found alpha/16-bit mask differences and
+  a latched save failure. All findings were repaired and re-reviewed. **59 focused
+  tests passed**, including real FINGER New/repeat/Home batches while the archive
+  is blocked, actual SIGTERM handling with a queued current snapshot, durable
+  archive-before-clear, ENOSPC/uncertain errors, storage recovery and IPC deadlines.
+- Independent Sol music preparation review: **58 focused tests passed**; preparation
+  is silent, caller-thread-only, fixed size and atomic per attack/loop pair. Local
+  warm-file/dummy-SDL preparation was 11–13 ms; cached first play 0.023–0.037 ms.
+- Genuine old/new fountain differential: **3,200 event snapshots / 400 strokes**
+  have identical RGBA pixels and stroke state, with RGB/alpha surfaces, clipping,
+  reversals, repeated points and widths 1–48.
+- Full paint/persistence harness: **174 exact observable records**, including
+  90 mixed-format fill fixtures, 60 long-stroke snapshots, undo/redo, presented
+  frames, archived/current PNG pixels and exact Typing document outputs.
+- On this builder, seven 1196×736 blank fills: old 131.2–142.3 ms, new 5.8–6.8 ms.
+  Paint New dispatch: old 41.2 ms, new 2.0 ms (durability completes asynchronously).
+  Long fountain stroke medians by size: old 3.43–3.67 ms, new 2.85–3.04 ms.
+  Actual pre-refactor `68e7bc2` fill was also measured: 131.6–146.1 ms here. This
+  does not reproduce the reported earlier physical speed or diagnose the change.
+- Final Reading/Photos/Math harness matches **49 unaffected RGBA frames** and
+  12 original synthetic-photo hashes exactly; Reading default/sidebar and Next
+  acceptance are the previously documented intended differences.
+- Final real SDL PCM: 3.2 s held piano remains busy, late RMS 0.09718; release
+  lasts 592.1 ms. Eight keys with the louder real song peak 23,960/32,768, zero
+  saturated samples, maximum gain sum 0.6875. Close is silent. 425 existing other
+  WAV/PNG files remain exact; 18 songs are the intentional louder assets.
+
+Repeatable commands (fresh output directories):
+
+```sh
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen pytest -q
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-fountain-baseline.py BASELINE_CHECKOUT
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-paint-persistence.py BASELINE_CHECKOUT build/check-old
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-paint-persistence.py . build/check-new
+cmp build/check-old/observables.json build/check-new/observables.json
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-picture-preload.py . build/check-pictures
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/check-music-sustain.py --baseline BASELINE_CHECKOUT --output build/check-piano
+```
+
+Raw builder evidence is under `build/responsiveness/` (ignored); scripts and
+focused regressions are public. Independent review and tests establish software
+behavior, not physical touch latency, acoustic balance or parent/child audio
+routing. No new native update qualification, package-installed VM, signed 0.5.1
+bundle, ISO or public/stable release was produced in this pass. Existing qualified
+VM checkpoints and artifacts remain intact. The baseline's standalone controller,
+escape/watchdog, credentials and durable atomic-write guards are unchanged.
+
+### 0.5.1 signed update qualification (2026-10-12)
+
+The later release pass supersedes the preceding “no signed release” status.
+The exact built revision is `9370408dda85c5dbe5014affffac4e6cc0d64e64`,
+application/system content `74c0a4981f4d0cb0`, version 0.5.1 / sequence 4.
+Production toolchain: Ubuntu CPython 3.12.3, uv 0.12.19, pygame-ce 2.5.8,
+Pillow 12.3.0 and PyYAML 6.0.3. The signed bundle is 90,878,804 bytes, SHA-256
+`93daf674ead23b132f6e03b5da37ea7c403c35682fc0592aabb6dbc8fd7196a9`.
+The already-passing 587-test suite and baseline observable comparisons above
+remain applicable: subsequent commits change only release documentation and QA.
+
+`scripts/qualify-patch-update.py` uses a disposable overlay on the preserved
+qualified 0.5.0 checkpoint and qualified 0.3 backing disk. This is Ubuntu 24.04
+x86-64 Q35 software emulation, 2 CPUs / 2 GiB, no NIC and virtual Intel HDA,
+with direct kernel boot. It passed signed installation, actual supervised child
+acceptance, native production worker/durable-save/authenticated deferred-IPC
+checks, immutable release-tree preservation, song PCM, four-second held piano
+PCM and fresh captured silence before/after release. Free Play captured 532,480
+new bytes at RMS 0; released piano captured 176,128 new bytes at RMS 0.
+Rollback to 0.5.0, exact signed reinstall, acceptance and reboot passed. A stopped
+launcher exited on independent Ctrl+Alt+Home, active GDM displayed the actual
+Parent greeter, and a separate stopped launcher was restarted by the watchdog
+with healthy child frames. Synthetic Paint/Typing SHA and configuration bytes
+remained exact through these transitions. Previously qualified bases remain
+unchanged and read-only; no private family media or real Drive was involved.
+
+Qualification driver revision: `d6dd24754de6bcfaf7596df280313e0777498a10`.
+The accepted disposable checkpoint was resumed after QA-only corrections:
+verify selected Free Play pixels instead of cursor-obscured OCR; read only fresh
+PCM; wait for a pinned current launcher after reboot; wait for completed GDM
+restart and visible Parent login instead of capturing the outgoing frame.
+Independent Sol review cleared the recovery/PCM/output safeguards and a heredoc
+indentation finding. All literal shell diagnostics pass `bash -n`; their seven
+embedded Python heredocs parse. Protected qualified output paths are rejected
+before writable disk/provisioning access.
+
+Repeatable commands (preserve old checkpoints; use a new output directory):
+
+```sh
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/qualify-patch-update.py CANDIDATE_DIR build/responsive-update-vm-NEW
+# Continue only the exact accepted disposable candidate after a harness correction:
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/qualify-patch-update.py CANDIDATE_DIR build/responsive-update-vm-NEW --resume
+# Repeat visual recovery on that same candidate after all earlier checks completed:
+UV_CACHE_DIR=/tmp/uv-cache uv run --frozen python scripts/qualify-patch-update.py CANDIDATE_DIR build/responsive-update-vm-NEW --resume-recovery
+```
+
+Limit: the unchanged two-second startup-audio helper can expire under this slow
+TCG environment. Genuine installed 0.5.0 and 0.5.1 have identical audio helper
+bytes; both reproduced that deadline. This pass explicitly set parent wpctl
+volume to 80% for PCM qualification and does not claim automatic startup volume
+was qualified. No timeout or production recovery guard was weakened. Physical
+HP touch latency and acoustic balance still need the parent's test (#15/#23);
+emulated pointer input is not touchscreen hardware evidence. Future-image ALSA
+and PulseAudio diagnostic packages are not installed by this bundle. This is an
+existing-install update, with no new ISO/fresh installation claim.
+
+Tag-specific signed manifests, qualified source record and checksum-identified
+public chunk transfer are under `docs/releases/v0.5.1-*` and
+`docs/builds/74c0a4981f4d0cb0-update-transfer.json`. Published download/catalogue
+checks are recorded separately in `docs/releases/v0.5.1-publication.json`.

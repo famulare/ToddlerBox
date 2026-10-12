@@ -172,13 +172,91 @@ def scene(tmp_path, monkeypatch):
     app = ReadingApp(screen, screen.get_rect(), pygame.time.Clock(),
                      config={"data_root": str(tmp_path)}, audio=audio, rng=random.Random(7))
     yield app, audio
-    app.player.close()
+    app.close()
     pygame.quit()
 
 
 def click(app, pos):
     for kind in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP):
         app.handle_event(pygame.event.Event(kind, pos=pos, button=1, touch=False))
+
+
+def _finish_previews(app):
+    for _ in range(len(app.cards) + 2):
+        app._service_thumbnails()
+        if app._thumbnail_future is None:
+            return
+        app._thumbnail_future.result(timeout=5)
+    raise AssertionError("Reading preloading did not settle")
+
+
+def test_reading_opens_pictures_and_preloads_deck_without_drawing_io(scene, monkeypatch):
+    app, _ = scene
+    assert app.rail_images
+    _finish_previews(app)
+    assert len(app.thumbnails) == len(app.cards)
+    app.render()  # Warm the shared Home glyph before guarding rail rendering.
+    monkeypatch.setattr(pygame.image, "load", Mock(side_effect=AssertionError("IO in render")))
+    for offset in range(0, len(app.cards)*76, 76):
+        app.rail_offset = offset
+        app.render()
+
+
+def test_slow_reading_preload_never_blocks_or_releases_finger(scene, monkeypatch):
+    import threading
+    from toddlerbox.reading import app as module
+    app, _ = scene
+    entered, release = threading.Event(), threading.Event()
+    original = module._thumbnail_pixels
+    main_thread = threading.get_ident()
+
+    def blocked(path):
+        assert threading.get_ident() != main_thread
+        entered.set()
+        assert release.wait(5)
+        return original(path)
+
+    monkeypatch.setattr(module, "_thumbnail_pixels", blocked)
+    app._service_thumbnails()
+    try:
+        assert entered.wait(2)
+        pending = app._thumbnail_future
+        selected = app.card.id
+        x = app.rail.centerx / app.rect.w
+        def finger(kind, y, identity=1):
+            return pygame.event.Event(kind, x=x, y=y/app.rect.h, finger_id=identity, touch_id=1)
+        app.handle_event(finger(pygame.FINGERDOWN, 400))
+        for y in range(390, 199, -10):
+            app._service_thumbnails()
+            assert app._thumbnail_future is pending  # One job, no growing queue.
+            app.handle_event(finger(pygame.FINGERMOTION, y))
+            app.render()
+        assert app.rail_offset == 200 and app.card.id == selected
+        assert app.pointer.owner == ("finger", 1, 1)
+        app.handle_event(finger(pygame.FINGERUP, 200, identity=2))
+        assert app.pointer.owner == ("finger", 1, 1)
+        release.set()
+        pending.result(timeout=5)
+        app._service_thumbnails()
+        assert app.pointer.owner == ("finger", 1, 1)
+        app.handle_event(finger(pygame.FINGERUP, 200))
+        assert app.pointer.owner is None and app.card.id == selected
+    finally:
+        release.set()
+
+
+def test_reading_preview_cache_is_bounded_and_reloads_after_scroll(scene):
+    app, _ = scene
+    app._thumbnail_limit = 8
+    _finish_previews(app)
+    assert len(app.thumbnails) == 8
+    initial = set(app.thumbnails)
+    app._scroll(2000)
+    _finish_previews(app)
+    assert len(app.thumbnails) == 8 and set(app.thumbnails) != initial
+    app._scroll(-2000)
+    _finish_previews(app)
+    assert len(app.thumbnails) == 8 and set(app.thumbnails) == initial
 
 
 def test_touch_emulation_second_finger_and_next_during_speech(scene):

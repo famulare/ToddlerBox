@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.1 - 2026-10-12
+
+- Reading opens its selector in picture view and prepares bounded previews in the background instead of decoding in drawing.
+- Photos preloads visible and upcoming thumbnail rows within its existing cache budget, including during a held touch. Restore loading ahead of the viewport without returning disk decoding to the UI thread.
+- Math Next uses the whole button plus a small safe edge margin, and accepts the same 32-pixel release drift as Reading. No pressure threshold or appearance change.
+- Manual piano notes sustain while held, then decay for 600 ms after release. Bounded sampled loops give the sustained note a stronger, consistent level without changing Reading/Math audio.
+- Raise song body levels with offline 2× gain and smooth peak limiting, retaining piano headroom and original timing. Reading/Math recordings and settings remain unchanged.
+- Prepare the fixed 25-key piano bank silently before input, removing first-touch file loading.
+- Paint fill searches exact-color runs instead of Python pixels; opaque restored paintings fill correctly too. Fountain strokes reuse exact direction widths and already-painted caps without dropping input points.
+- Paint/Typing New and recall archive immutable snapshots in one worker, preserving archive-before-clear durability while frames continue. Home and authenticated sync saves wait through normal frame polling; failed requests can be retried after storage recovers.
+- Add a parent-only quiet, bounded PipeWire speaker check and explicit ALSA/PulseAudio diagnostic packages for future images. Existing installs need no new packages for the check.
+- Physical touchscreen drag reliability still requires a retest; preloading alone is not claimed to resolve an unreproduced input-device failure.
+
 ## 0.5.0 - 2026-10-11
 
 - Released piano notes decay for up to 600 ms; bounded overlapping voices keep song headroom. Home/focus still stops all audio immediately.

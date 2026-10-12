@@ -1,0 +1,65 @@
+name: Upload a qualified signed patch update
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Qualified version tag (e.g. v0.5.1)
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: toddlerbox-patch-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  upload:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      RELEASE_TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - name: Reassemble and authenticate the exact qualified artifact
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true
+          uv sync --frozen --group dev --python /usr/bin/python3
+          content=$(jq -r .source "docs/releases/$RELEASE_TAG-stable.json")
+          [[ "$content" =~ ^[0-9a-f]{16}$ ]]
+          uv run --frozen python scripts/download-public-installer.py "docs/builds/$content-update-transfer.json" ToddlerBox-update.pyz
+          uv run --frozen python - <<'PY'
+          import hashlib,json,os,sys,zipfile
+          from pathlib import Path
+          sys.path.insert(0,'system')
+          from release_client import verify
+          tag=os.environ['RELEASE_TAG'];p=Path('docs/releases')
+          v=verify((p/f'{tag}-stable.json').read_bytes(),(p/f'{tag}-stable.json.sig').read_bytes(),Path('system/release-public-key.pem').read_bytes())
+          s=json.loads((p/f'{tag}-source.json').read_text())
+          assert v['tag']==tag and s['qualification_status']=='passed' and s['qualification']['checks']
+          assert s['content']==v['source'] and s['artifacts'][v['asset']]=={'bytes':v['bytes'],'sha256':v['sha256']}
+          b=Path('ToddlerBox-update.pyz');assert b.stat().st_size==v['bytes']
+          with b.open('rb') as f:assert hashlib.file_digest(f,'sha256').hexdigest()==v['sha256']
+          with zipfile.ZipFile(b) as z:assert json.loads(z.read('manifest.json'))['source']=={'git':s['git'],'content':s['content']}
+          Path('SHA256SUMS').write_text(f"{v['sha256']}  ToddlerBox-update.pyz\n")
+          PY
+          cp "docs/releases/$RELEASE_TAG-source.json" source.json
+          cp "docs/releases/$RELEASE_TAG-stable.json" stable.json
+          cp "docs/releases/$RELEASE_TAG-stable.json.sig" stable.json.sig
+          cp "docs/releases/$RELEASE_TAG.md" release-notes.md
+      - name: Upload to draft and verify GitHub byte identity
+        run: |
+          gh release upload "$RELEASE_TAG" ToddlerBox-update.pyz SHA256SUMS source.json stable.json stable.json.sig --clobber
+          gh api "repos/$GITHUB_REPOSITORY/releases/$(gh release view "$RELEASE_TAG" --json databaseId --jq .databaseId)" > release.json
+          uv run --frozen python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('release.json').read_text());s=json.loads(Path('source.json').read_text());v=json.loads(Path('stable.json').read_text())
+          assert r['draft'] is True and r['target_commitish']==s['git']
+          a=[a for a in r['assets'] if a['name']==v['asset']];assert len(a)==1
+          assert a[0]['size']==v['bytes'] and a[0]['digest']=='sha256:'+v['sha256']
+          PY
+          # Maintainer publishes and advances stable only after upload verification.

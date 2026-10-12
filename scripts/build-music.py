@@ -22,7 +22,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets/music"
 RATE = 22050
-VERSION = "toddlerbox-sampled-piano-1"
+VERSION = "toddlerbox-sampled-piano-2"
 ORDER = ("mary", "twinkle", "ode", "frere", "row", "minuet",
          "buns", "bridge", "spider", "farm", "oldman", "clock", "weasel",
          "bingo", "mulberry", "lullaby", "morning", "largo")
@@ -42,6 +42,25 @@ def write_wave(path: Path, data: np.ndarray) -> None:
     with wave.open(str(path), "wb") as output:
         output.setparams((1, 2, RATE, 0, "NONE", "not compressed"))
         output.writeframes(np.rint(data * 32767).astype("<i2").tobytes())
+
+
+def louder_song(audio: np.ndarray) -> np.ndarray:
+    """Offline 2x body gain with smooth bounded peak reduction, no clipping.
+
+    Each 20ms block's boundary gains are limited by BOTH adjoining block
+    peaks. Linear interpolation cannot exceed that block's safe gain; the
+    waveform/timing stay intact instead of hard-clipping boosted attacks.
+    """
+    boosted = audio * 2
+    block = round(RATE * .020)
+    limits = np.array([min(1.0, .60/max(float(np.max(np.abs(boosted[i:i+block]))), .000001))
+                       for i in range(0, len(boosted), block)])
+    edges = np.minimum(np.r_[limits[0], limits], np.r_[limits, limits[-1]])
+    result = np.empty_like(boosted)
+    for index, start in enumerate(range(0, len(boosted), block)):
+        stop = min(start+block, len(boosted))
+        result[start:stop] = boosted[start:stop] * np.linspace(edges[index], edges[index+1], stop-start)
+    return result
 
 
 def prepare_samples(raw_dir: Path) -> None:
@@ -162,10 +181,13 @@ def build(output_dir: Path) -> None:
     gain = min(1, 0.65 / peak)
     provenance = {"renderer": VERSION, "renderer_sha256": digest(Path(__file__)), "numpy": np.__version__, "sample_rate": RATE, "channels": 1,
                   "sample_width": 2, "release_ms": instrument["release_ms"], "collection_gain": gain,
+                  "body_gain": 2.0, "peak_ceiling": .60, "limiter_block_ms": 20,
                   "instrument_manifest_sha256": digest(ASSETS / "instrument/manifest.json"), "tracks": []}
     for score, cues, audio, score_hash in renders:
         piece_id = score["id"]
         audio *= gain
+        previous_rms = float(np.sqrt(np.mean(audio * audio)))
+        audio = louder_song(audio)
         wav_path, cue_path = output_dir / (piece_id + ".wav"), output_dir / (piece_id + ".json")
         write_wave(wav_path, audio)
         write_json(cue_path, cues)
@@ -174,6 +196,7 @@ def build(output_dir: Path) -> None:
         provenance["tracks"].append({"id": piece_id, "score_sha256": score_hash,
                                      "audio_sha256": digest(wav_path), "cues_sha256": digest(cue_path),
                                      "peak": float(np.max(np.abs(audio))), "rms": float(np.sqrt(np.mean(audio * audio))),
+                                     "pre_loudness_rms": previous_rms,
                                      "frames": len(audio), "notes": len(cues["notes"])})
         print(f"{piece_id}: {cues['duration_ms']/1000:.2f}s, {len(cues['notes'])} notes, peak {np.max(np.abs(audio)):.3f}")
     write_json(output_dir / "catalog.json", catalog)
