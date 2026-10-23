@@ -23,7 +23,7 @@ RECALL_READ_BYTES = 16 * 1024 * 1024
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
-from toddlerbox.runtime import health, control
+from toddlerbox.runtime import health, control, retained
 from toddlerbox.runtime.persistence import (
     has_archive_reserve,
     is_work_name,
@@ -39,6 +39,7 @@ from toddlerbox.ui.common import (
     PointerInput,
     create_fullscreen_window,
     draw_home_button,
+    escape_exits,
     is_primary_pointer_event,
     pointer_event_pos,
 )
@@ -215,6 +216,7 @@ def _rich_to_text(lines: List[List[Glyph]]) -> str:
 
 
 CURRENT_READ_LIMIT = 64 * 1024 * 1024
+EXIT_GRACE_SECONDS = 1.0  # A healthy save finishes well within this; then Home parks the work.
 KNOWN_ARCHIVES = 8
 
 
@@ -373,6 +375,7 @@ class TypingApp:
         self._save_worker = None
         self._save_pending = None
         self._save_failed = False
+        self._exit_since: Optional[float] = None
         self._transition_request = None
         self._transition_pending = None
         # (archive, content digest) pairs whose document is already durably archived.
@@ -491,7 +494,11 @@ class TypingApp:
         self.line_gap = 6
         self.recall_button.image = self._build_recall_button_thumbnail()
         self._recover_interrupted_saves()
-        self._restore_current()
+        parked = retained.adopt("typing")
+        if parked is not None:
+            self._resume_parked(parked)
+        else:
+            self._restore_current()
 
     def _handle_resume(self, reason: str) -> None:
         self.logger.info(f"Typing resume handling triggered: {reason}")
@@ -811,10 +818,43 @@ class TypingApp:
     def _poll_exit(self) -> bool:
         if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
             return False
-        saved = self._save_for_control()
-        if saved is False:
-            self._exit_requested = False
-        return saved is True
+        self._finish_pending_save()
+        payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
+        if payload == self._saved_payload:
+            return True
+        if self._exit_since is None:
+            self._exit_since = time.monotonic()
+        waiting = time.monotonic() - self._exit_since < EXIT_GRACE_SECONDS
+        if not self._save_blocked and not self._save_failed and waiting:
+            self._request_autosave()
+            return False
+        # Home never waits on storage: the launcher keeps and keeps saving this document.
+        self._park_unsaved(payload)
+        return True
+
+    def _park_unsaved(self, payload: bytes) -> None:
+        state = (_clone_rich_lines(self.rich_lines), (self.cursor_row, self.cursor_col),
+                 self.current_text_size, self.text_style, payload)
+        retained.park(retained.ParkedWork(
+            "typing", self.current_path, lambda: payload, state,
+            prior=None if self._save_pending is None else self._save_pending[1],
+            write_disabled=self._save_blocked))
+        self._save_pending = None
+        self._saved_payload = payload  # Ownership moved to the launcher.
+        self.logger.warning("Typing save unfinished at exit; work kept in memory and saving continues")
+
+    def _resume_parked(self, parked) -> None:
+        lines, (row, col), size, style, payload = parked.state
+        self.current_path = parked.target
+        self._save_blocked = self._save_blocked or parked.write_disabled
+        self.rich_lines = _clone_rich_lines(lines)
+        self._sync_all_text_lines()
+        self.cursor_row, self.cursor_col = row, col
+        if size in self.size_values and style in {"plain", "bold", "italic"}:
+            self.current_text_size, self.text_style = size, style
+        if parked.writer is not None:
+            self._save_pending = (payload, parked.writer)
+        self.logger.info("Typing resumed parked work")
 
     def _recover_interrupted_saves(self) -> None:
         archive = self.typing_dir / "archive"
@@ -1447,7 +1487,8 @@ class TypingApp:
                     self.logger.exception("Typing archive did not finish at shutdown")
                 self._service_transition()
             self._transition_request = None
-            self._save_current()
+            if not self._save_current():
+                self._park_unsaved(json.dumps(self._record(), ensure_ascii=False).encode("utf-8"))
             if self._save_worker is not None:
                 self._save_worker.shutdown(wait=False, cancel_futures=True)
             if quit_on_exit:
@@ -1486,7 +1527,8 @@ class TypingApp:
                     continue
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self._exit_requested = True
+                        if escape_exits():
+                            self._exit_requested = True
                     elif event.key == pygame.K_BACKSPACE:
                         op = self._delete_backward()
                         if op:
@@ -1574,6 +1616,7 @@ class TypingApp:
 def main() -> None:
     try:
         TypingApp().run(quit_on_exit=True)
+        retained.flush(5.0)
     except Exception:
         logger = get_runtime_logger(get_data_root(load_config()))
         logger.exception("Typing app crashed in main()")

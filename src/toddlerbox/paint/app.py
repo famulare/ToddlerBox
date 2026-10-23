@@ -18,7 +18,7 @@ from PIL import Image
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
-from toddlerbox.runtime import health, control
+from toddlerbox.runtime import health, control, retained
 from toddlerbox.runtime.image_safety import DECODE_ERRORS, MAX_PHOTO_PIXELS
 from toddlerbox.runtime.persistence import (
     has_archive_reserve,
@@ -35,6 +35,7 @@ from toddlerbox.ui.common import (
     PointerInput,
     create_fullscreen_window,
     draw_home_button,
+    escape_exits,
     ignore_system_shortcut,
     is_primary_pointer_event,
     pointer_event_pos,
@@ -172,6 +173,7 @@ def _is_paint_archive(path: Path) -> bool:
 
 
 KNOWN_ARCHIVES = 8
+EXIT_GRACE_SECONDS = 1.0  # A healthy save finishes well within this; then Home parks the work.
 
 
 class ArchiveResult(NamedTuple):
@@ -555,6 +557,8 @@ class PaintApp:
             self.screen_rect.height - 2 * self.margin,
         )
 
+        self._save_pending: Optional[tuple[int, Future]] = None
+        self._exit_since: Optional[float] = None
         self.base_surface = pygame.Surface(self.canvas_rect.size)
         self.base_surface.fill((255, 255, 255))
         self.canvas_surface = self.base_surface.copy()
@@ -570,7 +574,16 @@ class PaintApp:
             self._latest_writable = False
             self.logger.exception("Cannot classify interrupted Paint save; current saves disabled")
         latest = self.paint_dir / "latest.png"
-        if latest.exists():
+        parked = retained.adopt("paint")
+        if parked is not None:
+            # Newer than disk: a previous visit's save had not finished.
+            pixels, size = parked.state
+            self.canvas_surface = pygame.transform.smoothscale(
+                pygame.image.frombytes(pixels, size, "RGB").convert(), self.canvas_rect.size)
+            self._latest_writable = self._latest_writable and not parked.write_disabled
+            self._save_pending = None if parked.writer is None else (0, parked.writer)
+            self.logger.info("Paint resumed parked work")
+        elif latest.exists():
             restored = _load_canvas_image(latest, self.canvas_rect.size)
             if restored is not None:
                 self.canvas_surface = restored
@@ -622,7 +635,6 @@ class PaintApp:
         self._recall_pending: Optional[tuple[int, Future]] = None
         self._recall_generation = 0
         self._save_worker: Optional[ThreadPoolExecutor] = None
-        self._save_pending: Optional[tuple[int, Future]] = None
         self._save_failed = False
         self._transition_request = None
         self._transition_pending = None
@@ -1144,10 +1156,28 @@ class PaintApp:
     def _poll_exit(self) -> bool:
         if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
             return False
-        saved = self._save_for_control()
-        if saved is False:
-            self._exit_requested = False
-        return saved is True
+        self._finish_pending_save()
+        if self._saved_revision == self._canvas_revision:
+            return True
+        if self._exit_since is None:
+            self._exit_since = time.monotonic()
+        waiting = time.monotonic() - self._exit_since < EXIT_GRACE_SECONDS
+        if self._latest_writable and not self._save_failed and waiting:
+            self._request_autosave()
+            return False
+        # Home never waits on storage: the launcher keeps and keeps saving this canvas.
+        self._park_unsaved()
+        return True
+
+    def _park_unsaved(self) -> None:
+        pixels, size = _canvas_pixels(self.canvas_surface), self.canvas_surface.get_size()
+        retained.park(retained.ParkedWork(
+            "paint", self.paint_dir / "latest.png", lambda: _encode_png(pixels, size), (pixels, size),
+            prior=None if self._save_pending is None else self._save_pending[1],
+            write_disabled=not self._latest_writable))
+        self._save_pending = None
+        self._saved_revision = self._canvas_revision  # Ownership moved to the launcher.
+        self.logger.warning("Paint save unfinished at exit; work kept in memory and saving continues")
 
     def _canvas_digest(self) -> str:
         return _pixels_digest(_canvas_pixels(self.canvas_surface))
@@ -1413,7 +1443,8 @@ class PaintApp:
                     self.logger.exception("Paint archive did not finish at shutdown")
                 self._service_transition()
             self._transition_request = None
-            self._autosave_latest()
+            if not self._autosave_latest():
+                self._park_unsaved()
             if self._recall_worker is not None:
                 self._recall_worker.shutdown(wait=False, cancel_futures=True)
             if self._save_worker is not None:
@@ -1459,7 +1490,8 @@ class PaintApp:
                     self._handle_recall_event(event)
                     continue
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    self._exit_requested = True
+                    if escape_exits():
+                        self._exit_requested = True
                 elif is_primary_pointer_event(event, is_down=True):
                     pos = self._event_pos(event)
                     if pos is None:
@@ -1499,6 +1531,7 @@ class PaintApp:
 def main() -> None:
     try:
         PaintApp().run(quit_on_exit=True)
+        retained.flush(5.0)
     except Exception:
         logger = get_runtime_logger(get_data_root(load_config()))
         logger.exception("Paint app crashed in main()")

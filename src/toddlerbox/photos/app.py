@@ -35,6 +35,7 @@ from toddlerbox.ui.common import (
     PointerInput,
     create_fullscreen_window,
     draw_home_button,
+    escape_exits,
     ignore_system_shortcut,
     is_primary_pointer_event,
     pointer_event_pos,
@@ -579,6 +580,8 @@ class PhotosApp:
                     if not self.pointer_input.accept(event):
                         continue
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        if not escape_exits():
+                            continue
                         running = False
                         break
                     elif is_primary_pointer_event(event, is_down=True):

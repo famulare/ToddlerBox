@@ -10,6 +10,7 @@ import time
 from functools import lru_cache
 
 import pygame
+from toddlerbox.runtime import retained
 from toddlerbox.ui import theme
 
 
@@ -41,6 +42,12 @@ class AppChannel:
     def _save_result(self, nonce, callback, deadline):
         try:
             result = False if self.clock() >= deadline else (True if callback is None else callback())
+            # Work parked by an earlier activity counts too: memory is never durable.
+            parked = retained.status()
+            if result is not False and parked == retained.FAILED:
+                result = False
+            elif result is True and parked == retained.PENDING:
+                result = SAVE_PENDING
         except Exception:
             result = False
         if result is SAVE_PENDING and self.clock() < deadline:

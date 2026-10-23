@@ -21,7 +21,7 @@ from toddlerbox.paths import get_data_root
 from toddlerbox.paint.app import run_embedded as run_paint_embedded
 from toddlerbox.photos.app import PhotosApp, run_embedded as run_photos_embedded
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
-from toddlerbox.runtime import health, control
+from toddlerbox.runtime import health, control, retained
 from toddlerbox.typing.app import run_embedded as run_typing_embedded
 from toddlerbox.ui.common import (
     Button,
@@ -320,12 +320,16 @@ def main() -> None:
                     except Exception:
                         logger.exception("Photos prewarm thumbnail load failed")
                         break
+            retained.status()  # Non-blocking retry of work an activity could not save.
             clock.tick(60)
             health.frame_complete()
 
     finally:
         if photos_app is not None:
             photos_app.close()
+        # Inside the controller's shutdown grace: one bounded attempt for parked work.
+        if retained.flush(3.0) != retained.DURABLE:
+            logger.warning("Parked activity work could not be saved before shutdown")
         pygame.quit()
         health.shutdown_complete()
 
