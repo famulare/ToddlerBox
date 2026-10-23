@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import os
 from pathlib import Path
 from typing import Any, Dict
@@ -119,7 +120,8 @@ def _candidate_config_paths() -> list[Path]:
 
 
 def load_config() -> Dict[str, Any]:
-    config = dict(DEFAULT_CONFIG)
+    # Deep copy: callers may adjust their config without changing everyone's defaults.
+    config = copy.deepcopy(DEFAULT_CONFIG)
     for path in _candidate_config_paths():
         if path.exists():
             with path.open("r", encoding="utf-8") as handle:

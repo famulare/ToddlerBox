@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -70,6 +71,7 @@ class RecallSession:
     preview: str
     rich_lines: List[List[Glyph]]
     is_current: bool = False
+    source: Optional[Path] = None
 
 
 @dataclass
@@ -193,6 +195,30 @@ def _rich_to_text(lines: List[List[Glyph]]) -> str:
 
 
 CURRENT_READ_LIMIT = 64 * 1024 * 1024
+KNOWN_ARCHIVES = 8
+
+
+def _lines_digest(serialized_lines: list) -> str:
+    # Content only: timestamps, cursor and the next-typed style are not work.
+    return hashlib.sha256(json.dumps(serialized_lines, ensure_ascii=False,
+                                     separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def _archive_duplicate(directory: Path, digest: str, known: Tuple[Tuple[Path, str], ...]) -> bool:
+    """Identical to an archive that still exists: nothing new to preserve."""
+    if any(known_digest == digest and path.exists() for path, known_digest in known):
+        return True
+    archives = _archive_files(directory) if directory.is_dir() else []
+    if not archives:
+        return False
+    try:
+        newest = max(archives, key=lambda path: path.stat().st_mtime_ns)
+        if newest.stat().st_size > RECALL_READ_BYTES:
+            return False
+        record = json.loads(newest.read_bytes())
+        return isinstance(record, dict) and _lines_digest(record.get("rich_lines")) == digest
+    except Exception:
+        return False
 
 
 def _valid_document(raw: bytes) -> bool:
@@ -243,6 +269,7 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
             budget -= len(raw)
             item = _recall_session(raw)
             if item is not None:
+                item.source = archive
                 recent.append(item)
         except OSError:
             continue
@@ -263,6 +290,7 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
         for raw in reversed(records):
             item = _recall_session(raw)
             if item is not None:
+                item.source = path
                 recent.append(item)
                 if len(recent) == limit:
                     break
@@ -270,8 +298,14 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
         pass
     return recent
 
-def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, options: dict) -> None:
+def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, options: dict,
+                     digest: Optional[str] = None,
+                     known: Tuple[Tuple[Path, str], ...] = ()) -> Optional[Path]:
+    """Returns the new archive, or None when this content is already preserved."""
     directory = typing_dir / "archive"
+    # Checked before capacity so repeated New/Recall taps never fill the archive.
+    if digest is not None and _archive_duplicate(directory, digest, known):
+        return None
     try:
         max_archives = max(0, int(options.get("max_archives", 200)))
         max_bytes = max(0, int(options.get("max_archive_bytes", 256 * 1024 * 1024)))
@@ -293,7 +327,7 @@ def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, opti
         raise OSError("Typing archive reserve reached")
     directory.mkdir(exist_ok=True)
     sync_directory(typing_dir)
-    publish_new_bytes(directory / f"{time.time_ns()}.json", payload)
+    return publish_new_bytes(directory / f"{time.time_ns()}.json", payload)
 
 
 
@@ -321,6 +355,8 @@ class TypingApp:
         self._save_failed = False
         self._transition_request = None
         self._transition_pending = None
+        # (archive, content digest) pairs whose document is already durably archived.
+        self._known_archives: List[Tuple[Path, str]] = []
         self._exit_requested = False
         self._layout_key = None
         self._layout_revision = 0
@@ -686,40 +722,57 @@ class TypingApp:
     def _begin_transition(self, kind: str, item=None) -> None:
         if self._transition_request is not None or self._transition_pending is not None or self._exit_requested:
             return
-        self._transition_request = (kind, _clone_rich_lines(item.rich_lines) if item is not None else None)
+        self._transition_request = (kind, _clone_rich_lines(item.rich_lines) if item is not None else None,
+                                    item.source if item is not None else None)
 
     def _service_transition(self) -> None:
         self._finish_pending_save()
         if self._save_pending is not None:
             return
         if self._transition_pending is not None:
-            kind, lines, future = self._transition_pending
+            kind, lines, future, source, digest = self._transition_pending
             if not future.done():
                 return
             self._transition_pending = None
             try:
-                future.result()
+                published = future.result()
             except Exception:
                 self.logger.exception("Typing transition failed; preserving current document")
                 return
+            if published is not None:
+                self._remember_archive(published, digest)
             # Never clear or replace work until its archive is durably committed.
-            if kind == "new":
-                self._clear_text()
-            else:
-                self._set_recalled_lines(lines)
-            self._request_autosave()
+            self._finish_transition(kind, lines, source)
         if self._transition_request is None:
             return
-        kind, lines = self._transition_request
+        kind, lines, source = self._transition_request
         self._transition_request = None
+        serialized = _serialize_rich_lines(self.rich_lines)
+        if not any(serialized):
+            self._finish_transition(kind, lines, source)  # Blank: nothing to preserve.
+            return
         record = {"version": 1, "timestamp": datetime.now().isoformat(timespec="seconds"),
-                  "rich_lines": _serialize_rich_lines(self.rich_lines)}
+                  "rich_lines": serialized}
         payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
+        digest = _lines_digest(serialized)
         if self._save_worker is None:
             self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="typing-save")
         future = self._save_worker.submit(_archive_payload, self.typing_dir, self.sessions_path,
-                                          payload, self.config.get("typing", {}).copy())
-        self._transition_pending = (kind, lines, future)
+                                          payload, self.config.get("typing", {}).copy(),
+                                          digest, tuple(self._known_archives))
+        self._transition_pending = (kind, lines, future, source, digest)
+
+    def _finish_transition(self, kind: str, lines, source: Optional[Path]) -> None:
+        if kind == "new":
+            self._clear_text()
+        else:
+            self._set_recalled_lines(lines)
+            if source is not None:
+                self._remember_archive(source, _lines_digest(_serialize_rich_lines(self.rich_lines)))
+        self._request_autosave()
+
+    def _remember_archive(self, path: Path, digest: str) -> None:
+        self._known_archives = [*self._known_archives[-(KNOWN_ARCHIVES - 1):], (path, digest)]
 
     def _poll_exit(self) -> bool:
         if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
@@ -784,17 +837,25 @@ class TypingApp:
                 self.logger.exception("Cannot preserve unreadable typing document; current saves disabled")
 
     def _archive_session(self) -> bool:
+        serialized = _serialize_rich_lines(self.rich_lines)
+        if not any(serialized):
+            return True  # Blank: nothing to preserve.
         record = {
             "version": 1,
             "timestamp": datetime.now().isoformat(timespec="seconds"),
-            "rich_lines": _serialize_rich_lines(self.rich_lines),
+            "rich_lines": serialized,
         }
         payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
+        digest = _lines_digest(serialized)
         try:
-            _archive_payload(self.typing_dir, self.sessions_path, payload, self.config.get("typing", {}).copy())
+            published = _archive_payload(self.typing_dir, self.sessions_path, payload,
+                                         self.config.get("typing", {}).copy(), digest,
+                                         tuple(self._known_archives))
         except OSError:
             self.logger.warning("Typing session archive write failed; keeping current document")
             return False
+        if published is not None:
+            self._remember_archive(published, digest)
         return True
 
     def _current_text(self) -> str:
@@ -1142,6 +1203,8 @@ class TypingApp:
         if not self._archive_session():
             return
         self._set_recalled_lines(item.rich_lines)
+        if item.source is not None:
+            self._remember_archive(item.source, _lines_digest(_serialize_rich_lines(self.rich_lines)))
         self._save_current()
 
     def _set_recalled_lines(self, lines) -> None:

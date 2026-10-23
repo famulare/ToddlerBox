@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import io
 import math
 import os
@@ -9,7 +10,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NamedTuple, Optional, Tuple
 
 import pygame
 from PIL import Image
@@ -170,8 +171,44 @@ def _is_paint_archive(path: Path) -> bool:
     return path.name != "latest.png" and is_work_name(path.name)
 
 
+KNOWN_ARCHIVES = 8
+
+
+class ArchiveResult(NamedTuple):
+    loaded: Optional[Tuple[Tuple[int, int], bytes]]
+    published: Optional[Path]
+    digest: str
+
+
+def _pixels_digest(pixels: bytes) -> str:
+    return hashlib.sha256(pixels).hexdigest()
+
+
+def _archive_duplicate(pixels: bytes, size: Tuple[int, int], directory: Path,
+                       known: Tuple[Tuple[Path, str], ...], digest: str) -> bool:
+    """Blank, or identical to an archive that still exists: nothing new to preserve.
+
+    Checked before capacity so repeated New/Recall taps never fill the archive.
+    """
+    if pixels.count(255) == len(pixels):
+        return True
+    if any(known_digest == digest and path.exists() for path, known_digest in known):
+        return True
+    archives = [path for path in _list_archives(directory) if _is_paint_archive(path)]
+    if not archives:
+        return False
+    try:
+        with Image.open(archives[0]) as newest:
+            if newest.size != tuple(size) or newest.width * newest.height > MAX_PHOTO_PIXELS:
+                return False
+            return _pixels_digest(newest.convert("RGB").tobytes()) == digest
+    except Exception:
+        return False
+
+
 def _archive_pixels(pixels: bytes, size: Tuple[int, int], directory: Path,
-                    limit: int, source: Optional[Path] = None):
+                    limit: int, source: Optional[Path] = None,
+                    known: Tuple[Tuple[Path, str], ...] = ()) -> ArchiveResult:
     """Immutable worker inputs only; decode before archiving/replacing work."""
     loaded = None
     if source is not None:
@@ -179,11 +216,14 @@ def _archive_pixels(pixels: bytes, size: Tuple[int, int], directory: Path,
             if image.width * image.height > 40_000_000:
                 raise ValueError("Recalled painting exceeds decoding budget")
             loaded = (image.size, image.convert("RGBA").tobytes())
+    digest = _pixels_digest(pixels)
+    if _archive_duplicate(pixels, size, directory, known, digest):
+        return ArchiveResult(loaded, None, digest)
     archives = [path for path in _list_archives(directory) if _is_paint_archive(path)]
     if len(archives) >= limit or not has_archive_reserve(directory, size[0] * size[1] * 4 + 65536):
         raise OSError("Paint archive capacity/reserve reached")
-    publish_new_bytes(directory / _archive_name(), _encode_png(pixels, size))
-    return loaded
+    published = publish_new_bytes(directory / _archive_name(), _encode_png(pixels, size))
+    return ArchiveResult(loaded, published, digest)
 
 
 def _list_archives(paint_dir: Path) -> List[Path]:
@@ -587,6 +627,8 @@ class PaintApp:
         self._transition_request = None
         self._transition_pending = None
         self._exit_requested = False
+        # (archive, canvas digest) pairs whose canvas is already durably archived.
+        self._known_archives: List[Tuple[Path, str]] = []
         self._recall_overlay = pygame.Surface(self.screen_rect.size, pygame.SRCALPHA)
         self._recall_overlay.fill((*theme.INK, 110))
 
@@ -1050,20 +1092,22 @@ class PaintApp:
         if self._save_pending is not None:
             return
         if self._transition_pending is not None:
-            kind, future = self._transition_pending
+            kind, future, source = self._transition_pending
             if not future.done():
                 return
             self._transition_pending = None
             try:
-                loaded = future.result()
+                result = future.result()
             except Exception:
                 self.logger.exception("Paint transition failed; preserving current canvas")
                 return
+            if result.published is not None:
+                self._remember_archive(result.published, result.digest)
             if kind == "new":
                 self._update_thumbnail_button()
                 self._reset_canvas()
             else:
-                original_size, rgba = loaded
+                original_size, rgba = result.loaded
                 decoded = pygame.image.frombytes(rgba, original_size, "RGBA").convert_alpha()
                 self.canvas_surface = pygame.transform.smoothscale(decoded, self.canvas_rect.size)
                 self._mark_canvas_changed()
@@ -1071,6 +1115,8 @@ class PaintApp:
                 self.redo_stack = []
                 self._update_thumbnail_button()
                 self.recall_open = False
+                if source is not None:
+                    self._remember_archive(source, self._canvas_digest())
             # Archive was durably committed before the working canvas changed.
             self._request_autosave()
         if self._transition_request is None:
@@ -1089,10 +1135,11 @@ class PaintApp:
         self._transition_request = None
         if self._save_worker is None:
             self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paint-save")
-        pixels = pygame.image.tobytes(self.canvas_surface, "RGB")
+        pixels = _canvas_pixels(self.canvas_surface)
         limit = _coerce_archive_limit(self.config.get("paint", {}).get("max_archives", MAX_ARCHIVES), MAX_ARCHIVES)
         self._transition_pending = (kind, self._save_worker.submit(
-            _archive_pixels, pixels, self.canvas_rect.size, self.paint_dir, limit, source))
+            _archive_pixels, pixels, self.canvas_rect.size, self.paint_dir, limit, source,
+            tuple(self._known_archives)), source)
 
     def _poll_exit(self) -> bool:
         if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
@@ -1102,15 +1149,26 @@ class PaintApp:
             self._exit_requested = False
         return saved is True
 
+    def _canvas_digest(self) -> str:
+        return _pixels_digest(_canvas_pixels(self.canvas_surface))
+
+    def _remember_archive(self, path: Path, digest: str) -> None:
+        self._known_archives = [*self._known_archives[-(KNOWN_ARCHIVES - 1):], (path, digest)]
+
     def _archive_current(self) -> bool:
+        pixels = _canvas_pixels(self.canvas_surface)
+        size = self.canvas_surface.get_size()
+        digest = _pixels_digest(pixels)
+        if _archive_duplicate(pixels, size, self.paint_dir, tuple(self._known_archives), digest):
+            return True  # Already preserved (or blank): nothing new to archive.
         if not self._archive_capacity_available():
             return False
         try:
-            publish_new_bytes(self.paint_dir / _archive_name(),
-                              _encode_png(_canvas_pixels(self.canvas_surface), self.canvas_surface.get_size()))
+            published = publish_new_bytes(self.paint_dir / _archive_name(), _encode_png(pixels, size))
         except Exception:
             self.logger.exception("Paint archive write failed")
             return False
+        self._remember_archive(published, digest)
         self._update_thumbnail_button()
         return True
 
@@ -1223,6 +1281,7 @@ class PaintApp:
         self._mark_canvas_changed()
         self.undo_stack = []
         self.redo_stack = []
+        self._remember_archive(item.source, self._canvas_digest())
         # Always promote selected archive into latest working copy.
         self._autosave_latest()
         self.last_autosave = time.monotonic()
