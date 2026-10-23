@@ -9,7 +9,7 @@ from toddlerbox.paint.app import _fountain_width_for_direction
 from toddlerbox.paint.app import _load_canvas_image
 from toddlerbox.paint.app import _list_archives
 from toddlerbox.paint.app import _rollover_latest_snapshot
-from toddlerbox.paint.app import _save_surface_atomic
+from toddlerbox.paint.app import _save_pixels_atomic
 from toddlerbox.paint.app import PaintApp
 from toddlerbox.ui.common import Button
 from toddlerbox.ui.common import is_primary_pointer_event
@@ -129,22 +129,21 @@ def test_load_canvas_image_returns_none_on_image_error(monkeypatch, tmp_path):
     assert _load_canvas_image(path, (64, 64)) is None
 
 
-def test_save_surface_atomic_cleans_tmp_file_on_failure(monkeypatch, tmp_path):
-    surface = pygame.Surface((4, 4))
+def test_save_pixels_atomic_removes_its_own_tmp_file_on_failure(monkeypatch, tmp_path):
     path = tmp_path / "latest.png"
-    tmp_pathname = tmp_path / ".latest.tmp.png"
-    tmp_pathname.write_bytes(b"stale")
+    path.write_bytes(b"previous")
 
     def _raise(*_args, **_kwargs):
-        raise pygame.error("save failed")
+        raise OSError(28, "No space left on device")
 
-    monkeypatch.setattr(pygame.image, "save", _raise)
+    monkeypatch.setattr("toddlerbox.runtime.persistence.os.fsync", _raise)
     try:
-        _save_surface_atomic(surface, path)
-    except pygame.error:
+        _save_pixels_atomic(b"\0" * 48, (4, 4), path)
+    except OSError:
         pass
 
-    assert not tmp_pathname.exists()
+    assert path.read_bytes() == b"previous"
+    assert not (tmp_path / ".latest.tmp.png").exists()
 
 
 def _make_pointer_resolution_app() -> PaintApp:

@@ -23,7 +23,15 @@ from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.runtime import health, control
-from toddlerbox.runtime.persistence import has_archive_reserve, write_bytes, sync_directory
+from toddlerbox.runtime.persistence import (
+    has_archive_reserve,
+    is_work_name,
+    publish_new_bytes,
+    quarantine,
+    recover_orphans,
+    sync_directory,
+    write_bytes,
+)
 from toddlerbox.ui import theme
 from toddlerbox.ui.common import (
     Button,
@@ -184,6 +192,17 @@ def _rich_to_text(lines: List[List[Glyph]]) -> str:
     return "\n".join("".join(g.char for g in line) for line in lines)
 
 
+CURRENT_READ_LIMIT = 64 * 1024 * 1024
+
+
+def _valid_document(raw: bytes) -> bool:
+    return _recall_session(raw) is not None
+
+
+def _archive_files(directory: Path) -> List[Path]:
+    return [path for path in directory.glob("*.json") if is_work_name(path.name)]
+
+
 def _recall_session(raw: bytes) -> Optional[RecallSession]:
     try:
         record = json.loads(raw)
@@ -197,7 +216,7 @@ def _recall_session(raw: bytes) -> Optional[RecallSession]:
             preview=_preview_text(_rich_to_text(rich_lines)),
             rich_lines=rich_lines,
         )
-    except (ValueError, UnicodeError):
+    except (ValueError, UnicodeError, RecursionError):
         return None
 
 
@@ -212,7 +231,7 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
         return []
     recent: List[RecallSession] = []
     budget = RECALL_READ_BYTES
-    for archive in nlargest(limit, (path.parent / "archive").glob("*.json")):
+    for archive in nlargest(limit, _archive_files(path.parent / "archive")):
         if budget <= 0:
             break
         try:
@@ -263,7 +282,7 @@ def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, opti
     count, total_bytes = 0, len(payload)
     if sessions_path.exists():
         total_bytes += sessions_path.stat().st_size
-    for archive in directory.glob("*.json"):
+    for archive in _archive_files(directory):
         count += 1
         total_bytes += archive.stat().st_size
         if count >= max_archives or total_bytes > max_bytes:
@@ -274,7 +293,7 @@ def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, opti
         raise OSError("Typing archive reserve reached")
     directory.mkdir(exist_ok=True)
     sync_directory(typing_dir)
-    write_bytes(directory / f"{time.time_ns()}.json", payload)
+    publish_new_bytes(directory / f"{time.time_ns()}.json", payload)
 
 
 
@@ -415,6 +434,7 @@ class TypingApp:
         self.text_pad_top = 20
         self.line_gap = 6
         self.recall_button.image = self._build_recall_button_thumbnail()
+        self._recover_interrupted_saves()
         self._restore_current()
 
     def _handle_resume(self, reason: str) -> None:
@@ -709,10 +729,24 @@ class TypingApp:
             self._exit_requested = False
         return saved is True
 
+    def _recover_interrupted_saves(self) -> None:
+        archive = self.typing_dir / "archive"
+        try:
+            archive.mkdir(exist_ok=True)
+            for directory in (self.typing_dir, archive):
+                for recovered in recover_orphans(directory, suffix=".json", validate=_valid_document,
+                                                 recovered_dir=archive):
+                    self.logger.warning(f"Preserved interrupted Typing save as {recovered.name}")
+        except Exception:
+            self._save_blocked = True
+            self.logger.exception("Cannot classify interrupted Typing save; current saves disabled")
+
     def _restore_current(self) -> None:
         if not self.current_path.exists():
             return
         try:
+            if self.current_path.stat().st_size > CURRENT_READ_LIMIT:
+                raise ValueError("Typing document exceeds restore limit")
             record = json.loads(self.current_path.read_text(encoding="utf-8"))
             if isinstance(record, dict) and record.get("version", 1) != 1:
                 # Rollbacks must never classify a newer save as corrupt or
@@ -739,10 +773,15 @@ class TypingApp:
             size, style = record.get("size"), record.get("style")
             if size in self.size_values and style in {"plain", "bold", "italic"}:
                 self.current_text_size, self.text_style = size, style
-        except (OSError, ValueError, TypeError, AttributeError, IndexError):
+        except Exception:
+            # Includes RecursionError/KeyError from hostile structure: never a crash loop.
             self.logger.exception("Preserving unreadable typing document")
-            self.current_path.rename(self.typing_dir / f"corrupt-{time.time_ns()}.json")
-            sync_directory(self.typing_dir)
+            self._clear_text()
+            try:
+                quarantine(self.current_path)
+            except OSError:
+                self._save_blocked = True
+                self.logger.exception("Cannot preserve unreadable typing document; current saves disabled")
 
     def _archive_session(self) -> bool:
         record = {

@@ -27,14 +27,17 @@ def disk_full(*args, **kwargs):
     raise OSError(errno.ENOSPC, "No space left on device")
 
 
-def test_failed_write_preserves_previous_complete_file(tmp_path):
+def test_failed_write_preserves_previous_complete_file(tmp_path, monkeypatch):
     path = tmp_path / "current.json"
     path.write_bytes(b"previous work")
-    def interrupted(temporary):
-        temporary.write_bytes(b"partial replacement")
+    original = persistence.os.fsync
+    def interrupted(fd):
+        persistence.os.write(fd, b"partial replacement")
         disk_full()
+    monkeypatch.setattr(persistence.os, "fsync", interrupted)
     with pytest.raises(OSError):
-        persistence.atomic_write(path, interrupted)
+        persistence.write_bytes(path, b"new work")
+    monkeypatch.setattr(persistence.os, "fsync", original)
     assert path.read_bytes() == b"previous work"
     assert list(tmp_path.iterdir()) == [path]
 
@@ -100,6 +103,7 @@ def test_typing_new_keeps_work_if_archive_cannot_be_saved(screen, monkeypatch):
     app = TypingApp(screen=screen)
     app._insert_char("A")
     monkeypatch.setattr("toddlerbox.typing.app.write_bytes", disk_full)
+    monkeypatch.setattr("toddlerbox.typing.app.publish_new_bytes", disk_full)
     assert not app._archive_session()
     assert app.text_lines == ["A"]
     assert not app._save_current()
@@ -136,7 +140,8 @@ def test_paint_restores_canvas_after_return_home(screen):
 def test_paint_new_and_home_preserve_work_when_disk_full(screen, monkeypatch):
     app = PaintApp(screen=screen)
     app.canvas_surface.fill((1, 80, 120))
-    monkeypatch.setattr("toddlerbox.paint.app._save_surface_atomic", disk_full)
+    monkeypatch.setattr("toddlerbox.paint.app.publish_new_bytes", disk_full)
+    monkeypatch.setattr("toddlerbox.paint.app.write_bytes", disk_full)
     assert not app._handle_pointer_down(app.action_buttons["new"].rect.center)
     assert app.canvas_surface.get_at((10, 10))[:3] == (1, 80, 120)
     assert not app._handle_pointer_down(app.action_buttons["home"].rect.center)

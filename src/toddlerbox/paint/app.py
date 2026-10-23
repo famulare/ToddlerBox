@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import math
 import os
 import time
@@ -17,7 +18,15 @@ from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.runtime import health, control
-from toddlerbox.runtime.persistence import atomic_write, has_archive_reserve, sync_directory
+from toddlerbox.runtime.image_safety import MAX_PHOTO_PIXELS
+from toddlerbox.runtime.persistence import (
+    has_archive_reserve,
+    is_work_name,
+    publish_new_bytes,
+    quarantine,
+    recover_orphans,
+    write_bytes,
+)
 from toddlerbox.ui import theme
 from toddlerbox.ui.common import (
     Button,
@@ -129,13 +138,36 @@ class RecallItem:
     source: Optional[Path] = None
 
 
-def _save_surface_atomic(surface: pygame.Surface, path: Path) -> None:
-    atomic_write(path, lambda temporary: pygame.image.save(surface, str(temporary)))
+def _encode_png(pixels: bytes, size: Tuple[int, int]) -> bytes:
+    # Encode in memory: pygame.image.save returns normally after a short write,
+    # which would let a truncated file replace the previous complete painting.
+    buffer = io.BytesIO()
+    Image.frombytes("RGB", size, pixels).save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def _save_pixels_atomic(pixels: bytes, size: Tuple[int, int], path: Path) -> None:
-    image = Image.frombytes("RGB", size, pixels)
-    atomic_write(path, lambda temporary: image.save(temporary, format="PNG"))
+    write_bytes(path, _encode_png(pixels, size))
+
+
+def _canvas_pixels(surface: pygame.Surface) -> bytes:
+    return pygame.image.tobytes(surface, "RGB")
+
+
+def _valid_png(data: bytes) -> bool:
+    with Image.open(io.BytesIO(data)) as image:
+        if image.format != "PNG" or image.width * image.height > MAX_PHOTO_PIXELS:
+            return False
+        image.load()
+    return True
+
+
+def _archive_name() -> str:
+    return datetime.now().strftime("%Y-%m-%d_%H%M%S") + ".png"
+
+
+def _is_paint_archive(path: Path) -> bool:
+    return path.name != "latest.png" and is_work_name(path.name)
 
 
 def _archive_pixels(pixels: bytes, size: Tuple[int, int], directory: Path,
@@ -147,17 +179,10 @@ def _archive_pixels(pixels: bytes, size: Tuple[int, int], directory: Path,
             if image.width * image.height > 40_000_000:
                 raise ValueError("Recalled painting exceeds decoding budget")
             loaded = (image.size, image.convert("RGBA").tobytes())
-    archives = [path for path in _list_archives(directory)
-                if path.name != "latest.png" and not path.name.startswith(("corrupt-", "."))]
+    archives = [path for path in _list_archives(directory) if _is_paint_archive(path)]
     if len(archives) >= limit or not has_archive_reserve(directory, size[0] * size[1] * 4 + 65536):
         raise OSError("Paint archive capacity/reserve reached")
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-    path = directory / f"{timestamp}.png"
-    counter = 1
-    while path.exists():
-        path = directory / f"{timestamp}_{counter}.png"
-        counter += 1
-    _save_pixels_atomic(pixels, size, path)
+    publish_new_bytes(directory / _archive_name(), _encode_png(pixels, size))
     return loaded
 
 
@@ -418,8 +443,12 @@ def _recall_pixels(path: Path, size: Tuple[int, int]) -> Optional[bytes]:
 
 def _load_canvas_image(path: Path, size: Tuple[int, int]) -> Optional[pygame.Surface]:
     try:
+        with Image.open(path) as header:
+            if header.width * header.height > MAX_PHOTO_PIXELS:
+                return None
         image = pygame.image.load(str(path)).convert_alpha()
-    except (pygame.error, OSError):
+    except Exception:
+        # Any unreadable save is preserved by the caller, never a crash loop.
         return None
     return pygame.transform.smoothscale(image, size)
 
@@ -491,6 +520,15 @@ class PaintApp:
         self.canvas_surface = self.base_surface.copy()
         self._canvas_revision = 0
         self._saved_revision = -1
+        # False when the previous latest.png could not be preserved: never write over it.
+        self._latest_writable = True
+        try:
+            for recovered in recover_orphans(self.paint_dir, suffix=".png", validate=_valid_png,
+                                             recovered_dir=self.paint_dir):
+                self.logger.warning(f"Preserved interrupted Paint save as {recovered.name}")
+        except Exception:
+            self._latest_writable = False
+            self.logger.exception("Cannot classify interrupted Paint save; current saves disabled")
         latest = self.paint_dir / "latest.png"
         if latest.exists():
             restored = _load_canvas_image(latest, self.canvas_rect.size)
@@ -499,9 +537,12 @@ class PaintApp:
                 self._saved_revision = 0
             else:
                 # Keep damaged media for parent inspection before making a new save.
-                latest.rename(latest.with_name(f"corrupt-{time.time_ns()}.png"))
-                sync_directory(self.paint_dir)
-                self.logger.warning("Preserved unreadable paint save as corrupt media")
+                try:
+                    quarantine(latest)
+                    self.logger.warning("Preserved unreadable paint save as corrupt media")
+                except OSError:
+                    self._latest_writable = False
+                    self.logger.exception("Cannot preserve unreadable paint save; current saves disabled")
 
         self.palette = [tuple(color) for color in self.config.get("paint", {}).get("palette", [])]
         self.current_color: Color = self.palette[0] if self.palette else (0, 0, 0)
@@ -940,9 +981,11 @@ class PaintApp:
         self._finish_pending_save(wait=True)
         if self._saved_revision == self._canvas_revision:
             return True
+        if not self._latest_writable:
+            return False
         latest_path = self.paint_dir / "latest.png"
         try:
-            _save_surface_atomic(self.canvas_surface, latest_path)
+            _save_pixels_atomic(_canvas_pixels(self.canvas_surface), self.canvas_surface.get_size(), latest_path)
         except Exception:
             self.logger.exception("Paint autosave failed")
             return False
@@ -972,17 +1015,21 @@ class PaintApp:
         self._finish_pending_save()
         if self._save_pending is not None or self._saved_revision == self._canvas_revision:
             return
+        if not self._latest_writable:
+            return
         if self._save_worker is None:
             self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paint-save")
         self._save_failed = False
         # Immutable copy: the child can continue drawing while PNG/fsync runs.
-        pixels = pygame.image.tobytes(self.canvas_surface, "RGB")
+        pixels = _canvas_pixels(self.canvas_surface)
         future = self._save_worker.submit(_save_pixels_atomic, pixels, self.canvas_surface.get_size(),
                                           self.paint_dir / "latest.png")
         self._save_pending = (self._canvas_revision, future)
 
     def _save_for_control(self):
         self._finish_pending_save()
+        if self._saved_revision != self._canvas_revision and not self._latest_writable:
+            return False
         if self._save_failed:
             self._save_failed = False  # Consume one failure; a new explicit request can retry.
             return False
@@ -1058,14 +1105,9 @@ class PaintApp:
     def _archive_current(self) -> bool:
         if not self._archive_capacity_available():
             return False
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        archive_path = self.paint_dir / f"{timestamp}.png"
-        counter = 1
-        while archive_path.exists():
-            archive_path = self.paint_dir / f"{timestamp}_{counter}.png"
-            counter += 1
         try:
-            _save_surface_atomic(self.canvas_surface, archive_path)
+            publish_new_bytes(self.paint_dir / _archive_name(),
+                              _encode_png(_canvas_pixels(self.canvas_surface), self.canvas_surface.get_size()))
         except Exception:
             self.logger.exception("Paint archive write failed")
             return False
@@ -1093,8 +1135,7 @@ class PaintApp:
         return True
 
     def _recall_archives(self) -> List[Path]:
-        return [path for path in _list_archives(self.paint_dir)
-                if path.name != "latest.png" and not path.name.startswith(("corrupt-", "."))]
+        return [path for path in _list_archives(self.paint_dir) if _is_paint_archive(path)]
 
     def _reset_canvas(self) -> None:
         self.base_surface.fill((255, 255, 255))

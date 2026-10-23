@@ -108,11 +108,11 @@ def test_failed_archive_keeps_exact_current_and_old_durable_files(app, monkeypat
     if isinstance(app, PaintApp):
         assert app._autosave_latest()
         path = app.paint_dir / 'latest.png'
-        target = 'toddlerbox.paint.app._save_pixels_atomic'
+        target = 'toddlerbox.paint.app.publish_new_bytes'
     else:
         assert app._save_current()
         path = app.current_path
-        target = 'toddlerbox.typing.app.write_bytes'
+        target = 'toddlerbox.typing.app.publish_new_bytes'
     old_disk, before = path.read_bytes(), current(app)
     def failed(*args):
         raise failure
