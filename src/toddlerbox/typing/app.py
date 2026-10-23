@@ -161,29 +161,49 @@ def _serialize_rich_lines(lines: List[List[Glyph]]) -> List[List[dict]]:
     ]
 
 
-def _deserialize_rich_lines(payload: object) -> Optional[List[List[Glyph]]]:
-    if not isinstance(payload, list):
+# New input stops at these bounds; existing larger documents are never truncated.
+MAX_GLYPHS = 20_000
+MAX_LINES = 2_000
+MAX_GLYPH_SIZE = 1000
+
+
+def _parse_glyph(raw_glyph: object) -> Optional[Glyph]:
+    if not isinstance(raw_glyph, dict):
         return None
+    char, size, style = raw_glyph.get("char"), raw_glyph.get("size"), raw_glyph.get("style")
+    if not isinstance(char, str) or len(char) != 1:
+        return None
+    if type(size) is not int or not 1 <= size <= MAX_GLYPH_SIZE:
+        return None
+    if style not in {"plain", "bold", "italic"}:
+        return None
+    return Glyph(char=char, size=size, style=style)
+
+
+def _salvage_rich_lines(payload: object) -> Tuple[Optional[List[List[Glyph]]], int]:
+    """Keep every valid glyph; returns (lines or None if unparseable, glyphs dropped)."""
+    if not isinstance(payload, list):
+        return None, 0
     parsed: List[List[Glyph]] = []
+    dropped = 0
     for raw_line in payload:
         if not isinstance(raw_line, list):
-            return None
+            dropped += 1
+            continue
         parsed_line: List[Glyph] = []
         for raw_glyph in raw_line:
-            if not isinstance(raw_glyph, dict):
-                return None
-            char = raw_glyph.get("char")
-            size = raw_glyph.get("size")
-            style = raw_glyph.get("style")
-            if not isinstance(char, str) or len(char) != 1:
-                return None
-            if not isinstance(size, int) or size <= 0:
-                return None
-            if style not in {"plain", "bold", "italic"}:
-                return None
-            parsed_line.append(Glyph(char=char, size=size, style=style))
+            glyph = _parse_glyph(raw_glyph)
+            if glyph is None:
+                dropped += 1
+            else:
+                parsed_line.append(glyph)
         parsed.append(parsed_line)
-    return parsed if parsed else [[]]
+    return (parsed if parsed else [[]]), dropped
+
+
+def _deserialize_rich_lines(payload: object) -> Optional[List[List[Glyph]]]:
+    lines, dropped = _salvage_rich_lines(payload)
+    return None if dropped else lines
 
 
 def _clone_rich_lines(lines: List[List[Glyph]]) -> List[List[Glyph]]:
@@ -234,7 +254,7 @@ def _recall_session(raw: bytes) -> Optional[RecallSession]:
         record = json.loads(raw)
         if not isinstance(record, dict) or record.get("version", 1) != 1:
             return None
-        rich_lines = _deserialize_rich_lines(record.get("rich_lines"))
+        rich_lines, _dropped = _salvage_rich_lines(record.get("rich_lines"))
         if rich_lines is None:
             return None
         return RecallSession(
@@ -575,7 +595,21 @@ class TypingApp:
         self._sync_text_line(row)
         return removed
 
+    def _glyph_count(self) -> int:
+        return sum(len(line) for line in self.rich_lines)
+
+    def _accepts(self, char: str) -> bool:
+        # A held key or stuck keyboard must not grow the document without bound,
+        # and every glyph must be one renderable code point the loader accepts.
+        if char == "\n":
+            return len(self.rich_lines) < MAX_LINES
+        if len(char) != 1 or not char.isprintable() or self._glyph_count() >= MAX_GLYPHS:
+            return False
+        return self._get_font(self.current_text_size, self.text_style).size(char)[0] > 0
+
     def _insert_char(self, char: str) -> None:
+        if not self._accepts(char):
+            return
         if char == "\n":
             op = EditOp(
                 kind="insert",
@@ -815,9 +849,14 @@ class TypingApp:
                 self.current_path = fallback
                 self._restore_current()
                 return
-            restored = _deserialize_rich_lines(record.get("rich_lines"))
+            restored, dropped = _salvage_rich_lines(record.get("rich_lines"))
             if restored is None or record.get("version") != 1:
                 raise ValueError("invalid current document")
+            if dropped:
+                # Preserve the exact original first; then continue with every valid glyph.
+                original = self.current_path.read_bytes()
+                kept = publish_new_bytes(self.typing_dir / f"corrupt-{time.time_ns()}.json", original)
+                self.logger.warning(f"Typing document had {dropped} unusable glyphs; original kept as {kept.name}")
             self.rich_lines = restored
             self._sync_all_text_lines()
             cursor = record.get("cursor", [0, 0])
@@ -1378,7 +1417,12 @@ class TypingApp:
                 x = text_x
                 for glyph, glyph_w in zip(line.glyphs, line.widths):
                     font = self._get_font(glyph.size, glyph.style)
-                    surf = font.render(glyph.char, True, theme.INK)
+                    try:
+                        surf = font.render(glyph.char, True, theme.INK)
+                    except pygame.error:
+                        # Zero-advance code points from older saves: keep them, draw nothing.
+                        x += glyph_w
+                        continue
                     glyph_y = y + (line.height - font.get_height())
                     self.screen.blit(surf, (x, glyph_y))
                     x += glyph_w
