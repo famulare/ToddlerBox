@@ -1,0 +1,55 @@
+name: CI
+on:
+  push:
+    branches: ['dev/**', main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - name: Lint (narrow, correctness-only)
+        run: uvx ruff@0.12.0 check --no-cache . system/bin/toddlerbox-maintenance system/bin/toddlerbox-install-release system/bin/toddlerbox-mode
+      - name: Suite on the appliance interpreter, including Linux-only tests
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: |
+          uv sync --frozen --group dev --python /usr/bin/python3
+          uv run --frozen python -c 'import sys; assert sys.version_info[:2] == (3, 12), sys.version'
+          uv run --frozen pytest -q -p no:cacheprovider
+
+  root-worker-apt-pillow:
+    # The root sync worker runs /usr/bin/python3 with Ubuntu's python3-pil, not the app venv.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container: ubuntu:24.04@sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60
+    steps:
+      - name: Install the appliance's root Python packages
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git python3 python3-pil
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - name: Sync tests against apt Pillow
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+          PYTHONPATH: src
+        run: |
+          uv venv --system-site-packages --python /usr/bin/python3 /tmp/root-venv
+          # Pillow deliberately absent: imports must resolve to /usr/lib/python3/dist-packages.
+          uv pip install --python /tmp/root-venv pygame-ce==2.5.8 pyyaml==6.0.3 pytest==9.1.1
+          /tmp/root-venv/bin/python -c 'import PIL, sys; assert PIL.__file__.startswith("/usr/lib/python3/dist-packages/"), PIL.__file__; print("apt Pillow", PIL.__version__)'
+          /tmp/root-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_drive_sync.py tests/test_usb_setup.py

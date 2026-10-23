@@ -56,6 +56,7 @@ def test_unplugging_keyboard_cancels_escape():
     assert not chord.held(3)
 
 
+@pytest.mark.linux_only
 def test_controller_restart_latches_parent_mode_across_reboot(tmp_path, monkeypatch):
     state, runtime = tmp_path / "state", tmp_path / "run"
     state.mkdir()
@@ -70,6 +71,7 @@ def test_controller_restart_latches_parent_mode_across_reboot(tmp_path, monkeypa
     assert controller.startup_mode() == ("parent", False)
 
 
+@pytest.mark.linux_only
 def test_restart_reconciles_running_gdm_after_readiness(tmp_path, monkeypatch):
     events = []
     state, runtime = tmp_path / "state", tmp_path / "run"
@@ -112,6 +114,7 @@ def test_restart_reconciles_running_gdm_after_readiness(tmp_path, monkeypatch):
     assert events == [(b"READY=1", "\0notify-test"), "restart"]
 
 
+@pytest.mark.linux_only
 def test_restart_still_selects_parent_when_latch_disk_is_full(tmp_path, monkeypatch):
     state, runtime = tmp_path / "state", tmp_path / "run"
     state.mkdir()
@@ -212,6 +215,7 @@ def shutdown_environment(monkeypatch):
                            signals=signals, closed=closed, now=now)
 
 
+@pytest.mark.linux_only
 def test_shutdown_waits_for_authenticated_completion(shutdown_environment):
     env = shutdown_environment
     env.packet()
@@ -221,6 +225,7 @@ def test_shutdown_waits_for_authenticated_completion(shutdown_environment):
     assert env.now[0] < 5
 
 
+@pytest.mark.linux_only
 def test_frozen_launcher_cannot_extend_shutdown_grace(shutdown_environment):
     env = shutdown_environment
     controller.stop_launchers(env.health, 1000, grace=5)
@@ -234,6 +239,7 @@ def test_frozen_launcher_cannot_extend_shutdown_grace(shutdown_environment):
     (123, 1001, b"shutdown-complete"),
     (123, 1000, b"frame"),
 ])
+@pytest.mark.linux_only
 def test_unrelated_acknowledgement_cannot_finish_shutdown(shutdown_environment, pid, uid, message):
     env = shutdown_environment
     env.packet(pid, uid, message)
@@ -242,6 +248,7 @@ def test_unrelated_acknowledgement_cannot_finish_shutdown(shutdown_environment, 
     assert env.now[0] == 5
 
 
+@pytest.mark.linux_only
 def test_natural_exit_finishes_shutdown_without_ack(shutdown_environment):
     env = shutdown_environment
     env.readiness.append([(SimpleNamespace(data=123, fd=42), 1)])
@@ -250,6 +257,7 @@ def test_natural_exit_finishes_shutdown_without_ack(shutdown_environment):
     assert env.now[0] < 5
 
 
+@pytest.mark.linux_only
 def test_shutdown_tolerates_stale_socket_readiness(shutdown_environment, monkeypatch):
     env = shutdown_environment
 
@@ -263,6 +271,7 @@ def test_shutdown_tolerates_stale_socket_readiness(shutdown_environment, monkeyp
     assert env.now[0] == 5
 
 
+@pytest.mark.linux_only
 def test_exiting_process_is_not_signalled_by_reused_numeric_pid(shutdown_environment, monkeypatch):
     env = shutdown_environment
 
@@ -276,6 +285,7 @@ def test_exiting_process_is_not_signalled_by_reused_numeric_pid(shutdown_environ
     assert env.now[0] == 0
 
 
+@pytest.mark.linux_only
 def test_launcher_identity_accepts_absolute_python_path_and_closes_other_pidfds(tmp_path, monkeypatch):
     for pid, args in [(10, b"/opt/release/.venv/bin/python\0-m\0toddlerbox.launcher\0"),
                       (11, b"python\0-m\0unrelated.launcher\0")]:

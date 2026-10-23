@@ -61,6 +61,7 @@ def channel(clock):
     return value
 
 
+@pytest.mark.linux_only
 def test_app_ignores_child_forgery_truncated_packets_and_malformed_requests():
     app=channel([10]);saves=[]
     app.socket.incoming=[packet(b'sync-received',uid=1001),packet(b'sync-received',flags=socket.MSG_CTRUNC),
@@ -69,6 +70,7 @@ def test_app_ignores_child_forgery_truncated_packets_and_malformed_requests():
     assert app.received_at==float('-inf') and not saves and not app.socket.sent
 
 
+@pytest.mark.linux_only
 def test_app_receipt_and_save_are_normal_thread_callbacks_once_per_nonce():
     clock=[10];app=channel(clock);saves=[];nonce=b'a'*32
     app.socket.incoming=[packet(b'sync-received'),packet(b'save-current:'+nonce),packet(b'save-current:'+nonce)]
@@ -80,6 +82,7 @@ def test_app_receipt_and_save_are_normal_thread_callbacks_once_per_nonce():
     assert app.received_at==11  # Every recognized repeat after release can show it.
 
 
+@pytest.mark.linux_only
 def test_failed_save_is_not_acknowledged_as_success():
     app=channel([10]);nonce=b'b'*32
     app.socket.incoming=[packet(b'save-current:'+nonce)]
@@ -163,6 +166,7 @@ def test_overlay_has_real_pixels_fades_and_disappears_without_touching_input(mon
     finally:pygame.quit()
 
 
+@pytest.mark.linux_only
 def test_kernel_supplied_credentials_reject_unprivileged_datagram(tmp_path):
     if os.geteuid()==0:
         pytest.skip('Unprivileged sender test; privileged receive is exercised in VM')
@@ -180,6 +184,7 @@ def test_kernel_supplied_credentials_reject_unprivileged_datagram(tmp_path):
         finally:channel.close()
 
 
+@pytest.mark.linux_only
 def test_deferred_save_keeps_frames_and_receipts_live_and_acks_only_durable_success():
     from toddlerbox.runtime.control import SAVE_PENDING
     clock = [10]
@@ -205,6 +210,7 @@ def test_deferred_save_keeps_frames_and_receipts_live_and_acks_only_durable_succ
     assert len(app.socket.sent) == 1
 
 
+@pytest.mark.linux_only
 def test_deferred_save_is_bounded_and_expires_without_late_success():
     from toddlerbox.runtime.control import SAVE_PENDING
     clock = [10]

@@ -348,6 +348,7 @@ def test_report_identifies_current_and_candidate_without_raw_metadata(appliance_
     assert maintenance.report(appliance_machine)["update_source"] == "never-run"
 
 
+@pytest.mark.linux_only
 def test_setup_routes_to_parent_without_completion(tmp_path, monkeypatch):
     from test_system_controller import controller
     state, runtime = tmp_path / "state", tmp_path / "run"
