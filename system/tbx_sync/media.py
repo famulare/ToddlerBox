@@ -7,9 +7,9 @@ from PIL import Image
 
 # Image assembly installs this exact shared module beside the root-owned worker.
 try:
-    from .image_safety import prepare_decoder
+    from .image_safety import DECODE_ERRORS, prepare_decoder
 except ImportError:
-    from toddlerbox.runtime.image_safety import prepare_decoder
+    from toddlerbox.runtime.image_safety import DECODE_ERRORS, prepare_decoder
 
 
 def validate_photo(data, name):
@@ -31,6 +31,11 @@ def validate_photo(data, name):
                 image.load()  # Strict decoder: do not enable LOAD_TRUNCATED_IMAGES.
     except (Image.DecompressionBombWarning, Image.DecompressionBombError) as exc:
         raise ValueError('Image exceeds safe decoding limits') from exc
+    except ValueError:
+        raise
+    except DECODE_ERRORS as exc:
+        # One damaged photo must be an item issue, never an uncaught worker crash.
+        raise ValueError('Damaged or unsupported image') from exc
 
 
 def typing_text(data):

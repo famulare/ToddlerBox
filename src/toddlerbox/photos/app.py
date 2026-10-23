@@ -23,7 +23,7 @@ FINGERMOTION = getattr(pygame, "FINGERMOTION", None)
 DRAG_THRESHOLD = 10
 SWIPE_THRESHOLD = 80
 SCROLL_STEP = 40
-from toddlerbox.runtime.image_safety import MAX_PHOTO_PIXELS, prepare_decoder
+from toddlerbox.runtime.image_safety import DECODE_ERRORS, MAX_PHOTO_PIXELS, prepare_decoder
 
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
@@ -125,7 +125,7 @@ def _prepare_thumbnail(path: Path, thumb_path: Path, size: Tuple[int, int]):
     try:
         if thumb_path.stat().st_mtime_ns >= path.stat().st_mtime_ns:
             return _decode_photo(thumb_path, size)
-    except (OSError, ValueError):
+    except DECODE_ERRORS:
         pass
     pixels = _decode_photo(path, size)
     try:

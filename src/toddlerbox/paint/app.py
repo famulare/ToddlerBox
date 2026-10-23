@@ -19,7 +19,7 @@ from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.runtime import health, control
-from toddlerbox.runtime.image_safety import MAX_PHOTO_PIXELS
+from toddlerbox.runtime.image_safety import DECODE_ERRORS, MAX_PHOTO_PIXELS
 from toddlerbox.runtime.persistence import (
     has_archive_reserve,
     is_work_name,
@@ -477,7 +477,7 @@ def _recall_pixels(path: Path, size: Tuple[int, int]) -> Optional[bytes]:
             if source.width * source.height > 40_000_000:
                 return None
             return source.convert("RGB").resize(size).tobytes()
-    except (OSError, ValueError, Image.DecompressionBombError):
+    except DECODE_ERRORS:
         return None
 
 

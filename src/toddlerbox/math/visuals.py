@@ -8,6 +8,7 @@ import pygame
 from PIL import Image
 
 from toddlerbox.math.model import MOTIFS
+from toddlerbox.runtime.image_safety import DECODE_ERRORS
 from toddlerbox.ui import theme
 
 LIBRARY = Path(__file__).resolve().parents[3] / "assets/reading/images"
@@ -31,7 +32,7 @@ class Illustrations:
                 if not bounds:
                     raise ValueError("Empty Math illustration")
                 self.sources[name] = picture.subsurface(bounds).copy()
-            except (pygame.error, OSError, ValueError, SyntaxError, Image.DecompressionBombError):
+            except (pygame.error, *DECODE_ERRORS):
                 continue
 
     @lru_cache(maxsize=48)
