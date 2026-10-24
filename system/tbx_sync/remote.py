@@ -12,6 +12,10 @@ import time
 from .safeio import MAX_FILE, parts, reserve
 
 
+# These end the run: no later phase can succeed either.
+GLOBAL_FAILURES = {'authorization-required', 'offline-or-unreachable', 'timed-out', 'clock-or-certificate'}
+
+
 class TransferError(Exception):
     def __init__(self, code):
         self.code = code
@@ -21,6 +25,7 @@ class TransferError(Exception):
 class Rclone:
     def __init__(self, paths, root_id, stage, *, deadline, binary='/usr/bin/rclone', minimum=512*1024**2):
         self.paths, self.stage, self.deadline = paths, Path(stage), deadline
+        self.phase_deadline = None  # Set by a phase that must not use the whole run.
         self.minimum = minimum
         self.args = [binary, '--config', str(paths.config/'rclone.conf'),
                      '--drive-root-folder-id', root_id, '--transfers', '1', '--checkers','1',
@@ -31,9 +36,15 @@ class Rclone:
         parts(path)
         return 'toddlerbox:' + path
 
-    def command(self, arguments, *, target=None, missing=False):
-        if time.monotonic() >= self.deadline:
+    def _check_deadlines(self):
+        now = time.monotonic()
+        if now >= self.deadline:
             raise TransferError('timed-out')
+        if self.phase_deadline is not None and now >= self.phase_deadline:
+            raise TransferError('phase-deadline')
+
+    def command(self, arguments, *, target=None, missing=False):
+        self._check_deadlines()
         # Output files stay private and bounded; never surface raw provider errors
         # or URLs/tokens in public logs, status, or the child UI.
         with tempfile.TemporaryFile(dir=self.stage) as output, tempfile.TemporaryFile(dir=self.stage) as error:
@@ -43,8 +54,7 @@ class Rclone:
                                        stdin=subprocess.DEVNULL, env=environment)
             try:
                 while process.poll() is None:
-                    if time.monotonic() >= self.deadline:
-                        raise TransferError('timed-out')
+                    self._check_deadlines()
                     if os.fstat(output.fileno()).st_size > 4*1024**2 or os.fstat(error.fileno()).st_size > 65536:
                         raise TransferError('response-limit')
                     reserve(output.fileno(), minimum=self.minimum)
@@ -62,6 +72,9 @@ class Rclone:
                         return None
                     if any(word in diagnostics for word in (b'invalid_grant',b'unauthorized',b'401',b'token expired',b'invalid_client')):
                         raise TransferError('authorization-required')
+                    if b'certificate' in diagnostics and (b'not yet valid' in diagnostics or b'expired' in diagnostics):
+                        # Usually a wrong laptop clock (dead CMOS battery), not a network fault.
+                        raise TransferError('clock-or-certificate')
                     if any(word in diagnostics for word in (b'network is unreachable',b'no such host',b'dial tcp',b'timeout',b'no route')):
                         raise TransferError('offline-or-unreachable')
                     raise TransferError('transfer-failed')

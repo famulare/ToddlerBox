@@ -10,8 +10,8 @@ import uuid
 
 from .media import typing_text, validate_photo
 from .package import consume_package, credentials_bytes, inspect_package
-from .safeio import MAX_TOTAL, SafeTree, atomic_json, parts
-from .state import initialize, load, lock, private_directory
+from .safeio import MAX_TOTAL, Refused, SafeTree, atomic_json, parts
+from .state import initialize, load, lock, private_directory, sweep_staging
 
 
 def ensure_data_directory(paths, components):
@@ -37,86 +37,101 @@ def ensure_data_directory(paths, components):
             os.close(fd)
 
 
-def setup(paths, archive, expected, *, consume=False, reconnect=False, minimum=512*1024**2):
+def setup(paths, archive, expected, *, consume=False, reconnect=False, minimum=512*1024**2, locked=False):
+    """locked=True: the caller already holds the job lock and has swept staging."""
     initialize(paths)
-    with lock(paths), tempfile.TemporaryDirectory(prefix='import-',dir=paths.state/'staging') as temporary:
-        stage = Path(temporary)
-        manifest, config, identity = inspect_package(archive,expected,stage,minimum=minimum)
-        installed = load(paths.config/'installed.json')
-        if installed:
-            if reconnect:
-                old = load(paths.config/'config.json')
-                if old['root_folder_id'] != config['root_folder_id']:
-                    raise ValueError('Reconnect cannot change the Drive root')
-            elif installed.get('package_sha256') == expected:
-                if consume:
-                    consume_package(archive,identity)
-                return {'result':'already-installed','photos_imported':0}
-            else:
-                raise ValueError('Already configured; use reconnect or the Photos folder')
-        elif reconnect:
-            raise ValueError('Setup is required before reconnect')
-        credentials = credentials_bytes((stage/'rclone.conf').read_bytes(),config['root_folder_id'])
+    if locked:
+        with tempfile.TemporaryDirectory(prefix='import-',dir=paths.state/'staging') as temporary:
+            return _setup(paths, Path(temporary), archive, expected, consume, reconnect, minimum)
+    with lock(paths):
+        sweep_staging(paths)
+        with tempfile.TemporaryDirectory(prefix='import-',dir=paths.state/'staging') as temporary:
+            return _setup(paths, Path(temporary), archive, expected, consume, reconnect, minimum)
+
+
+def _setup(paths, stage, archive, expected, consume, reconnect, minimum):
+    manifest, config, identity = inspect_package(archive,expected,stage,minimum=minimum)
+    installed = load(paths.config/'installed.json')
+    if installed:
         if reconnect:
-            old_remote = configparser.ConfigParser(interpolation=None)
-            new_remote = configparser.ConfigParser(interpolation=None)
-            with SafeTree(paths.config) as private:
-                old_remote.read_string(credentials_bytes(private.read('rclone.conf',limit=65536),config['root_folder_id']).decode())
-            new_remote.read_string(credentials.decode())
-            if old_remote['toddlerbox']['client_id'] != new_remote['toddlerbox']['client_id']:
-                raise ValueError('Reconnect must retain the existing OAuth client')
-        photos = {name.removeprefix('photos/library/'):entry for name,entry in manifest['files'].items()
-                  if name.startswith('photos/library/')}
-        imported = 0
-        if not reconnect:
-            ensure_data_directory(paths, ['photos','library'])
-            # Check every collision before publishing any photo. Entries can still
-            # race; the final link operation never replaces a racing destination.
-            with SafeTree(paths.library) as library:
-                existing = {name.casefold():name for name in library.names()}
+            old = load(paths.config/'config.json')
+            if old['root_folder_id'] != config['root_folder_id']:
+                raise Refused('Reconnect cannot change the Drive root')
+        elif installed.get('package_sha256') == expected:
+            if consume:
+                consume_package(archive,identity)
+            return {'result':'already-installed','photos_imported':0}
+        else:
+            raise Refused('Already configured; use reconnect or the Photos folder')
+    elif reconnect:
+        raise Refused('Setup is required before reconnect')
+    credentials = credentials_bytes((stage/'rclone.conf').read_bytes(),config['root_folder_id'])
+    if reconnect:
+        old_remote = configparser.ConfigParser(interpolation=None)
+        new_remote = configparser.ConfigParser(interpolation=None)
+        with SafeTree(paths.config) as private:
+            old_remote.read_string(credentials_bytes(private.read('rclone.conf',limit=65536),config['root_folder_id']).decode())
+        new_remote.read_string(credentials.decode())
+        if old_remote['toddlerbox']['client_id'] != new_remote['toddlerbox']['client_id']:
+            raise Refused('Reconnect must retain the existing OAuth client')
+    photos = {name.removeprefix('photos/library/'):entry for name,entry in manifest['files'].items()
+              if name.startswith('photos/library/')}
+    imported = 0
+    if not reconnect:
+        ensure_data_directory(paths, ['photos','library'])
+        # Check every collision before publishing any photo. Entries can still
+        # race; the final link operation never replaces a racing destination.
+        with SafeTree(paths.library) as library:
+            existing = {name.casefold():name for name in library.names()}
+            for name, entry in photos.items():
+                if name.casefold() in existing:
+                    old_name = existing[name.casefold()]
+                    old = library.read(old_name)
+                    if old_name != name or hashlib.sha256(old).hexdigest() != entry['sha256']:
+                        raise Refused('Existing photo name conflict')
+            private_directory(paths.state/'initial')
+            private_directory(paths.state/'initial'/manifest['package_id'])
+            with SafeTree(paths.state/'initial'/manifest['package_id']) as originals:
                 for name, entry in photos.items():
-                    if name.casefold() in existing:
-                        old_name = existing[name.casefold()]
-                        old = library.read(old_name)
-                        if old_name != name or hashlib.sha256(old).hexdigest() != entry['sha256']:
-                            raise ValueError('Existing photo name conflict')
-                private_directory(paths.state/'initial')
-                private_directory(paths.state/'initial'/manifest['package_id'])
-                with SafeTree(paths.state/'initial'/manifest['package_id']) as originals:
-                    for name, entry in photos.items():
-                        data = (stage/'photos/library'/name).read_bytes()
-                        if not originals.exists(name):
-                            originals.publish(name,data,mode=0o600,minimum=minimum)
-                        elif hashlib.sha256(originals.read(name)).hexdigest() != entry['sha256']:
-                            raise ValueError('Preserved original changed')
-                        if name.casefold() not in existing:
-                            library.publish(name,data,minimum=minimum)
-                            imported += 1
-                atomic_json(paths.state/'initial.json',{'version':1,'package_id':manifest['package_id'],
-                            'date':manifest['created_at'][:10],'files':photos,'complete':False})
-        with SafeTree(paths.config) as config_tree:
-            old_hash = hashlib.sha256(config_tree.read('rclone.conf',limit=65536)).hexdigest() if config_tree.exists('rclone.conf') else None
-            config_tree.publish('rclone.conf',credentials,expected=old_hash,mode=0o600,minimum=minimum)
-        atomic_json(paths.config/'config.json',config)
-        if not reconnect:
-            atomic_json(paths.config/'installed.json',{'version':1,'package_id':manifest['package_id'],
-                                                       'package_sha256':expected})
-        if consume:
-            consume_package(archive,identity)
-        return {'result':'reconnected' if reconnect else 'installed','photos_imported':imported}
+                    data = (stage/'photos/library'/name).read_bytes()
+                    if not originals.exists(name):
+                        originals.publish(name,data,mode=0o600,minimum=minimum)
+                    elif hashlib.sha256(originals.read(name)).hexdigest() != entry['sha256']:
+                        raise Refused('Preserved original changed')
+                    if name.casefold() not in existing:
+                        library.publish(name,data,minimum=minimum)
+                        imported += 1
+            atomic_json(paths.state/'initial.json',{'version':1,'package_id':manifest['package_id'],
+                        'date':manifest['created_at'][:10],'files':photos,'complete':False})
+    with SafeTree(paths.config) as config_tree:
+        old_hash = hashlib.sha256(config_tree.read('rclone.conf',limit=65536)).hexdigest() if config_tree.exists('rclone.conf') else None
+        config_tree.publish('rclone.conf',credentials,expected=old_hash,mode=0o600,minimum=minimum)
+    atomic_json(paths.config/'config.json',config)
+    if not reconnect:
+        atomic_json(paths.config/'installed.json',{'version':1,'package_id':manifest['package_id'],
+                                                   'package_sha256':expected})
+    if consume:
+        consume_package(archive,identity)
+    return {'result':'reconnected' if reconnect else 'installed','photos_imported':imported}
 
 
 def restore_archives(paths, source, expected, *, minimum=512*1024**2):
     """Explicit import as new Recall archives. Never replace a current document."""
     initialize(paths)
-    with lock(paths), SafeTree(source) as tree, tempfile.TemporaryDirectory(dir=paths.state/'staging') as temporary:
+    with lock(paths):
+        sweep_staging(paths)
+        return _restore_archives(paths, source, expected, minimum)
+
+
+def _restore_archives(paths, source, expected, minimum):
+    with SafeTree(source) as tree, tempfile.TemporaryDirectory(prefix='restore-',dir=paths.state/'staging') as temporary:
         raw = tree.read('manifest.json',limit=4*1024**2)
         if hashlib.sha256(raw).hexdigest() != expected:
-            raise ValueError('Restore manifest SHA-256 mismatch')
+            raise Refused('Restore manifest SHA-256 mismatch')
         manifest = json.loads(raw)
         if (manifest.get('format') != 'toddlerbox-creations' or manifest.get('version') != 1
                 or not isinstance(manifest.get('files'),dict) or len(manifest['files']) > 4096):
-            raise ValueError('Invalid creation manifest')
+            raise Refused('Invalid creation manifest')
         run_id = str(uuid.UUID(manifest['run_id']))
         staged = []
         total = 0
@@ -126,13 +141,13 @@ def restore_archives(paths, source, expected, *, minimum=512*1024**2):
             typing = (components[0]=='typing' and name.endswith(('.json','.txt')) and
                       (len(components)==2 or len(components)==3 and components[1]=='archive'))
             if not (paint or typing):
-                raise ValueError('Unexpected creation path')
+                raise Refused('Unexpected creation path')
             data = tree.read(name)
             total += len(data)
             if total > MAX_TOTAL:
-                raise ValueError('Restore exceeds total byte limit')
+                raise Refused('Restore exceeds total byte limit')
             if len(data) != entry['size'] or hashlib.sha256(data).hexdigest() != entry['sha256']:
-                raise ValueError('Restore file checksum mismatch')
+                raise Refused('Restore file checksum mismatch')
             if paint:
                 validate_photo(data,name)
                 target = 'paint/restored-'+run_id+'-'+components[-1]
@@ -155,7 +170,7 @@ def restore_archives(paths, source, expected, *, minimum=512*1024**2):
                 data = copies.read(target)
                 if destination.exists(target):
                     if destination.read(target) != data:
-                        raise ValueError('Existing restored archive changed; preserved')
+                        raise Refused('Existing restored archive changed; preserved')
                     continue
                 destination.publish(target,data,minimum=minimum)
                 imported += 1

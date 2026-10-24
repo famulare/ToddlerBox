@@ -9,6 +9,10 @@ import secrets
 import stat
 import unicodedata
 
+class Refused(ValueError):
+    """A fixed sentence for the parent; never contains parser or provider output."""
+
+
 MAX_FILE = 50 * 1024 * 1024
 MAX_TOTAL = 2 * 1024**3
 RESERVE = 512 * 1024**2

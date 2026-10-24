@@ -52,4 +52,4 @@ jobs:
           # Pillow deliberately absent: imports must resolve to /usr/lib/python3/dist-packages.
           uv pip install --python /tmp/root-venv pygame-ce==2.5.8 pyyaml==6.0.3 pytest==9.1.1
           /tmp/root-venv/bin/python -c 'import PIL, sys; assert PIL.__file__.startswith("/usr/lib/python3/dist-packages/"), PIL.__file__; print("apt Pillow", PIL.__version__)'
-          /tmp/root-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_drive_sync.py tests/test_usb_setup.py tests/test_decode_errors.py
+          /tmp/root-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_drive_sync.py tests/test_usb_setup.py tests/test_decode_errors.py tests/test_sync_isolation.py
