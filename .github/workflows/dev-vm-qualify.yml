@@ -1,0 +1,61 @@
+name: Dev VM qualification (never published)
+# Lives only on dev/** branches. A push whose head commit message contains [vm]
+# builds this branch's image and qualifies a fresh installation under TCG.
+# Read-only token: no tags, releases, stable.json or signing keys are touched;
+# evidence is a short-lived workflow artifact made from synthetic data only.
+on:
+  push:
+    branches: ['dev/**']
+permissions:
+  contents: read
+concurrency:
+  group: dev-vm-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  fresh-install:
+    if: contains(github.event.head_commit.message, '[vm]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    env:
+      TODDLERBOX_BUILD_DIR: ${{ github.workspace }}/build/dev
+      TODDLERBOX_DOCKER_ARCHIVE: /tmp/toddlerbox-dev-image.tar.gz
+      TODDLERBOX_PRUNE_BUILD_CACHE: '1'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - name: Suite on the appliance interpreter
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr
+          uv sync --frozen --group dev --python /usr/bin/python3
+          uv run --frozen pytest -q -p no:cacheprovider
+      - name: Build disk, installer and unsigned update bundle
+        run: |
+          df -h . /tmp
+          ./system/build-compact.sh
+          container=$(docker create toddlerbox-cage-builder)
+          docker cp "$container:/toddlerbox-cage" "$TODDLERBOX_BUILD_DIR/toddlerbox-cage"
+          docker rm "$container"
+          id=$(cat "$TODDLERBOX_BUILD_DIR/release-id")
+          uv run --frozen python system/build-update.py --cage "$TODDLERBOX_BUILD_DIR/toddlerbox-cage" \
+            --app "$TODDLERBOX_BUILD_DIR/toddlerbox-app-$id.tar.gz" --output "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
+          sha256sum "$TODDLERBOX_BUILD_DIR/toddlerbox-installer.iso" "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
+      - name: Qualify fresh installation without networking
+        run: uv run --frozen python scripts/qualify-release-vm.py --image-dir build/dev --output build/dev-qa
+      - name: Keep synthetic evidence briefly
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dev-vm-evidence
+          retention-days: 14
+          if-no-files-found: ignore
+          path: |
+            build/dev-qa/*.png
+            build/dev-qa/results.json
+            build/dev/release-id
+            build/dev/packages.tsv

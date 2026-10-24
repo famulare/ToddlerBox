@@ -20,12 +20,16 @@ import struct
 import subprocess
 import sys
 import time
+import tomllib
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'system'))
 from qmp import command
+
+# The installed app must be exactly the source version under qualification.
+EXPECTED_VERSION = tomllib.loads((ROOT/'pyproject.toml').read_text())['project']['version']
 
 
 class Qualification:
@@ -237,6 +241,9 @@ class Qualification:
         test -z "$(ip -o link show | grep -v 'lo:')"
         test -x /usr/local/libexec/toddlerbox-cage
         test "$(stat -c %a /var/lib/toddlerbox-system)" = 700
+        test "$(sysctl -n kernel.sysrq)" = 16
+        grep -q '^GRUB_RECORDFAIL_TIMEOUT=5$' /etc/default/grub.d/toddlerbox.cfg
+        grep -q 'TODDLERBOX_DATA_ROOT=/var/lib/toddlerbox' /usr/local/libexec/toddlerbox-session
         /opt/toddlerbox/current/.venv/bin/python - <<'INNER'
 from toddlerbox.config import load_config
 from toddlerbox.music.library import load_library
@@ -244,7 +251,7 @@ from toddlerbox.math.speech import NumberBank
 from unittest.mock import Mock
 from pathlib import Path
 import importlib.metadata
-assert importlib.metadata.version('ToddlerBox')=='0.4.0'
+assert importlib.metadata.version('ToddlerBox')=='@EXPECTED_VERSION@'
 import os
 os.environ['KIDBOX_CONFIG']='/etc/toddlerbox/config.yaml'
 assert len(load_config()['launcher']['apps'])==6
@@ -253,7 +260,7 @@ assert all(NumberBank(Mock()).get(n) for n in range(101))
 assert all(NumberBank(Mock()).operator(n) for n in ('plus','minus','equals'))
 INNER
         toddlerbox-maintenance --action test
-        ''')
+        '''.replace('@EXPECTED_VERSION@', EXPECTED_VERSION))
         self.wait_text('Paint','Math','Reading')
         self.wait_health()
         self.shot('six-activity-launcher')
