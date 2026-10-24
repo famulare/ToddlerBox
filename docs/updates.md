@@ -38,6 +38,16 @@ Order the six entries Paint, Photos, Music, Typing, Reading, Math for the standa
 two-row layout. A fresh 0.4 installation already has this configuration. Other
 parent settings and all child data remain unchanged.
 
+After any edit, check the file before starting child mode:
+
+```sh
+/opt/toddlerbox/current/.venv/bin/python -m toddlerbox.config --check /etc/toddlerbox/config.yaml
+```
+
+A damaged file never stops the child session: ToddlerBox logs each problem and uses
+built-in defaults for the affected settings (the standard six activities if
+`launcher.apps` is unusable). Child work always stays in `/var/lib/toddlerbox`.
+
 Older images without this embedded trust anchor use the historical manual route
 below, or reinstall the new appliance image after backing up child work.
 

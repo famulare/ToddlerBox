@@ -107,11 +107,15 @@ def load_image(path: str, size: Optional[Tuple[int, int]] = None) -> Optional[py
     if not path:
         return None
     resolved = Path(path)
-    if not resolved.exists():
+    try:
+        if not resolved.is_file():
+            return None
+        image = pygame.image.load(str(resolved)).convert_alpha()
+        if size:
+            image = pygame.transform.smoothscale(image, size)
+    except (pygame.error, OSError, ValueError):
+        # A damaged custom icon gets the placeholder tile, never a failed launcher.
         return None
-    image = pygame.image.load(str(resolved)).convert_alpha()
-    if size:
-        image = pygame.transform.smoothscale(image, size)
     return image
 
 
