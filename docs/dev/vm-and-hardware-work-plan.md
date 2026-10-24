@@ -96,7 +96,7 @@ Synthetic data only. Never use real family photos or credentials in a VM.
 ## Physical HP acceptance (owner)
 
 Only after Route A (or B) passes, on the exact final candidate:
-- **The installer USB.** Flash it with balenaEtcher, following `~/ToddlerBox-private/RECOVERY.md`.
+- **The installer USB.** Flash it with balenaEtcher, following the owner's private recovery notes (`RECOVERY.md`).
   Codex can drive Etcher via computer use, but the administrator prompt is the owner's.
 - **Reaching the build.** Install fresh on the HP, or apply the update. Class C fixes
   (sync, boot gate, image) need a fresh install.
