@@ -2118,8 +2118,8 @@ qualified:
 - setup persistence across reboot without network, and a standalone Cage session with no
   child GNOME shell
 
-Evidence is a 14-day workflow artifact. Run 40071568094 re-qualifies the final head
-`9667fcb`.
+Run 40071568094 re-qualified the final code at `9667fcb` and also passed.
+Evidence is a 14-day workflow artifact.
 
 Not yet run: the signed update chain in a VM (requires parameterising
 `scripts/qualify-patch-update.py`), and any physical HP check. VM results are not
