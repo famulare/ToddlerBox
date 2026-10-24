@@ -260,7 +260,7 @@ def _rollover_latest_snapshot(paint_dir: Path, now: Optional[datetime] = None) -
 def _coerce_archive_limit(value: object, default: int) -> int:
     try:
         limit = int(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return default
     return max(1, limit)
 

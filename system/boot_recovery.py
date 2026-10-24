@@ -124,6 +124,11 @@ def validate(root, job, value):
     for name, old in files.items():
         safe(root, DESTINATIONS[name][0])
         if old is not None:
+            # The journal's own record must be well formed before absence is trusted.
+            if (not isinstance(old, dict) or set(old) != {"sha256", "mode"} or old["mode"] != DESTINATIONS[name][1]
+                    or not isinstance(old["sha256"], str) or len(old["sha256"]) != 64
+                    or any(c not in "0123456789abcdef" for c in old["sha256"])):
+                raise ValueError("Invalid backup record")
             source = safe(root, job.relative_to(root) / name)
             if not os.path.lexists(source):
                 missing.append(name)

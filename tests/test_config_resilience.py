@@ -131,3 +131,8 @@ def test_launcher_resets_clip_and_key_repeat_after_an_activity(display):
     _reset_shared_display_state(display)
     assert display.get_clip() == display.get_rect()
     assert pygame.key.get_repeat() == (0, 0)
+
+
+def test_infinite_archive_cap_falls_back_instead_of_crashing_new():
+    from toddlerbox.paint.app import _coerce_archive_limit
+    assert _coerce_archive_limit(float("inf"), 100) == 100

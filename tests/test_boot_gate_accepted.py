@@ -72,3 +72,13 @@ def test_a_file_where_the_previous_release_should_be_is_not_missing(appliance_ma
     shutil.rmtree(release)
     release.write_bytes(b"not a release")
     assert not recovery.gate(appliance_machine)
+
+
+def test_malformed_record_for_a_missing_backup_still_fails_closed(appliance_machine, updater, modules, tmp_path):
+    recovery = modules[0]
+    job, value = accepted(appliance_machine, updater, modules, tmp_path)
+    (job / "controller.py").unlink()
+    value["old_files"]["controller.py"] = {"mode": 0o777, "sha256": "malformed"}
+    recovery.record(job / "state.json", value)
+    assert not recovery.gate(appliance_machine)
+    assert not (appliance_machine / recovery.STATE / "rollback-unavailable").exists()
