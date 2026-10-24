@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased (dev/review-hardening)
+
+- Paint encodes PNGs in memory so a full or failing disk can never replace the previous painting
+  with a truncated file. Archives never overwrite an existing name; interrupted saves are recovered
+  as Recall archives or kept as `corrupt-` media. Restore never crash-loops.
+- New/Recall skip blank and already-archived documents, so mashing New no longer fills the archive
+  and disables New and Recall. Parent status shows archive counts.
+- Home always leaves Paint and Typing: unsaved work is kept in the launcher and keeps saving.
+  Esc no longer exits activities in the supervised child session.
+- Typing accepts only renderable single code points, caps new input at 20,000 glyphs, and salvages
+  older documents glyph by glyph instead of quarantining them whole.
+- A damaged config file or launcher icon no longer stops the child session; problems are logged,
+  defaults used, and child work stays in `/var/lib/toddlerbox`. Parents can run
+  `python -m toddlerbox.config --check FILE`.
+- One damaged Reading picture no longer disables Reading (Pillow `SyntaxError` is now handled).
+- Drive sync uploads the child's creations before downloading photos, isolates every bad photo as a
+  named issue, withholds the manifest after a failed creation, cleans up after killed jobs, and
+  explains wrong clocks. iPhone HEIC photos must be exported as JPEG (documented).
+- Maintenance shows the actual refusal reason; a refused rollback no longer wedges the appliance;
+  unsigned update paths require `--unsigned-recovery`; torn release installs are set aside.
+- Fresh images: SysRq limited to sync, recordfail wait capped at 5 s, first-boot password retries,
+  and the boot gate no longer blocks child mode when old releases are cleaned up after acceptance.
+- Development: Python pinned to 3.12, Linux-only tests skip elsewhere, CI on every push including the
+  root worker against Ubuntu's Pillow, and a dev-only VM qualification workflow.
+
 ## 0.5.1 - 2026-10-12
 
 - Reading opens its selector in picture view and prepares bounded previews in the background instead of decoding in drawing.

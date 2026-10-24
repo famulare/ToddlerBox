@@ -5,6 +5,10 @@ Dev-only working plan. It is not a release document and is not intended for `mai
 - **Base:** `origin/main` `b3d87f9` (0.5.1).
 - **Status:** agreed between Claude (implementer) and Codex `gpt-6-astra` (reviewer),
   2026-10-23, after three review rounds.
+- **Progress (2026-10-23):** WP12, WP1, WP2, WP5, WP7, WP3, WP4, WP10, WP6, WP11, WP8 and
+  WP9 are implemented and committed with tests, plus fixes for Codex implementation
+  review 1. Remaining: Linux CI and VM runs (need the branch pushed), the signed update
+  chain in a VM, and physical HP acceptance.
 
 Constraints are inherited from `AGENTS.md`:
 - Preserve child work first.

@@ -2072,3 +2072,34 @@ and downloaded all90,878,804 bytes with the exact SHA. No GitHub login or manual
 hash checking is needed on the appliance. Scope remains update-only; #19's
 future clean-image diagnostic package check and #15/#23 physical input retests
 remain open.
+
+## Dev branch `dev/review-hardening` — local evidence only, 2026-10-23
+
+Not a release. Base `b3d87f9` (0.5.1). Plan and delivery classes:
+`docs/dev/review-hardening-plan.md`. Implementation by Claude. The plan was agreed
+with Codex `gpt-6-astra`, which reviewed the implementation at two checkpoints;
+every review-1 finding has a regression test that fails on the previous commit.
+
+Environment: macOS arm64, uv-managed CPython 3.12.15 (pinned by `.python-version`),
+Pillow 12.3.0, pygame-ce 2.5.8, SDL dummy video/audio.
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider
+```
+
+Result: 674 passed, 20 skipped. The 20 skips are `linux_only` tests (pidfd,
+`SCM_CREDENTIALS`, `/proc`, 108-byte AF_UNIX paths); each was reproduced on macOS
+as a platform failure before being marked. `test_audio_polish.py::test_key_sustains_beyond_original_sample_then_releases_for_600ms[True]`
+is a pre-existing wall-clock flake: it failed 3 of 5 runs on the unchanged base
+under Python 3.14 as well.
+
+Real faults used: RLIMIT_FSIZE short writes in a subprocess, read-only
+directories, failing fsync/directory fsync, stalled writers, hard-linked
+orphan temporaries, SIGTERM of a real worker process, damaged PNG chunks that
+raise `SyntaxError`, and a fake rclone binary reporting certificate dates.
+
+Not yet run: Linux CI (`ci.yml`, including the apt-Pillow root-worker job), the
+dev VM workflow (`dev-vm-qualify.yml`), the signed update chain in a VM (requires
+parameterising `scripts/qualify-patch-update.py`), and any physical HP check.
+Resident and image changes (sync worker, boot gate, SysRq, recordfail, first boot)
+reach appliances only through a fresh installer.

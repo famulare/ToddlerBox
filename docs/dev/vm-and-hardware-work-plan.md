@@ -18,6 +18,12 @@ Codex `gpt-6-astra` on 2026-10-23.
 
 Claude prepares this. It runs only after the owner approves pushing the branch.
 
+**Status:** the fresh-install job is implemented in `.github/workflows/dev-vm-qualify.yml`.
+To run it, push `dev/review-hardening` with a head commit message containing `[vm]`.
+`ci.yml` runs on every push. The update-chain job (step 3 below) is not written yet. It
+needs `scripts/qualify-patch-update.py` to start from published artifacts instead of the
+preserved 0.5.0 checkpoint on the maintainer's machine.
+
 - **File.** `.github/workflows/dev-vm-qualify.yml`, present only on `dev/**` branches.
   `workflow_dispatch` would require the file on the default branch, so the trigger is a push.
 - **Trigger.** Pushes to `dev/**` whose commit message contains `[vm]`, so ordinary pushes
