@@ -1,12 +1,14 @@
 #!/usr/bin/python3
 """Install an app bundle from this build recipe. Run in parent mode as root."""
 import hashlib
+import json
 import os
 import stat
 from pathlib import Path, PurePosixPath
 import sys
 import tarfile
 import tempfile
+import time
 
 # Shared helpers are root-owned and ship with this system image, not the bundle.
 sys.path.insert(0, "/usr/local/lib/toddlerbox-system")
@@ -56,11 +58,72 @@ def tree_record(directory: Path, *, production: bool) -> dict:
     return result
 
 
+APPLIANCE_REFUSAL = ("On the appliance, releases install through ToddlerBox Setup & Maintenance "
+                     "(signed updates). For recovery only, rerun with --unsigned-recovery.")
+
+
+def journals(state: Path) -> list:
+    records = []
+    for path in sorted((state / "updates").glob("*/state.json")):
+        try:
+            records.append(json.loads(path.read_text()))
+        except (OSError, ValueError):
+            records.append({"status": "unreadable"})
+    return records
+
+
+def appliance_guard(state: Path, *, journaled: bool, unsigned_recovery: bool) -> None:
+    """Journal-bypassing installs would leave links the boot gate later overrides."""
+    if journaled or not (state / "appliance-v1").exists():
+        return
+    if not unsigned_recovery:
+        raise ValueError(APPLIANCE_REFUSAL)
+    active = {"applying", "restoring", "pending", "unreadable"}
+    if (state / "maintenance").exists() or any(record.get("status") in active for record in journals(state)):
+        raise ValueError("An update or recovery is in progress; finish it in ToddlerBox Setup & Maintenance first.")
+
+
+def referenced_releases(root: Path, state: Path) -> set:
+    names = set()
+    for link in ("current", "previous"):
+        try:
+            names.add(release_target(root, link).name)
+        except (OSError, ValueError):
+            pass
+    for record in journals(state):
+        links = record.get("old_links")
+        if isinstance(links, dict):
+            names.update(value for value in links.values() if isinstance(value, str))
+    return names
+
+
+def fsync_tree(directory: Path) -> None:
+    # Publish only fully written files: a power cut after the rename must not
+    # leave a release directory of empty files that blocks this ID forever.
+    for parent, directories, files in os.walk(directory):
+        for name in files:
+            path = Path(parent) / name
+            if not path.is_symlink():
+                fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+                try:
+                    os.fsync(fd)
+                finally:
+                    os.close(fd)
+        fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+
 def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddlerbox"),
-            mode_file: Path = Path("/run/toddlerbox-system/mode")) -> str:
+            mode_file: Path = Path("/run/toddlerbox-system/mode"),
+            state: Path = Path("/var/lib/toddlerbox-system"),
+            journaled: bool = False, unsigned_recovery: bool = False) -> str:
     # Keep the verified file descriptor open: replacing the bundle pathname after
     # hashing cannot substitute a different archive during extraction.
     verify_ancestors(root)
+    appliance_guard(state, journaled=journaled, unsigned_recovery=unsigned_recovery)
     with release_lock(root), bundle.open("rb") as handle:
         if mode_file.read_text().strip() != "parent":
             raise ValueError("Enter parent mode before installing a release.")
@@ -104,12 +167,16 @@ def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddl
                 # Everything is root-owned; child accounts have no release write access.
                 production = root == Path("/opt/toddlerbox")
                 candidate_record = tree_record(candidate, production=production)
-                if destination.exists():
-                    if tree_record(destination, production=production) != candidate_record:
+                if destination.exists() and tree_record(destination, production=production) != candidate_record:
+                    if release_id in referenced_releases(root, state):
                         raise ValueError("Existing release differs from verified archive; no files changed.")
+                    # Usually a torn earlier install. Nothing refers to it: keep it aside, never delete it.
+                    os.rename(destination, root / "releases" / f".conflict-{release_id}-{time.time_ns()}")
+                if destination.exists():
                     if destination == current:
                         return release_id  # Retain the distinct previous fallback.
                 else:
+                    fsync_tree(candidate)
                     os.rename(candidate, destination)
         os.sync()
         sync_directory(root / "releases")
@@ -121,10 +188,13 @@ def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddl
 
 
 def main() -> None:
-    if os.geteuid() != 0 or len(sys.argv) != 3:
-        sys.exit("Usage: sudo toddlerbox-install-release BUNDLE.tar.gz EXPECTED_SHA256")
+    flags = {"--journaled", "--unsigned-recovery"}
+    arguments = [argument for argument in sys.argv[1:] if argument not in flags]
+    if os.geteuid() != 0 or len(arguments) != 2:
+        sys.exit("Usage: sudo toddlerbox-install-release BUNDLE.tar.gz EXPECTED_SHA256 [--unsigned-recovery]")
     try:
-        release_id = install(Path(sys.argv[1]), sys.argv[2])
+        release_id = install(Path(arguments[0]), arguments[1], journaled="--journaled" in sys.argv,
+                             unsigned_recovery="--unsigned-recovery" in sys.argv)
     except (OSError, ValueError, tarfile.TarError) as error:
         sys.exit(str(error))
     print(f"Installed {release_id}; previous release retained. Start child mode to validate.")

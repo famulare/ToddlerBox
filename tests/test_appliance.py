@@ -69,7 +69,7 @@ def appliance_machine(machine, updater, modules, monkeypatch):
 def pending(root, updater, tmp_path):
     module, _ = updater
     bundle, digest = make_bundle(tmp_path, module)
-    module.run(bundle, digest, root=root)
+    module.run(bundle, digest, root=root, unsigned_recovery=True)
     return bundle, digest
 
 
@@ -92,7 +92,7 @@ def test_candidate_requires_observation_and_parent_acceptance(appliance_machine,
 def test_second_pending_install_is_refused(appliance_machine, updater, modules, tmp_path):
     bundle, digest = pending(appliance_machine, updater, tmp_path)
     with pytest.raises(ValueError, match="candidate is waiting.*Accept tested update"):
-        updater[0].run(bundle, digest, root=appliance_machine)
+        updater[0].run(bundle, digest, root=appliance_machine, unsigned_recovery=True)
 
 
 @pytest.mark.parametrize("event", ["applying", "restoring", "failed-controller", "exhausted"])
@@ -411,7 +411,7 @@ def test_shared_lock_blocks_candidate_and_second_install(appliance_machine, upda
     bundle, digest = make_bundle(tmp_path, updater[0])
     with core.maintenance_lock(appliance_machine):
         with pytest.raises(BlockingIOError):
-            updater[0].run(bundle, digest, root=appliance_machine)
+            updater[0].run(bundle, digest, root=appliance_machine, unsigned_recovery=True)
     assert not updater[1]
 
 
@@ -424,7 +424,7 @@ def test_updater_rechecks_parent_after_acquiring_lock(appliance_machine, updater
     monkeypatch.setattr(updater[0], "lock", raced)
     bundle, digest = make_bundle(tmp_path, updater[0])
     with pytest.raises(ValueError, match="parent mode"):
-        updater[0].run(bundle, digest, root=appliance_machine)
+        updater[0].run(bundle, digest, root=appliance_machine, unsigned_recovery=True)
     assert not updater[1]
 
 
@@ -441,7 +441,7 @@ def test_interrupted_apt_blocks_bundle_but_allows_repair(appliance_machine, upda
     (appliance_machine / recovery.STATE / "apt-maintenance").touch()
     bundle, digest = make_bundle(tmp_path, updater[0])
     with pytest.raises(ValueError, match="Ubuntu repair"):
-        updater[0].run(bundle, digest, root=appliance_machine)
+        updater[0].run(bundle, digest, root=appliance_machine, unsigned_recovery=True)
     core.guard(appliance_machine, allow_apt=True)
     assert not updater[1]
 

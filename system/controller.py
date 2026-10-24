@@ -620,6 +620,9 @@ def main() -> None:
                         try:
                             if mode != "parent":
                                 raise ValueError("enter parent mode before rollback")
+                            if (STATE / "appliance-v1").exists():
+                                # A link swap outside the journal would be undone by the boot gate.
+                                raise ValueError("use ToddlerBox Setup & Maintenance > Rollback")
                             rollback()
                             transition("parent", "release rolled back; inspect then start child mode")
                         except (OSError, ValueError) as error:

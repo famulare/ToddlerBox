@@ -206,9 +206,32 @@ def test_existing_release_reuse_refuses_changes(release_installer, release_tree,
     else:
         destination.rename(root / "releases/moved")
         destination.symlink_to(root / "releases/moved")
-    with pytest.raises(ValueError, match="differs|Hardlinked|Unsafe"):
+    if mutation in {"hardlink", "destination-symlink"}:
+        with pytest.raises(ValueError, match="differs|Hardlinked|Unsafe"):
+            installer.install(archive, digest, root=root, mode_file=mode)
+        assert (root / "current").resolve() == root / "releases/old"
+        return
+    # Unreferenced differing release (usually a torn install): kept aside, reinstalled fresh.
+    assert installer.install(archive, digest, root=root, mode_file=mode) == release_id
+    (kept,) = (root / "releases").glob(f".conflict-{release_id}-*")
+    assert kept.is_dir() and (root / "current").resolve() == destination
+    assert launcher.read_bytes() != b"changed"
+
+
+@pytest.mark.parametrize("link", ["current", "previous"])
+def test_referenced_differing_release_is_never_replaced(release_installer, release_tree, tmp_path, link):
+    installer, controller = release_installer
+    root, mode = release_tree
+    archive, digest, release_id = bundle(tmp_path)
+    installer.install(archive, digest, root=root, mode_file=mode)
+    destination = root / "releases" / release_id
+    if link == "previous":
+        controller.replace_release_link(root, "current", root / "releases/old")
+        controller.replace_release_link(root, "previous", destination)
+    (destination / "src/toddlerbox/launcher.py").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="differs"):
         installer.install(archive, digest, root=root, mode_file=mode)
-    assert (root / "current").resolve() == root / "releases/old"
+    assert (destination / "src/toddlerbox/launcher.py").read_bytes() == b"changed"
 # Build layout remains compatible with the unchanged resident installer.
 
 def normalizer():

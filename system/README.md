@@ -187,6 +187,15 @@ sudo toddlerbox-install-release toddlerbox-app-<id>.tar.gz <expected-sha256>
 sudo toddlerbox-mode child
 ```
 
+On appliance images (`/var/lib/toddlerbox-system/appliance-v1`), releases change
+only through the journaled signed update: a direct install needs
+`--unsigned-recovery` and is refused while an update or recovery is in progress,
+and `toddlerbox-mode rollback` is refused in favour of Maintenance > Rollback,
+which the boot gate understands. Extracted files are fsynced before a release
+directory is published; a differing release directory that nothing references
+(usually a torn earlier install) is kept as `.conflict-<id>-<time>` and
+reinstalled, never deleted.
+
 New bundles include `data-schema.json`. Installation/rollback refuse incompatible
 schema declarations, serialize changes, and fsync replaced links. Existing
 unmarked releases use the established v1 schema. Typing preserves unsupported

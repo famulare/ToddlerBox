@@ -96,10 +96,13 @@ parent login screen. Log in and select **Start ToddlerBox** after installation.
 
 ## Later updates and rollback
 
-The first update installs a root-owned command for subsequent bundles:
+Normal updates use **ToddlerBox Setup & Maintenance > Check updates / Install
+update**, which verifies signed release metadata and its monotonic sequence. On an
+appliance image, an unsigned bundle is refused unless you say it is a recovery
+action, because it bypasses that signature and could install an older release:
 
 ```sh
-sudo toddlerbox-update /path/ToddlerBox-update.pyz EXPECTED_SHA256
+sudo toddlerbox-update /path/ToddlerBox-update.pyz EXPECTED_SHA256 --unsigned-recovery
 sudo toddlerbox-update --rollback
 ```
 

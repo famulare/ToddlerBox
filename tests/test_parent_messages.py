@@ -12,7 +12,7 @@ def test_refused_rollback_leaves_no_maintenance_marker(appliance_machine, update
     module, _ = updater
     recovery = modules[0]
     bundle, digest = make_bundle(tmp_path, module)
-    module.run(bundle, digest, root=appliance_machine)
+    module.run(bundle, digest, root=appliance_machine, unsigned_recovery=True)
     job, _value = module.latest(appliance_machine / module.STATE)
     (job / "toddlerbox-session").write_bytes(b"damaged backup")
     with pytest.raises(ValueError):

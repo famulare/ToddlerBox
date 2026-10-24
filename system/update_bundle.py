@@ -227,8 +227,17 @@ def latest(state):
     return job, json.loads((job / "state.json").read_text())
 
 
-def run(bundle=None, digest=None, *, rollback=False, root=Path("/"), release_sequence=None, release_source=None):
+UNSIGNED_REFUSAL = ("Signed updates install from ToddlerBox Setup & Maintenance > Install update. "
+                    "An unsigned bundle is only for recovery: rerun with --unsigned-recovery.")
+
+
+def run(bundle=None, digest=None, *, rollback=False, root=Path("/"), release_sequence=None, release_source=None,
+        unsigned_recovery=False):
     guard(root)
+    if (not rollback and release_sequence is None and not unsigned_recovery
+            and (root / "var/lib/toddlerbox-system/appliance-v1").exists()):
+        # Unsigned bundles skip the signature and sequence floor: a stale download could downgrade.
+        raise ValueError(UNSIGNED_REFUSAL)
     directory = safe_path(root, STATE)
     directory.mkdir(parents=True, exist_ok=True, mode=0o700)
     with lock(directory):
@@ -321,7 +330,7 @@ def run(bundle=None, digest=None, *, rollback=False, root=Path("/"), release_seq
                     replace(stage / name, root / destination, mode)
                 if manifest["app"] is not None:
                     command([str(root / "usr/local/sbin/toddlerbox-install-release"),
-                             str(stage / "app.tar.gz"), manifest["app"]])
+                             str(stage / "app.tar.gz"), manifest["app"], "--journaled"])
                 state["status"] = "pending" if appliance else "applied"
                 record(job / "state.json", state)
             except BaseException:
@@ -348,13 +357,15 @@ def main():
     parser.add_argument("sha256", nargs="?")
     parser.add_argument("--rollback", action="store_true")
     parser.add_argument("--sha256", dest="self_digest", help="Bootstrap executable zip checksum")
+    parser.add_argument("--unsigned-recovery", action="store_true",
+                        help="Install an unsigned bundle (recovery only; skips the signed sequence floor)")
     args = parser.parse_args()
     if args.self_digest:
         args.bundle, args.sha256 = sys.argv[0], args.self_digest
     if not args.rollback and (not args.bundle or not args.sha256):
         parser.error("Supply BUNDLE SHA256, or --rollback.")
     try:
-        print(run(args.bundle, args.sha256, rollback=args.rollback), flush=True)
+        print(run(args.bundle, args.sha256, rollback=args.rollback, unsigned_recovery=args.unsigned_recovery), flush=True)
     except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile, subprocess.SubprocessError) as error:
         sys.exit(f"Update stopped: {error}. Child work and private configuration were not replaced.")
 
