@@ -8,12 +8,13 @@ on:
     branches: ['dev/**']
 permissions:
   contents: read
-concurrency:
-  group: dev-vm-${{ github.ref }}
-  cancel-in-progress: true
 jobs:
   fresh-install:
     if: contains(github.event.head_commit.message, '[vm]')
+    # Job-level: a later push without [vm] skips this job and never cancels a running one.
+    concurrency:
+      group: dev-vm-${{ github.ref }}
+      cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     env:
