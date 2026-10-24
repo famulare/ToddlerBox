@@ -161,7 +161,7 @@ def test_interrupted_update_requires_explicit_rollback(updater, machine, tmp_pat
     job, state = module.latest(machine / module.STATE)
     state["status"] = "applying"
     module.record(job / "state.json", state)
-    with pytest.raises(ValueError, match="Interrupted update"):
+    with pytest.raises(ValueError, match="update was interrupted.*Rollback"):
         module.run(archive, digest, root=machine)
     module.run(rollback=True, root=machine)
     assert (machine / module.FILES["controller.py"][0]).read_bytes() == b"old-controller.py"

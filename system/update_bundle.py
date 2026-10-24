@@ -244,7 +244,10 @@ def run(bundle=None, digest=None, *, rollback=False, root=Path("/"), release_seq
             command(["systemctl", "stop", SERVICE])
             try:
                 if appliance:
-                    from boot_recovery import restore as resident_restore, atomic
+                    from boot_recovery import restore as resident_restore, atomic, validate
+                    # Validate first: a refused rollback must not leave a maintenance
+                    # marker that blocks every later action until a root shell.
+                    validate(root, *previous)
                     atomic(root / "var/lib/toddlerbox-system/maintenance", b"rollback\n")
                     atomic(root / "var/lib/toddlerbox-system/parent-mode", b"rollback\n")
                     resident_restore(root, *previous)
@@ -254,8 +257,11 @@ def run(bundle=None, digest=None, *, rollback=False, root=Path("/"), release_seq
             finally:
                 restart()
             return "Previous controls/app restored; audio packages retained. Return to parent login."
-        if previous and previous[1]["status"] in {"applying", "restoring", "pending"}:
-            raise ValueError("Interrupted update: run toddlerbox-update --rollback first.")
+        if previous and previous[1]["status"] == "pending":
+            raise ValueError("A tested-update candidate is waiting: test it in child mode, then "
+                             "choose Accept tested update (or Rollback) before installing another.")
+        if previous and previous[1]["status"] in {"applying", "restoring"}:
+            raise ValueError("An update was interrupted: choose Rollback or Retry recovery first.")
         with tempfile.TemporaryDirectory(dir=directory, prefix=".stage-") as temporary:
             stage = Path(temporary)
             manifest = stage_bundle(Path(bundle), digest, stage)

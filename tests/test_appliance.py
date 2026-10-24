@@ -91,7 +91,7 @@ def test_candidate_requires_observation_and_parent_acceptance(appliance_machine,
 
 def test_second_pending_install_is_refused(appliance_machine, updater, modules, tmp_path):
     bundle, digest = pending(appliance_machine, updater, tmp_path)
-    with pytest.raises(ValueError, match="Interrupted update"):
+    with pytest.raises(ValueError, match="candidate is waiting.*Accept tested update"):
         updater[0].run(bundle, digest, root=appliance_machine)
 
 
