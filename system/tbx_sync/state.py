@@ -68,6 +68,23 @@ def load(path, default=None):
             return {} if default is None else default
 
 
+def clock_plausible(versions=Path('/opt/toddlerbox/versions.env'), *, current=None):
+    """False when the clock predates this system's build (a flat CMOS battery)."""
+    try:
+        text = Path(versions).read_text()
+    except OSError:
+        return True
+    for line in text.splitlines():
+        if line.startswith('UBUNTU_SNAPSHOT='):
+            try:
+                built = dt.datetime.strptime(line.split('=', 1)[1].strip(), '%Y%m%dT%H%M%SZ')
+            except ValueError:
+                return True
+            current = current or dt.datetime.now(dt.timezone.utc)
+            return current >= built.replace(tzinfo=dt.timezone.utc)
+    return True
+
+
 def sweep_staging(paths):
     """Remove staging a killed job or import left behind. Call only while holding the lock."""
     with SafeTree(paths.state/'staging') as tree:

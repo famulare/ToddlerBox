@@ -11,7 +11,7 @@ import sys
 import urllib.parse
 
 sys.path.insert(0, "/usr/local/lib/toddlerbox-system")
-from appliance import STEPS, accept, check, command, finish, guard, maintenance_lock, mode, progress
+from appliance import STEPS, accept, check, clock_problem, command, finish, guard, maintenance_lock, mode, progress
 from boot_recovery import STATE, SETUP_VISIBLE, atomic, latest, record, safe
 
 
@@ -28,7 +28,8 @@ def report(root=Path("/")):
     except (OSError, RuntimeError):
         value["current_release"] = "unknown"
     value["free_mib"] = __import__("shutil").disk_usage(root / STATE).free // 1024 ** 2
-    value["maintenance"] = {name: (root / STATE / name).exists() for name in ("maintenance", "apt-maintenance", "recovery-error")}
+    value["maintenance"] = {name: (root / STATE / name).exists()
+                            for name in ("maintenance", "apt-maintenance", "recovery-error", "rollback-unavailable")}
     for service in ("NetworkManager", "wpasupplicant", "gdm3", "toddlerbox-controller", "toddlerbox-sync"):
         result = subprocess.run(["systemctl", "is-active", service], capture_output=True, text=True, timeout=5)
         state = result.stdout.strip()
@@ -117,6 +118,9 @@ def audio_defaults_available():
 
 def root_action(action, arguments):
     guard(readonly=action == "status", allow_apt=action == "ubuntu", allow_recovery=action == "recover")
+    problem = clock_problem() if action in {"updates", "install", "ubuntu"} else None
+    if problem:
+        raise ValueError(problem)
     if action == "check" and len(arguments) == 2:
         check(*arguments)
     elif action == "finish" and not arguments:

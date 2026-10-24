@@ -30,6 +30,10 @@ STATE = Path("var/lib/toddlerbox-system")
 SETUP_VISIBLE = Path("run/toddlerbox-system/setup-complete")
 
 
+class MissingRollbackMaterial(ValueError):
+    """A backup or previous release is gone: rollback is impossible, nothing is unsafe."""
+
+
 def safe(root, relative):
     path = root / relative
     for parent in (path, *path.parents):
@@ -118,6 +122,8 @@ def validate(root, job, value):
         safe(root, DESTINATIONS[name][0])
         if old is not None:
             source = safe(root, job.relative_to(root) / name)
+            if not source.exists() and not source.is_symlink():
+                raise MissingRollbackMaterial("Missing system backup")
             if source.stat().st_size > 16 * 1024 ** 2:
                 raise ValueError("Oversized system backup")
             with source.open("rb") as handle:
@@ -133,7 +139,7 @@ def validate(root, job, value):
             if not isinstance(release, str) or Path(release).name != release or release in {".", ".."}:
                 raise ValueError("Unsafe release name")
             if not safe(root, Path("opt/toddlerbox/releases") / release).is_dir():
-                raise ValueError("Missing previous release")
+                raise MissingRollbackMaterial("Missing previous release")
 
 
 def restore(root, job, value):
@@ -183,8 +189,17 @@ def gate(root=Path("/"), *, failure=False):
             status = value["status"]
             if status not in {"applying", "restoring", "pending", "accepted", "rolled-back"}:
                 raise ValueError("Unknown recovery state")
+            unavailable = safe(root, STATE / "rollback-unavailable")
             if status != "rolled-back":
-                validate(root, job, value)
+                try:
+                    validate(root, job, value)
+                    unavailable.unlink(missing_ok=True)
+                except MissingRollbackMaterial:
+                    if status != "accepted":
+                        raise
+                    # After acceptance the old pair is only a convenience. Losing it
+                    # (a parent cleaning up old releases) must never block child mode.
+                    atomic(unavailable, b"accepted update has no complete rollback material\n")
             if status in {"applying", "restoring"} or (failure and status == "pending"):
                 restore(root, job, value)
                 atomic(state / "parent-mode", b"Update restored; inspect before child use\n")

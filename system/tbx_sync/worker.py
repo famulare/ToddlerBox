@@ -13,7 +13,7 @@ from .media import typing_text, validate_photo
 from .package import config_bytes, credentials_bytes
 from .remote import GLOBAL_FAILURES, Rclone, TransferError
 from .safeio import MAX_FILE, MAX_TOTAL, SafeTree, atomic_json, digest, parts
-from .state import Paths, initialize, load, lock, now, sweep_staging
+from .state import Paths, clock_plausible, initialize, load, lock, now, sweep_staging
 
 UNIT_TIMEOUT = 900  # toddlerbox-sync.service TimeoutStartSec
 # Finish, record status and clean staging before systemd's timeout kills the job.
@@ -334,6 +334,8 @@ class Run:
             if not (self.paths.config/'installed.json').exists():
                 self.status['state'] = 'unconfigured'
                 return self.status
+            if not clock_plausible():
+                raise TransferError('clock-or-certificate')
             with SafeTree(self.paths.config) as config_tree:
                 config = config_bytes(config_tree.read('config.json',limit=65536))
                 credentials_bytes(config_tree.read('rclone.conf',limit=65536),config['root_folder_id'])

@@ -196,3 +196,12 @@ def test_cli_shows_the_fixed_refusal_sentence(tmp_path, monkeypatch, capsys):
     with pytest.raises(SystemExit):
         cli.main()
     assert "Archive SHA-256 mismatch" in capsys.readouterr().err
+
+
+def test_wrong_clock_stops_the_job_before_any_transfer(tmp_path, monkeypatch):
+    locations = installed(tmp_path)
+    monkeypatch.setattr("system.tbx_sync.worker.clock_plausible", lambda: False)
+    drive = MemoryDrive()
+    status = run(locations, drive)
+    assert status["state"] == "partial" and "clock-or-certificate" in status["issues"]
+    assert not drive.operations
