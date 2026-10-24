@@ -2098,8 +2098,31 @@ directories, failing fsync/directory fsync, stalled writers, hard-linked
 orphan temporaries, SIGTERM of a real worker process, damaged PNG chunks that
 raise `SyntaxError`, and a fake rclone binary reporting certificate dates.
 
-Not yet run: Linux CI (`ci.yml`, including the apt-Pillow root-worker job), the
-dev VM workflow (`dev-vm-qualify.yml`), the signed update chain in a VM (requires
-parameterising `scripts/qualify-patch-update.py`), and any physical HP check.
+Linux CI (GitHub Actions, ubuntu-24.04, `/usr/bin/python3` 3.12):
+- Run 40071386034 at `14c5445`: the full suite, including every `linux_only` test, passed.
+  The apt-Pillow root-worker job (Ubuntu `python3-pil` 10.2.0, asserted at runtime)
+  failed one fixture check. Pillow 10.2 keeps the MPO primary size after `seek(1)`,
+  which stopped the test before its bounded-decoding assertions.
+- Run 40071568065 at `9667fcb`, after making that fixture check version-aware: both jobs
+  passed, so the MPO bounded-decoding assertions now run under the worker's Pillow too.
+
+Dev VM workflow (`dev-vm-qualify.yml`, run 40071386069 at `14c5445`, TCG, no network):
+passed. It built the disk, installer and unsigned update bundle from this source, then
+qualified:
+- fresh ISO installation with payload checksum and exact-target confirmation
+- the boot gate, including `kernel.sysrq=16`, `GRUB_RECORDFAIL_TIMEOUT=5` and the
+  session's `TODDLERBOX_DATA_ROOT` pin
+- the six-activity child session, Music (18 songs, Free Play, HDA output, Home silence)
+  and Math speech
+- supervised first setup, independent escape from a stopped launcher, and watchdog recovery
+- setup persistence across reboot without network, and a standalone Cage session with no
+  child GNOME shell
+
+Evidence is a 14-day workflow artifact. Run 40071568094 re-qualifies the final head
+`9667fcb`.
+
+Not yet run: the signed update chain in a VM (requires parameterising
+`scripts/qualify-patch-update.py`), and any physical HP check. VM results are not
+hardware validation.
 Resident and image changes (sync worker, boot gate, SysRq, recordfail, first boot)
 reach appliances only through a fresh installer.

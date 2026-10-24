@@ -7,8 +7,8 @@ Dev-only working plan. It is not a release document and is not intended for `mai
   2026-10-23, after three review rounds.
 - **Progress (2026-10-23):** WP12, WP1, WP2, WP5, WP7, WP3, WP4, WP10, WP6, WP11, WP8 and
   WP9 are implemented and committed with tests, plus fixes for Codex implementation
-  review 1. Remaining: Linux CI and VM runs (need the branch pushed), the signed update
-  chain in a VM, and physical HP acceptance.
+  reviews 1–3. Linux CI and the fresh-install VM qualification have passed (see
+  `VALIDATION.md`). Remaining: the signed update chain in a VM, and physical HP acceptance.
 
 Constraints are inherited from `AGENTS.md`:
 - Preserve child work first.
