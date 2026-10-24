@@ -5,7 +5,7 @@ import io
 import math
 import os
 import time
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Future, wait as wait_futures
 from dataclasses import dataclass
 from functools import lru_cache
 from datetime import datetime
@@ -20,7 +20,9 @@ from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.runtime import health, control, retained
 from toddlerbox.runtime.image_safety import DECODE_ERRORS, MAX_PHOTO_PIXELS
+from toddlerbox.runtime.workers import DaemonExecutor
 from toddlerbox.runtime.persistence import (
+    confirm_durable,
     has_archive_reserve,
     is_work_name,
     publish_new_bytes,
@@ -174,6 +176,7 @@ def _is_paint_archive(path: Path) -> bool:
 
 KNOWN_ARCHIVES = 8
 EXIT_GRACE_SECONDS = 1.0  # A healthy save finishes well within this; then Home parks the work.
+SHUTDOWN_WAIT_SECONDS = 0.75  # Per wait at TERM; the launcher must ack within the controller's grace.
 
 
 class ArchiveResult(NamedTuple):
@@ -194,8 +197,10 @@ def _archive_duplicate(pixels: bytes, size: Tuple[int, int], directory: Path,
     """
     if pixels.count(255) == len(pixels):
         return True
-    if any(known_digest == digest and path.exists() for path, known_digest in known):
-        return True
+    for path, known_digest in known:
+        if known_digest == digest and path.exists():
+            # A visible archive whose commit was uncertain does not yet replace current work.
+            return confirm_durable(path)
     archives = [path for path in _list_archives(directory) if _is_paint_archive(path)]
     if not archives:
         return False
@@ -203,9 +208,10 @@ def _archive_duplicate(pixels: bytes, size: Tuple[int, int], directory: Path,
         with Image.open(archives[0]) as newest:
             if newest.size != tuple(size) or newest.width * newest.height > MAX_PHOTO_PIXELS:
                 return False
-            return _pixels_digest(newest.convert("RGB").tobytes()) == digest
+            same = _pixels_digest(newest.convert("RGB").tobytes()) == digest
     except Exception:
         return False
+    return same and confirm_durable(archives[0])
 
 
 def _archive_pixels(pixels: bytes, size: Tuple[int, int], directory: Path,
@@ -631,10 +637,10 @@ class PaintApp:
         self.recall_drag_distance = 0
         self.pointer_down = False
         self.pointer_input = PointerInput()
-        self._recall_worker: Optional[ThreadPoolExecutor] = None
+        self._recall_worker: Optional[DaemonExecutor] = None
         self._recall_pending: Optional[tuple[int, Future]] = None
         self._recall_generation = 0
-        self._save_worker: Optional[ThreadPoolExecutor] = None
+        self._save_worker: Optional[DaemonExecutor] = None
         self._save_failed = False
         self._transition_request = None
         self._transition_pending = None
@@ -1029,14 +1035,21 @@ class PaintApp:
         icon_size = (max(1, size[0] - 6), max(1, size[1] - 6))
         self.action_buttons["recall"].image = pygame.transform.smoothscale(self.canvas_surface, icon_size)
 
-    def _autosave_latest(self) -> bool:
+    def _autosave_latest(self, timeout: Optional[float] = None) -> bool:
         # Synchronous final/direct save API, serialized after an older snapshot.
         # Interactive Home/New/Recall/control paths poll the writer instead.
-        self._finish_pending_save(wait=True)
+        # With a timeout (shutdown), the write runs on the worker and is bounded.
+        self._finish_pending_save(wait=True, timeout=timeout)
+        if self._save_pending is not None:
+            return False
         if self._saved_revision == self._canvas_revision:
             return True
         if not self._latest_writable:
             return False
+        if timeout is not None:
+            self._request_autosave()
+            self._finish_pending_save(wait=True, timeout=timeout)
+            return self._saved_revision == self._canvas_revision
         latest_path = self.paint_dir / "latest.png"
         try:
             _save_pixels_atomic(_canvas_pixels(self.canvas_surface), self.canvas_surface.get_size(), latest_path)
@@ -1048,11 +1061,13 @@ class PaintApp:
         self.logger.info("Paint current canvas committed")
         return True
 
-    def _finish_pending_save(self, *, wait: bool = False) -> None:
+    def _finish_pending_save(self, *, wait: bool = False, timeout: Optional[float] = None) -> None:
         if self._save_pending is None:
             return
         revision, future = self._save_pending
-        if not wait and not future.done():
+        if wait:
+            wait_futures([future], timeout=timeout)
+        if not future.done():
             return
         self._save_pending = None
         try:
@@ -1072,7 +1087,7 @@ class PaintApp:
         if not self._latest_writable:
             return
         if self._save_worker is None:
-            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paint-save")
+            self._save_worker = DaemonExecutor("paint-save")
         self._save_failed = False
         # Immutable copy: the child can continue drawing while PNG/fsync runs.
         pixels = _canvas_pixels(self.canvas_surface)
@@ -1146,7 +1161,7 @@ class PaintApp:
             return
         self._transition_request = None
         if self._save_worker is None:
-            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paint-save")
+            self._save_worker = DaemonExecutor("paint-save")
         pixels = _canvas_pixels(self.canvas_surface)
         limit = _coerce_archive_limit(self.config.get("paint", {}).get("max_archives", MAX_ARCHIVES), MAX_ARCHIVES)
         self._transition_pending = (kind, self._save_worker.submit(
@@ -1154,20 +1169,32 @@ class PaintApp:
             tuple(self._known_archives)), source)
 
     def _poll_exit(self) -> bool:
-        if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
+        if not self._exit_requested:
             return False
-        self._finish_pending_save()
-        if self._saved_revision == self._canvas_revision:
-            return True
         if self._exit_since is None:
             self._exit_since = time.monotonic()
         waiting = time.monotonic() - self._exit_since < EXIT_GRACE_SECONDS
+        if self._transition_request is not None or self._transition_pending is not None:
+            if waiting:
+                return False
+            self._abandon_transition()
+        self._finish_pending_save()
+        if self._saved_revision == self._canvas_revision:
+            return True
         if self._latest_writable and not self._save_failed and waiting:
             self._request_autosave()
             return False
         # Home never waits on storage: the launcher keeps and keeps saving this canvas.
         self._park_unsaved()
         return True
+
+    def _abandon_transition(self) -> None:
+        # Home wins over a stalled New/Recall: the current canvas is parked unchanged;
+        # a late archive still lands on disk but can no longer alter any document.
+        if self._transition_pending is not None:
+            self.logger.warning("Paint New/Recall still saving at exit; current canvas kept unchanged")
+        self._transition_request = None
+        self._transition_pending = None
 
     def _park_unsaved(self) -> None:
         pixels, size = _canvas_pixels(self.canvas_surface), self.canvas_surface.get_size()
@@ -1273,7 +1300,7 @@ class PaintApp:
             if not self._recall_item_rect(index).colliderect(self.recall_strip_rect):
                 continue
             if self._recall_worker is None:
-                self._recall_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="paint-recall")
+                self._recall_worker = DaemonExecutor("paint-recall")
             def decode(index=index, path=item.source, size=self.recall_thumb_size):
                 return index, _recall_pixels(path, (size, size))
             self._recall_pending = (self._recall_generation, self._recall_worker.submit(decode))
@@ -1438,12 +1465,14 @@ class PaintApp:
             # an older periodic snapshot overwrite the final current canvas.
             if self._transition_pending is not None:
                 try:
-                    self._transition_pending[1].result()
+                    self._transition_pending[1].result(timeout=SHUTDOWN_WAIT_SECONDS)
                 except Exception:
                     self.logger.exception("Paint archive did not finish at shutdown")
-                self._service_transition()
+                    self._abandon_transition()
+                else:
+                    self._service_transition()
             self._transition_request = None
-            if not self._autosave_latest():
+            if not self._autosave_latest(timeout=SHUTDOWN_WAIT_SECONDS):
                 self._park_unsaved()
             if self._recall_worker is not None:
                 self._recall_worker.shutdown(wait=False, cancel_futures=True)

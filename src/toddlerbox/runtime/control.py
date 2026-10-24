@@ -61,8 +61,10 @@ class AppChannel:
     def service(self, save_current=None):
         if not hasattr(self, "pending_saves"):
             self.pending_saves = {}
-        for nonce, (callback, deadline) in list(self.pending_saves.items()):
-            if self._save_result(nonce, callback, deadline):
+        # Judge pending requests by the current owner: since the request arrived,
+        # work may have been parked in the launcher or adopted by a new activity.
+        for nonce, (_requested_by, deadline) in list(self.pending_saves.items()):
+            if self._save_result(nonce, save_current, deadline):
                 del self.pending_saves[nonce]
         for _ in range(16):
             try:

@@ -86,6 +86,31 @@ def _link_new(source: Path, path: Path) -> Path:
             counter += 1
 
 
+def _rename_new(source: Path, path: Path) -> Path:
+    # Rename, not link: a crash can never leave two names for one inode, which
+    # the root sync worker rightly refuses to read.
+    candidate, counter = path, 1
+    while os.path.lexists(candidate):
+        candidate = path.with_name(f"{path.stem}_{counter}{path.suffix}")
+        counter += 1
+    os.rename(source, candidate)
+    return candidate
+
+
+def confirm_durable(path: Path) -> bool:
+    """True only if an existing file and its directory entry are confirmed on disk."""
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        sync_directory(Path(path).parent)
+        return True
+    except OSError:
+        return False
+
+
 def publish_new_bytes(path: Path, data: bytes) -> Path:
     """Publish a new file without ever replacing an existing name; returns the name used."""
     path = Path(path)
@@ -102,8 +127,7 @@ def publish_new_bytes(path: Path, data: bytes) -> Path:
 def quarantine(path: Path) -> Path:
     """Keep unreadable work for a parent under a corrupt- name; never overwrite."""
     path = Path(path)
-    target = _link_new(path, path.with_name(f"corrupt-{time.time_ns()}{path.suffix}"))
-    path.unlink()
+    target = _rename_new(path, path.with_name(f"corrupt-{time.time_ns()}{path.suffix}"))
     sync_directory(path.parent)
     return target
 
@@ -129,16 +153,21 @@ def recover_orphans(directory: Path, *, suffix: str, validate: Callable[[bytes],
                     continue
                 if not stat.S_ISREG(info.st_mode):
                     continue
+                if info.st_nlink > 1:
+                    # Interrupted after publish_new_bytes linked it: the work is
+                    # already visible under its archive name; drop the extra name.
+                    temporary.unlink()
+                    sync_directory(directory)
+                    continue
                 try:
                     valid = info.st_size <= ORPHAN_READ_LIMIT and bool(validate(temporary.read_bytes()))
                 except Exception:
                     valid = False
                 stamp = time.time_ns()
                 if valid:
-                    target = _link_new(temporary, Path(recovered_dir) / f"recovered-{stamp}{suffix}")
+                    target = _rename_new(temporary, Path(recovered_dir) / f"recovered-{stamp}{suffix}")
                 else:
-                    target = _link_new(temporary, directory / f"corrupt-{stamp}{suffix}")
-                temporary.unlink()
+                    target = _rename_new(temporary, directory / f"corrupt-{stamp}{suffix}")
                 sync_directory(target.parent)
                 if target.parent != directory:
                     sync_directory(directory)

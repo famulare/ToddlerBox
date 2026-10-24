@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import wait as wait_futures
 from dataclasses import dataclass
 from datetime import datetime
 from heapq import nlargest
@@ -25,6 +25,7 @@ from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.runtime import health, control, retained
 from toddlerbox.runtime.persistence import (
+    confirm_durable,
     has_archive_reserve,
     is_work_name,
     publish_new_bytes,
@@ -33,6 +34,7 @@ from toddlerbox.runtime.persistence import (
     sync_directory,
     write_bytes,
 )
+from toddlerbox.runtime.workers import DaemonExecutor
 from toddlerbox.ui import theme
 from toddlerbox.ui.common import (
     Button,
@@ -176,7 +178,7 @@ def _parse_glyph(raw_glyph: object) -> Optional[Glyph]:
         return None
     if type(size) is not int or not 1 <= size <= MAX_GLYPH_SIZE:
         return None
-    if style not in {"plain", "bold", "italic"}:
+    if not isinstance(style, str) or style not in {"plain", "bold", "italic"}:
         return None
     return Glyph(char=char, size=size, style=style)
 
@@ -217,6 +219,7 @@ def _rich_to_text(lines: List[List[Glyph]]) -> str:
 
 CURRENT_READ_LIMIT = 64 * 1024 * 1024
 EXIT_GRACE_SECONDS = 1.0  # A healthy save finishes well within this; then Home parks the work.
+SHUTDOWN_WAIT_SECONDS = 0.75  # Per wait at TERM; the launcher must ack within the controller's grace.
 KNOWN_ARCHIVES = 8
 
 
@@ -228,8 +231,10 @@ def _lines_digest(serialized_lines: list) -> str:
 
 def _archive_duplicate(directory: Path, digest: str, known: Tuple[Tuple[Path, str], ...]) -> bool:
     """Identical to an archive that still exists: nothing new to preserve."""
-    if any(known_digest == digest and path.exists() for path, known_digest in known):
-        return True
+    for path, known_digest in known:
+        if known_digest == digest and path.exists():
+            # A visible archive whose commit was uncertain does not yet replace current work.
+            return confirm_durable(path)
     archives = _archive_files(directory) if directory.is_dir() else []
     if not archives:
         return False
@@ -238,9 +243,10 @@ def _archive_duplicate(directory: Path, digest: str, known: Tuple[Tuple[Path, st
         if newest.stat().st_size > RECALL_READ_BYTES:
             return False
         record = json.loads(newest.read_bytes())
-        return isinstance(record, dict) and _lines_digest(record.get("rich_lines")) == digest
+        same = isinstance(record, dict) and _lines_digest(record.get("rich_lines")) == digest
     except Exception:
         return False
+    return same and confirm_durable(newest)
 
 
 def _valid_document(raw: bytes) -> bool:
@@ -704,13 +710,18 @@ class TypingApp:
                 "cursor": [self.cursor_row, self.cursor_col],
                 "size": self.current_text_size, "style": self.text_style}
 
-    def _save_current(self) -> bool:
-        self._finish_pending_save(wait=True)
-        if self._save_blocked:
+    def _save_current(self, timeout: Optional[float] = None) -> bool:
+        # With a timeout (shutdown), the write runs on the worker and is bounded.
+        self._finish_pending_save(wait=True, timeout=timeout)
+        if self._save_pending is not None or self._save_blocked:
             return False
         payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
         if payload == self._saved_payload:
             return True
+        if timeout is not None:
+            self._request_autosave()
+            self._finish_pending_save(wait=True, timeout=timeout)
+            return self._saved_payload == payload
         try:
             write_bytes(self.current_path, payload)
         except OSError:
@@ -720,11 +731,13 @@ class TypingApp:
         self._save_failed = False
         return True
 
-    def _finish_pending_save(self, *, wait: bool = False) -> None:
+    def _finish_pending_save(self, *, wait: bool = False, timeout: Optional[float] = None) -> None:
         if self._save_pending is None:
             return
         payload, future = self._save_pending
-        if not wait and not future.done():
+        if wait:
+            wait_futures([future], timeout=timeout)
+        if not future.done():
             return
         self._save_pending = None
         try:
@@ -744,7 +757,7 @@ class TypingApp:
         if payload == self._saved_payload:
             return
         if self._save_worker is None:
-            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="typing-save")
+            self._save_worker = DaemonExecutor("typing-save")
         self._save_failed = False
         self._save_pending = (payload, self._save_worker.submit(write_bytes, self.current_path, payload))
 
@@ -797,7 +810,7 @@ class TypingApp:
         payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
         digest = _lines_digest(serialized)
         if self._save_worker is None:
-            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="typing-save")
+            self._save_worker = DaemonExecutor("typing-save")
         future = self._save_worker.submit(_archive_payload, self.typing_dir, self.sessions_path,
                                           payload, self.config.get("typing", {}).copy(),
                                           digest, tuple(self._known_archives))
@@ -816,21 +829,33 @@ class TypingApp:
         self._known_archives = [*self._known_archives[-(KNOWN_ARCHIVES - 1):], (path, digest)]
 
     def _poll_exit(self) -> bool:
-        if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
+        if not self._exit_requested:
             return False
+        if self._exit_since is None:
+            self._exit_since = time.monotonic()
+        waiting = time.monotonic() - self._exit_since < EXIT_GRACE_SECONDS
+        if self._transition_request is not None or self._transition_pending is not None:
+            if waiting:
+                return False
+            self._abandon_transition()
         self._finish_pending_save()
         payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
         if payload == self._saved_payload:
             return True
-        if self._exit_since is None:
-            self._exit_since = time.monotonic()
-        waiting = time.monotonic() - self._exit_since < EXIT_GRACE_SECONDS
         if not self._save_blocked and not self._save_failed and waiting:
             self._request_autosave()
             return False
         # Home never waits on storage: the launcher keeps and keeps saving this document.
         self._park_unsaved(payload)
         return True
+
+    def _abandon_transition(self) -> None:
+        # Home wins over a stalled New/Recall: the current document is parked unchanged;
+        # a late archive still lands on disk but can no longer alter any document.
+        if self._transition_pending is not None:
+            self.logger.warning("Typing New/Recall still saving at exit; current document kept unchanged")
+        self._transition_request = None
+        self._transition_pending = None
 
     def _park_unsaved(self, payload: bytes) -> None:
         state = (_clone_rich_lines(self.rich_lines), (self.cursor_row, self.cursor_col),
@@ -1400,8 +1425,11 @@ class TypingApp:
             border = theme.ACCENT if item.is_current else theme.BORDER
             pygame.draw.rect(self.screen, border, rect, width=3 if item.is_current else 2)
 
-            label_surface = self.ui_font.render(item.label, True, theme.INK)
-            self.screen.blit(label_surface, (rect.left + preview_x_pad, rect.top + preview_y_pad))
+            try:
+                label_surface = self.ui_font.render(item.label, True, theme.INK)
+                self.screen.blit(label_surface, (rect.left + preview_x_pad, rect.top + preview_y_pad))
+            except pygame.error:
+                pass  # Zero-advance text from older saves: draw nothing rather than crash.
 
             preview_top = rect.top + preview_y_pad + self.ui_font.get_height() + 6
             max_width = rect.width - preview_x_pad * 2
@@ -1413,7 +1441,10 @@ class TypingApp:
                 y = preview_top + line_idx * line_step
                 if y + self.ui_font.get_height() > rect.bottom - preview_y_pad:
                     break
-                line_surface = self.ui_font.render(line, True, theme.INK)
+                try:
+                    line_surface = self.ui_font.render(line, True, theme.INK)
+                except pygame.error:
+                    continue  # Zero-advance text from older saves: draw nothing rather than crash.
                 self.screen.blit(line_surface, (rect.left + preview_x_pad, y))
 
     def _render(self) -> None:
@@ -1482,12 +1513,14 @@ class TypingApp:
         finally:
             if self._transition_pending is not None:
                 try:
-                    self._transition_pending[2].result()
+                    self._transition_pending[2].result(timeout=SHUTDOWN_WAIT_SECONDS)
                 except Exception:
                     self.logger.exception("Typing archive did not finish at shutdown")
-                self._service_transition()
+                    self._abandon_transition()
+                else:
+                    self._service_transition()
             self._transition_request = None
-            if not self._save_current():
+            if not self._save_current(timeout=SHUTDOWN_WAIT_SECONDS):
                 self._park_unsaved(json.dumps(self._record(), ensure_ascii=False).encode("utf-8"))
             if self._save_worker is not None:
                 self._save_worker.shutdown(wait=False, cancel_futures=True)

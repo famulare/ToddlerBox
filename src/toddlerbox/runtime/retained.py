@@ -8,12 +8,13 @@ from __future__ import annotations
 
 import threading
 import time
-from concurrent.futures import Future, ThreadPoolExecutor, wait
+from concurrent.futures import Future, wait
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional
 
 from toddlerbox.runtime.persistence import write_bytes
+from toddlerbox.runtime.workers import DaemonExecutor
 
 RETRY_SECONDS = 2.0
 DURABLE, PENDING, FAILED = "durable", "pending", "failed"
@@ -33,7 +34,7 @@ class ParkedWork:
 
 _slots: Dict[str, ParkedWork] = {}
 _lock = threading.RLock()
-_executor: Optional[ThreadPoolExecutor] = None
+_executor: Optional[DaemonExecutor] = None
 
 
 def _write(work: ParkedWork) -> None:
@@ -51,7 +52,7 @@ def _start(work: ParkedWork, now: float) -> None:
     if work.write_disabled:
         return
     if _executor is None:
-        _executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="retained-save")
+        _executor = DaemonExecutor("retained-save")
     work.last_attempt = now
     work.writer = _executor.submit(_write, work)
 
