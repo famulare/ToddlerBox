@@ -75,3 +75,17 @@ def test_torn_unreferenced_release_is_kept_aside_and_reinstalled(release_install
     assert (torn / "src/toddlerbox/launcher.py").read_bytes() == b"# launcher\n"
     (kept,) = (root / "releases").glob(f".conflict-{release_id}-*")
     assert (kept / "src/toddlerbox/launcher.py").read_bytes() == b""
+
+
+def test_direct_install_waits_for_no_update_by_holding_the_update_lock(release_installer, release_tree,
+                                                                      tmp_path, appliance_state):
+    import fcntl
+    installer, _ = release_installer
+    root, mode = release_tree
+    archive, digest, _ = bundle(tmp_path)
+    with (appliance_state / "updates/lock").open("a") as held:
+        fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)  # A signed update is running.
+        with pytest.raises(ValueError, match="running"):
+            installer.install(archive, digest, root=root, mode_file=mode, state=appliance_state,
+                              unsigned_recovery=True)
+    assert (root / "current").resolve() == root / "releases/old"

@@ -65,16 +65,28 @@ def test_session_pin_keeps_child_work_in_place_whatever_the_file_says(config_fil
     assert load_config()["data_root"] == "/var/lib/toddlerbox"
 
 
-def test_valid_custom_values_are_kept_and_clamped(config_file):
+def test_previously_accepted_values_keep_their_meaning(config_file):
     config_file.write_text(
-        "music: {volume: 4, autoplay: false}\n"
-        "photos: {thumb_cache_limit: 3}\n"
-        "launcher:\n  apps:\n    - {name: Paint, icon_path: x.png, command: python -m toddlerbox.paint}\n")
+        "music: {volume: 4, autoplay: false, latency_ms: -125.5}\n"
+        "photos: {thumb_cache_limit: 3, show_arrows: 'yes'}\n"
+        "paint: {autosave_seconds: '30'}\n"
+        "typing: {autosave_seconds: 12.5}\n"
+        "launcher:\n  photos_prewarm_batch: true\n  apps:\n"
+        "    - {name: 7, icon_path: x.png, command: python -m toddlerbox.paint}\n"
+        "    - {name: Inert}\n")
     config = load_config()
-    assert config["music"] == {"volume": 1.0, "autoplay": False, "latency_ms": 0}
-    assert config["photos"]["thumb_cache_limit"] == 8
-    assert [app.name for app in _load_apps(config)] == ["Paint"]
+    assert config["music"] == {"volume": 4, "autoplay": False, "latency_ms": -125.5}
+    assert config["photos"] == {"thumb_cache_limit": 3, "show_arrows": "yes"}
+    assert config["paint"]["autosave_seconds"] == "30" and config["typing"]["autosave_seconds"] == 12.5
+    assert [app.name for app in _load_apps(config)] == ["7", "Inert"]
     assert not config_errors()
+
+
+def test_huge_numbers_never_break_loading_or_checking(config_file, tmp_path):
+    config_file.write_text("music: {volume: " + "9" * 400 + "}\npaint: {autosave_seconds: " + "9" * 400 + "}\n")
+    config = load_config()
+    assert str(config["music"]["volume"]).startswith("999")
+    assert check(config_file) == []
 
 
 def test_mutating_a_loaded_config_does_not_change_defaults(config_file):

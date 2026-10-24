@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import math
 import os
 import shlex
 from pathlib import Path
@@ -118,20 +117,11 @@ def _candidate_config_paths() -> list[Path]:
 
 
 _SECTIONS = ("audio", "launcher", "paint", "photos", "typing", "music", "reading", "math")
-_NUMBERS = {
-    ("launcher", "photos_prewarm_idle_ms"): (int, 0, 60_000),
-    ("launcher", "photos_prewarm_batch"): (int, 0, 16),
-    ("paint", "autosave_seconds"): (int, 1, 3600),
-    ("paint", "max_archives"): (int, 0, 1_000_000),
-    ("typing", "autosave_seconds"): (int, 1, 3600),
-    ("typing", "max_archives"): (int, 0, 1_000_000),
-    ("typing", "max_archive_bytes"): (int, 0, 1 << 40),
-    ("photos", "thumb_cache_limit"): (int, 8, 256),
-    ("music", "volume"): (float, 0.0, 1.0),
-    ("music", "latency_ms"): (int, 0, 2000),
-    ("audio", "startup_volume"): (float, 0.0, 1.0),
-}
-_BOOLEANS = {("launcher", "photos_prewarm"), ("photos", "show_arrows"), ("music", "autoplay")}
+# Values whose consumers call int() directly. Keep exactly the conversion they
+# always accepted ("30", 12.5, true); replace only what would raise. Other values
+# (volumes, latency, archive caps, booleans) are validated by their own readers.
+_INTEGERS = (("launcher", "photos_prewarm_idle_ms"), ("launcher", "photos_prewarm_batch"),
+             ("paint", "autosave_seconds"), ("typing", "autosave_seconds"), ("photos", "thumb_cache_limit"))
 _last_errors: List[str] = []
 
 
@@ -151,12 +141,12 @@ def _read(path: Path, errors: List[str]) -> Optional[Dict[str, Any]]:
 
 
 def _command_ok(command: Any) -> bool:
-    if isinstance(command, list):
-        return bool(command) and all(isinstance(part, str) for part in command)
+    # Only what used to raise is refused; other odd commands still give an inert tile.
     if not isinstance(command, str):
-        return False
+        return True
     try:
-        return bool(shlex.split(command))
+        shlex.split(command)
+        return True
     except ValueError:
         return False
 
@@ -167,11 +157,10 @@ def _valid_apps(apps: Any, errors: List[str]) -> Optional[list]:
         return None
     valid = []
     for index, entry in enumerate(apps):
-        if (isinstance(entry, dict) and isinstance(entry.get("name"), str)
-                and isinstance(entry.get("icon_path", ""), str) and _command_ok(entry.get("command"))):
+        if isinstance(entry, dict) and _command_ok(entry.get("command", "")):
             valid.append(entry)
         else:
-            errors.append(f"launcher.apps[{index}] needs a name, icon_path and command; skipped")
+            errors.append(f"launcher.apps[{index}] must be a mapping with a valid command; skipped")
     if apps and not valid:
         # An explicit empty list is a parent's choice; a list of only broken entries is not.
         errors.append("launcher.apps has no usable entries; using the standard activities")
@@ -180,20 +169,12 @@ def _valid_apps(apps: Any, errors: List[str]) -> Optional[list]:
 
 
 def _valid_color(color: Any) -> bool:
-    return (isinstance(color, (list, tuple)) and len(color) == 3
+    return (isinstance(color, (list, tuple)) and len(color) in (3, 4)
             and all(type(part) is int and 0 <= part <= 255 for part in color))
 
 
-def _number(value: Any, kind: type, low: float, high: float) -> Optional[float]:
-    if type(value) not in (int, float) or not math.isfinite(value):
-        return None
-    if kind is int and value != int(value):
-        return None
-    return kind(min(high, max(low, value)))
-
-
 def _normalise(config: Dict[str, Any], errors: List[str]) -> Dict[str, Any]:
-    """Every value an activity reads is type- and range-checked here, once."""
+    """Replace only what would crash a reader; previously accepted values keep their meaning."""
     if not isinstance(config.get("data_root"), str) or not config["data_root"].strip():
         errors.append("data_root must be a path; using the default")
         config["data_root"] = DEFAULT_CONFIG["data_root"]
@@ -201,28 +182,18 @@ def _normalise(config: Dict[str, Any], errors: List[str]) -> Dict[str, Any]:
         if section in config and not isinstance(config[section], dict):
             errors.append(f"{section} must be a mapping; using its defaults")
             config[section] = copy.deepcopy(DEFAULT_CONFIG.get(section, {}))
-    for (section, key), (kind, low, high) in _NUMBERS.items():
+    for section, key in _INTEGERS:
         values = config.get(section, {})
         if key in values:
-            number = _number(values[key], kind, low, high)
-            if number is None:
-                errors.append(f"{section}.{key} must be a number from {low} to {high}; using the default")
+            try:
+                int(values[key])
+            except (TypeError, ValueError, OverflowError):
+                errors.append(f"{section}.{key} must be a whole number; using the default")
                 default = DEFAULT_CONFIG.get(section, {}).get(key)
                 if default is None:
                     del values[key]
                 else:
                     values[key] = default
-            else:
-                values[key] = number
-    for section, key in _BOOLEANS:
-        values = config.get(section, {})
-        if key in values and type(values[key]) is not bool:
-            errors.append(f"{section}.{key} must be true or false; using the default")
-            default = DEFAULT_CONFIG.get(section, {}).get(key)
-            if default is None:
-                del values[key]
-            else:
-                values[key] = default
     launcher = config.setdefault("launcher", {})
     apps = _valid_apps(launcher.get("apps"), errors)
     launcher["apps"] = copy.deepcopy(DEFAULT_CONFIG["launcher"]["apps"]) if apps is None else apps

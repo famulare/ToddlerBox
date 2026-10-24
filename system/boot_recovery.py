@@ -118,12 +118,18 @@ def validate(root, job, value):
         raise ValueError("Invalid restore destination")
     if type(value.get("attempts")) is not int or not 0 <= value["attempts"] <= 2 or type(value.get("observed")) is not bool:
         raise ValueError("Invalid candidate state")
+    # Validate everything before reporting absence: one missing item must never
+    # hide a tampered backup or unsafe link elsewhere in the same journal.
+    missing = []
     for name, old in files.items():
         safe(root, DESTINATIONS[name][0])
         if old is not None:
             source = safe(root, job.relative_to(root) / name)
-            if not source.exists() and not source.is_symlink():
-                raise MissingRollbackMaterial("Missing system backup")
+            if not os.path.lexists(source):
+                missing.append(name)
+                continue
+            if not stat.S_ISREG(source.lstat().st_mode):
+                raise ValueError("Backup is not a regular file")
             if source.stat().st_size > 16 * 1024 ** 2:
                 raise ValueError("Oversized system backup")
             with source.open("rb") as handle:
@@ -138,8 +144,13 @@ def validate(root, job, value):
         if release is not None:
             if not isinstance(release, str) or Path(release).name != release or release in {".", ".."}:
                 raise ValueError("Unsafe release name")
-            if not safe(root, Path("opt/toddlerbox/releases") / release).is_dir():
-                raise MissingRollbackMaterial("Missing previous release")
+            target = safe(root, Path("opt/toddlerbox/releases") / release)
+            if not os.path.lexists(target):
+                missing.append(release)
+            elif target.is_symlink() or not target.is_dir():
+                raise ValueError("Previous release is not a directory")
+    if missing:
+        raise MissingRollbackMaterial("Missing rollback backup or previous release")
 
 
 def restore(root, job, value):

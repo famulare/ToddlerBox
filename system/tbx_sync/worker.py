@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import hashlib
 import json
 from pathlib import Path
@@ -103,7 +104,7 @@ class Run:
         if time.monotonic() >= self.deadline:
             raise TransferError('timed-out')
 
-    def phase(self, function, *args):
+    def phase(self, name, function, *args):
         """One phase's failure is an issue; only global failures stop the later phases."""
         self.phase_bytes = 0
         try:
@@ -112,6 +113,13 @@ class Run:
             self.issue(error.code)
             if error.code in GLOBAL_FAILURES:
                 raise
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            if isinstance(error, OSError) and error.errno == errno.ENOSPC:
+                raise  # A full disk stops every phase; the job is failed, not partial.
+            # e.g. a missing preserved original: that phase stops, the others still run.
+            self.issue(name + '-local-failure')
+            if name == 'creations':
+                self.creations_complete = False
 
     def stage_bytes(self, relative, data):
         self.budget(len(data))
@@ -143,6 +151,7 @@ class Run:
                     if name.startswith('corrupt-'):
                         # Quarantined media stays on the device for the parent; it is not work.
                         self.status['counts']['local_quarantined_skipped'] += 1
+                        self.excluded.append(relative)
                         continue
                     try:
                         # A concurrent atomic app commit may invalidate the first
@@ -348,9 +357,9 @@ class Run:
                 self.remote = self.factory(self.paths,config['root_folder_id'],self.stage,
                                            deadline=self.deadline,minimum=self.minimum)
                 # Child work is the precious direction: it is never queued behind downloads.
-                self.phase(self.initial_backup)
-                self.phase(self.creations, files)
-                self.phase(self.photos)
+                self.phase('initial-backup', self.initial_backup)
+                self.phase('creations', self.creations, files)
+                self.phase('photos', self.photos)
             self.status['state'] = 'partial' if self.status['issue_count'] else 'success'
         except TransferError as error:
             if self.status['issues'][-1:] != [error.code]:

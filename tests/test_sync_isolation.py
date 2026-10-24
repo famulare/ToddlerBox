@@ -205,3 +205,24 @@ def test_wrong_clock_stops_the_job_before_any_transfer(tmp_path, monkeypatch):
     status = run(locations, drive)
     assert status["state"] == "partial" and "clock-or-certificate" in status["issues"]
     assert not drive.operations
+
+
+def test_missing_initial_original_still_lets_creations_upload(tmp_path):
+    locations = installed(tmp_path)
+    initial = load(locations.state / "initial.json")
+    original = next(iter(initial["files"]))
+    (locations.state / "initial" / initial["package_id"] / original).unlink()
+    drive = MemoryDrive()
+    status = run(locations, drive)
+    assert "initial-backup-local-failure" in status["issues"]
+    assert any(name.endswith("/paint/latest.png") for name in creations(drive, status))
+
+
+def test_quarantined_media_is_listed_as_excluded_in_the_manifest(tmp_path):
+    locations = installed(tmp_path)
+    (locations.data / "paint/corrupt-123.png").write_bytes(b"damaged")
+    drive = MemoryDrive()
+    status = run(locations, drive)
+    manifest = json.loads(drive.files["Creations/" + status["device_uuid"] + "/manifest.json"])
+    assert manifest["excluded"] == ["paint/corrupt-123.png"]
+    assert "paint/corrupt-123.png" not in manifest["files"]

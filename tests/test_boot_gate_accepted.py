@@ -51,3 +51,24 @@ def test_missing_backup_for_an_unaccepted_candidate_still_fails_closed(appliance
     (job / "controller.py").unlink()
     assert not recovery.gate(appliance_machine)
     assert not (appliance_machine / recovery.STATE / "rollback-unavailable").exists()
+
+
+def test_one_missing_backup_cannot_hide_tampering_elsewhere(appliance_machine, updater, modules, tmp_path):
+    recovery = modules[0]
+    job, value = accepted(appliance_machine, updater, modules, tmp_path)
+    present = [name for name, old in value["old_files"].items() if old is not None]
+    assert len(present) >= 2
+    (job / present[0]).unlink()
+    (job / present[1]).write_bytes(b"tampered")
+    assert not recovery.gate(appliance_machine)
+    assert not (appliance_machine / recovery.STATE / "rollback-unavailable").exists()
+
+
+def test_a_file_where_the_previous_release_should_be_is_not_missing(appliance_machine, updater, modules, tmp_path):
+    import shutil
+    recovery = modules[0]
+    job, value = accepted(appliance_machine, updater, modules, tmp_path)
+    release = appliance_machine / "opt/toddlerbox/releases" / value["old_links"]["current"]
+    shutil.rmtree(release)
+    release.write_bytes(b"not a release")
+    assert not recovery.gate(appliance_machine)

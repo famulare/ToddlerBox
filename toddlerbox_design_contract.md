@@ -300,9 +300,10 @@ data_root/
   preserved by updates; louder defaults require an explicit authenticated parent
   action, with a durable original-config backup. Parent GNOME keeps ordinary controls.
 
-Loading never raises: every value an activity reads is type- and range-checked once; a damaged file,
-wrong type or unusable launcher entry is logged and replaced by its default (the standard six
-activities when `launcher.apps` is unusable; an explicit empty list is kept). A named config
+Loading never raises: a damaged file, a non-mapping section, a value a reader would fail to convert,
+or a launcher entry that is not a mapping (or has an unparseable command) is logged and replaced by
+its default (the standard six activities when `launcher.apps` is unusable; an explicit empty list is
+kept). Every value the previous release accepted keeps its meaning. A named config
 (`KIDBOX_CONFIG`) never falls back to a development file, and the child session pins
 `TODDLERBOX_DATA_ROOT=/var/lib/toddlerbox`. Parents check edits with
 `python -m toddlerbox.config --check FILE`.
