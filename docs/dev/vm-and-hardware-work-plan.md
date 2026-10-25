@@ -9,20 +9,21 @@ Codex `gpt-6-astra` on 2026-10-23.
 |---|---|---|---|
 | Claude, local Mac | No | No | arm64 Mac with no Docker or QEMU. Runs unit and integration tests through uv. |
 | Claude cloud session | No | No | No cloud environment is available for this project. |
-| Codex (this account) | No | Only through UTM via computer use, if UTM is installed | No Codex Cloud executor with Docker or KVM. Cross-architecture emulation is slow. |
-| **GitHub Actions** (ubuntu-24.04) | Yes | Yes (TCG, as the release workflow already does) | **Preferred route. Needs the owner's approval to push `dev/review-hardening` to the public repo.** |
+| Codex, local Mac | No | Only through UTM via computer use, if UTM is installed | This continuation uses the existing local dev worktree. Cloud Docker/QEMU capability has not been tested. |
+| **GitHub Actions** (ubuntu-24.04) | Yes | Yes (TCG, as the release workflow already does) | **Selected route. The owner approved dev pushes and Actions qualification, reaffirmed 2026-10-25.** |
 | The owner, with Codex computer use | Indirectly | Through UTM | Fallback for route C. |
 | The owner | — | — | Physical HP acceptance only. |
 
 ## Route A (preferred): dev-only GitHub Actions workflow
 
-Claude prepares this. It runs only after the owner approves pushing the branch.
+The owner has approved pushing the dev branch and running this workflow.
 
 **Status:** the fresh-install job is implemented in `.github/workflows/dev-vm-qualify.yml`.
 To run it, push `dev/review-hardening` with a head commit message containing `[vm]`.
-`ci.yml` runs on every push. The update-chain job (step 3 below) is not written yet. It
-needs `scripts/qualify-patch-update.py` to start from published artifacts instead of the
-preserved 0.5.0 checkpoint on the maintainer's machine.
+`ci.yml` runs on every push. The second job, `update-chain`, consumes the exact
+candidate bundle built by `fresh-install` and starts from public release assets.
+It builds only the pinned VM tools again, not another candidate image. See
+`VALIDATION.md` for execution evidence; implementation alone is not qualification.
 
 - **File.** `.github/workflows/dev-vm-qualify.yml`, present only on `dev/**` branches.
   `workflow_dispatch` would require the file on the default branch, so the trigger is a push.
@@ -46,13 +47,48 @@ preserved 0.5.0 checkpoint on the maintainer's machine.
      - Then run rollback and the interrupted-update checks. This uses
        `scripts/qualify-patch-update.py`, parameterised for baseline, candidate, version and
        sequence.
-  4. **Fault checks in the guest.**
+     - The installed historical updater performs the signed upgrade. The harness
+       never substitutes a new updater to make that test pass. The explicit
+       unsigned recovery check uses the checksum-verified candidate zip bootstrap
+       because the old command predates `--unsigned-recovery`.
+     - A read-only published baseline backs a disposable overlay. Real durable
+       `applying`, first changed installer replacement, `pending`, and interrupted
+       `restoring` boundaries stop the responsible process before a QMP reset.
+       Check the stopped process, candidate identity and durable journal before
+       each reset; then verify the resident result and exact system/app rollback,
+       synthetic Paint/Typing bytes, config and original resident files.
+  4. **Separate planned image fault checks** (not performed by the update-chain job).
      - A Paint short write (the guest's data partition filled with a test file) and Home.
      - A read-only remount, then Home.
      - Sync with the fake rclone shim: a corrupt PNG and a case-duplicate pair in Photos,
        then SIGTERM during upload.
 - **Runtime.** Expect each full run to take 100–150 minutes of TCG time. GitHub Actions
   minutes are free for public repositories.
+
+Portable update-chain invocation (new output directory; Docker tools and public
+downloads must already be present):
+
+```sh
+uv run --frozen python scripts/qualify-patch-update.py build/dev-candidate build/responsive-update-vm-NEW \
+  --baseline-image-dir build/published/installer --baseline-version 0.4.0 --baseline-sequence 2 \
+  --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 \
+  --candidate-version 0.5.1 --candidate-sequence 5
+```
+
+`installer/` contains `toddlerbox-installer.iso` and `INSTALLER-SHA256SUMS` from
+v0.4.0. Each tag directory contains its published `stable.json`, signature and
+`ToddlerBox-update.pyz`. The candidate's Git revision and content ID must match
+the checkout. Sequence 5 is synthetic metadata for this VM run; source remains
+version 0.5.1 / sequence 4. Test private keys exist only in host process memory;
+the public key is injected only after the real signed chain succeeds. The bundle
+bytes remain exactly the build's original bytes. Guests have no NIC.
+
+New runs refuse existing outputs and have no resume bypass. The older positional
+invocation and `--resume`/`--resume-recovery` are retained solely for the historical
+qualified 0.5.0 checkpoint described in the 0.5.1 validation record. Evidence
+artifacts contain only selected `checkpoint-*.png` screenshots and `results.json`;
+no VM disks, raw serial logs or signing keys are uploaded. The candidate transfer
+artifact expires after one day; evidence expires after fourteen days.
 
 ## Route B (fallback): Codex drives UTM on the owner's Mac
 

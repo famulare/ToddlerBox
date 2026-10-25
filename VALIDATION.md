@@ -2126,3 +2126,59 @@ Not yet run: the signed update chain in a VM (requires parameterising
 hardware validation.
 Resident and image changes (sync worker, boot gate, SysRq, recordfail, first boot)
 reach appliances only through a fresh installer.
+
+### Portable signed upgrade qualification — continuation, 2026-10-25
+
+Baseline before this continuation: `c435d5d1ef1b04cd81471c424990f4157139a497`.
+Live GitHub checks confirmed CI run `40075465856` passed at that revision and
+fresh-install run `40071568094` passed at `9667fcbaa4d3096e398241f7f50d99576731667e`.
+
+Implemented a portable route in `scripts/qualify-patch-update.py` with explicit
+installer baseline, ordered signed releases, candidate version/sequence and
+new-output inputs. The old checkpoint/resume route is retained for historical
+0.5.1 evidence. The new `update-chain` job consumes the exact candidate built by
+`fresh-install`, verifies the public v0.4.0 installer against its checksum file,
+then installs signed v0.5.0 and v0.5.1 under the shipped key before trusting the
+synthetic guest key. Production version 0.5.1, sequence 4, public key and both
+11-file destination tables remain unchanged. The synthetic sequence is 5;
+no production private key is read or generated. The test private key exists
+only in host process memory; candidate bundle bytes are unchanged.
+
+Actual published `b3d87f9:system/update_bundle.py` reproduced a real upgrade
+failure against the unchanged candidate installer: its three-argument installer
+call omits `--journaled` and hits the lock it already holds. A narrow installer
+compatibility path authenticates a live root parent through a pidfd and the
+exact exclusive flock in Linux `/proc/<parent>/fdinfo`, validates the resident
+applying journal and checks the root-owned staged app's hash/source. Missing
+Linux support fails closed; the local host has neither pidfds nor `/proc`.
+Direct-install and concurrent-update refusal tests remain enforced.
+
+Under identical valid synthetic tar/zip inputs, the genuine published updater
+fails against the genuine `c435d5d` installer and installs the expected app with
+the new installer. macOS supplies a mocked positive kernel-parent proof for
+that comparison; real proof remains a VM check. Genuine old/new QEMU command
+arrays match exactly for installer and normal boots when the optional public
+9p share is absent. The new CLI help and all workflow shell blocks parse.
+
+Local commands (uv-managed CPython 3.12.15, macOS arm64, synthetic inputs):
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider
+uvx ruff@0.12.0 check --no-cache .
+```
+
+Final complete result: **714 passed, 20 Linux-only skips** in 56.01 s; lint passed.
+The focused update/recovery suite passed **86 tests**. Hook tests exercise the actual updater's
+durable records and file replacement, without fabricating journal state. Local
+parent-proof fixtures cover wrong UID/PID/inode, shared or waiting locks, exited
+parents, oversized records and absent Linux support. Actual kernel proof,
+signed installation and reset recovery require the Actions VM run below.
+
+Planned VM checks: accepted signed candidate, explicit unsigned-recovery zip
+bootstrap and rollback; stopped-process/journal verification followed by real
+QMP resets at durable `applying`, changed system-installer replacement,
+`pending`, and partial `restoring`; exact known-good system/app link and file-mode/
+hash restoration; exact synthetic Paint/Typing, config and resident class-C
+bytes; final accepted reboot and supervised child frames. Disks and raw serial
+logs are excluded from artifacts. VM evidence remains pending until an actual
+successful run is recorded; no physical HP validation is claimed.

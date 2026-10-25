@@ -328,6 +328,11 @@ with `./system/build.sh` and tested with `./system/vm.sh`. See the
 [validation record and remaining qualification](VALIDATION.md) before installing
 it on hardware. The commands below run individual apps during development.
 
+The dev branch's [VM work plan](docs/dev/vm-and-hardware-work-plan.md) covers both
+fresh installation and upgrades from the published installer. The update job
+uses synthetic signing material only inside its disposable qualification setup;
+published releases still require the owner's offline signing and approval.
+
 ### Requirements
 
 - Ubuntu 22.04 or 24.04

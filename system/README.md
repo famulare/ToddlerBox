@@ -212,6 +212,14 @@ not revert the OS or child data. Qualify a candidate before calling it known-goo
 
 ## Qualification gates
 
+The dev [VM work plan](../docs/dev/vm-and-hardware-work-plan.md) also qualifies
+upgrades from the published installer through signed intermediate releases,
+using the unchanged resident boot gate. A synthetic dev signing identity exists
+only for that isolated test. Real QMP resets cover durable update and restore
+boundaries; the results never establish physical HP acceptance. Historical
+updaters without `--journaled` are authenticated by the new installer's live
+parent/kernel-lock/journal checks; see [updates](../docs/updates.md).
+
 Record results and actual artifact IDs, not just intended behavior:
 
 - Fresh disk boot and first-boot password setup; several clean reboots.

@@ -131,6 +131,13 @@ remains the OS recovery option.
 
 ## What updates preserve
 
+Published updaters before the explicit `--journaled` installer argument remain
+supported. The new installer verifies the calling root parent's Linux process
+identity and exclusive update lock, the resident applying journal and the staged
+app's hash/source before treating that historical call as journaled. A marker or
+a busy lock alone cannot authorize it. Normal direct installs still require
+`--unsigned-recovery` and cannot run alongside an update.
+
 Updates never replace `/var/lib/toddlerbox`, `/etc/toddlerbox/config.yaml`, Drive
 credentials, the device UUID, or sync history/state. Rosie’s photos, drawings and
 Typing documents stay in place. The bundle format allows only fixed system

@@ -5,6 +5,7 @@ import fcntl
 import hashlib
 import json
 import os
+import select
 import stat
 from pathlib import Path, PurePosixPath
 import sys
@@ -62,6 +63,80 @@ def tree_record(directory: Path, *, production: bool) -> dict:
 
 APPLIANCE_REFUSAL = ("On the appliance, releases install through ToddlerBox Setup & Maintenance "
                      "(signed updates). For recovery only, rerun with --unsigned-recovery.")
+
+
+def parent_update_lock(state: Path) -> bool:
+    """Authenticate the legacy caller by its live root process and kernel lock.
+
+    Published v0.4/0.5 updaters hold this lock but predate --journaled. A busy
+    lock or an applying marker alone is insufficient: this process's actual
+    parent must own the exact exclusive flock. Linux pidfds pin that identity.
+    """
+    if os.geteuid() != 0 or not hasattr(os, "pidfd_open"):
+        return False
+    parent = os.getppid()
+    pidfd = None
+    try:
+        pidfd = os.pidfd_open(parent)
+        poller = select.poll()
+        poller.register(pidfd, select.POLLIN)
+        proc = Path("/proc") / str(parent)
+        status = (proc / "status").read_text()
+        uid = next(line.split()[1:] for line in status.splitlines() if line.startswith("Uid:"))
+        if uid != ["0"] * 4:
+            return False
+        locked = (state / "updates/lock").stat()
+        entries = list((proc / "fdinfo").iterdir())
+        if len(entries) > 1024:
+            return False
+        for entry in entries:
+            with entry.open() as handle:
+                info = handle.read(16385)
+            if len(info) > 16384:
+                continue
+            for line in info.splitlines():
+                if not line.startswith("lock:"):
+                    continue
+                fields = line.split()[1:]
+                if len(fields) != 8 or fields[1:5] != ["FLOCK", "ADVISORY", "WRITE", str(parent)]:
+                    continue
+                device = fields[5].split(":")
+                if len(device) == 3 and (int(device[0], 16), int(device[1], 16), int(device[2])) == (
+                        os.major(locked.st_dev), os.minor(locked.st_dev), locked.st_ino):
+                    return os.getppid() == parent and not poller.poll(0)
+    except (OSError, ValueError, StopIteration):
+        return False
+    finally:
+        if pidfd is not None:
+            os.close(pidfd)
+    return False
+
+
+def legacy_journaled_parent(bundle: Path, expected_digest: str, state: Path, *, root=Path("/")) -> bool:
+    """Allow only the exact staged app belonging to the parent's valid journal."""
+    if not (state / "appliance-v1").exists() or not parent_update_lock(state):
+        return False
+    try:
+        from boot_recovery import latest, safe, validate
+        safe(root, (state / "updates/lock").relative_to(root))
+        item = latest(root)
+        if not item or item[1]["status"] != "applying":
+            return False
+        validate(root, *item)
+        if (bundle.name != "app.tar.gz" or bundle.parent.parent != state / "updates"
+                or not bundle.parent.name.startswith(".stage-")):
+            return False
+        safe(root, bundle.relative_to(root))
+        with bundle.open("rb") as handle:
+            if hashlib.file_digest(handle, "sha256").hexdigest() != expected_digest:
+                return False
+            handle.seek(0)
+            with tarfile.open(fileobj=handle, mode="r:gz") as archive:
+                first = archive.next()
+        return (item[1]["app_changed"] and first is not None
+                and PurePosixPath(first.name).parts[0] == item[1]["source"]["content"])
+    except (OSError, ValueError, KeyError, TypeError, IndexError, tarfile.TarError):
+        return False
 
 
 def journals(state: Path) -> list:
@@ -142,6 +217,7 @@ def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddl
     # Keep the verified file descriptor open: replacing the bundle pathname after
     # hashing cannot substitute a different archive during extraction.
     verify_ancestors(root)
+    journaled = journaled or legacy_journaled_parent(bundle, expected_digest, state)
     with update_lock(state, journaled=journaled):
         appliance_guard(state, journaled=journaled, unsigned_recovery=unsigned_recovery)
         return _install(bundle, expected_digest, root=root, mode_file=mode_file, state=state)

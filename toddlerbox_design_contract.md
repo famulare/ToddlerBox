@@ -346,6 +346,14 @@ kept). Every value the previous release accepted keeps its meaning. A named conf
   refused rollback writes no marker. After acceptance, missing historical rollback material only
   marks rollback unavailable; malformed or tampered journals still fail closed.
 - `kernel.sysrq=16`, a 5 s recordfail timeout, and bounded first-boot password retries.
+- Qualification of upgrades uses the published installer's resident recovery code,
+  signed intermediate releases and the exact candidate bundle. Development tests
+  may trust a synthetic key only in the disposable guest, without changing the
+  release key, version, sequence or destination tables in source. Interrupted
+  updates are tested by resetting the VM after real durable journal writes.
+- The app installer supports historical journaled callers without `--journaled`
+  only when its live root parent owns the exact exclusive update lock, the resident
+  journal validates as applying, and the staged app matches that journal's source.
 - See `system/README.md` for exact behavior, artifact identity, and qualification limits.
 
 ## 9. Explicit private Drive copies

@@ -24,6 +24,12 @@
   and the boot gate no longer blocks child mode when old releases are cleaned up after acceptance.
 - Development: Python pinned to 3.12, Linux-only tests skip elsewhere, CI on every push including the
   root worker against Ubuntu's Pillow, and a dev-only VM qualification workflow.
+- Development: qualify the published installer → signed 0.5.0 → signed 0.5.1 →
+  dev candidate chain, explicit unsigned recovery, rollback and real VM resets at
+  durable update/restore boundaries. Historical checkpoint qualification remains available.
+- Accept the published updater's app-install call without its newer `--journaled`
+  argument only after authenticating its live root parent, exclusive kernel update
+  lock, applying journal and matching staged app. Direct-install guards remain enforced.
 
 ## 0.5.1 - 2026-10-12
 

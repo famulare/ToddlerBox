@@ -52,9 +52,13 @@ class Qualification:
             self.docker('run','--rm','--network=none','-v',f'{self.out}:/vm','toddlerbox-image-tools',
                         'bash','-c',f'cp /usr/share/OVMF/OVMF_VARS_4M.fd /vm/OVMF.fd; qemu-img create -f qcow2 /vm/target.qcow2 16G; chown -R {os.getuid()}:{os.getgid()} /vm')
         media=['-cdrom','/build/toddlerbox-installer.iso','-boot','d'] if installer else []
+        share = getattr(self, 'share', None)
+        shared = ['-v', f'{share}:/qa:ro'] if share else []
+        devices = (['-fsdev', 'local,id=qa,path=/qa,security_model=none,readonly=on',
+                    '-device', 'virtio-9p-pci,fsdev=qa,mount_tag=qa'] if share else [])
         # Use software CPU emulation intentionally: this evidence never assumes nested KVM.
         self.docker('run','-d','--name',self.name,'--user',f'{os.getuid()}:{os.getgid()}',
-                    '--network=none','-v',f'{self.image}:/build:ro','-v',f'{self.out}:/vm',
+                    '--network=none','-v',f'{self.image}:/build:ro','-v',f'{self.out}:/vm',*shared,
                     'toddlerbox-image-tools','qemu-system-x86_64','-accel','tcg,thread=multi',
                     '-machine','q35','-cpu','qemu64','-smp','2','-m','4096',
                     '-drive','if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd',
@@ -65,7 +69,7 @@ class Qualification:
                     '-device','hda-duplex,audiodev=audio','-display','none',
                     '-qmp','unix:/vm/qmp.sock,server=on,wait=off',
                     '-chardev','socket,id=serial,path=/vm/serial.sock,server=on,wait=off,logfile=/vm/serial.log',
-                    '-serial','chardev:serial',*media,stdout=subprocess.DEVNULL)
+                    '-serial','chardev:serial',*devices,*media,stdout=subprocess.DEVNULL)
 
     def stop(self):
         subprocess.run(['docker','rm','-f',self.name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)

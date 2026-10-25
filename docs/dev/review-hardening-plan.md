@@ -10,6 +10,14 @@ Dev-only working plan. It is not a release document and is not intended for `mai
   reviews 1–3. Linux CI and the fresh-install VM qualification have passed (see
   `VALIDATION.md`). Remaining: the signed update chain in a VM, and physical HP acceptance.
 
+Update-chain continuation (2026-10-25): the portable harness and second Actions
+job are implemented; execution results are recorded in `VALIDATION.md`. The
+actual published updater exposed an upgrade compatibility failure: it calls the
+new installer without `--journaled` while holding the update lock. The installer
+now authenticates this historical call through the live root parent's exact
+kernel lock, valid applying journal and matching staged app. The 11-file tables,
+release version/sequence and class-C delivery boundary are unchanged.
+
 Constraints are inherited from `AGENTS.md`:
 - Preserve child work first.
 - No pruning, deletion propagation or rollback of child data.

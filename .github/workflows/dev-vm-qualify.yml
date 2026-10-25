@@ -46,6 +46,15 @@ jobs:
           uv run --frozen python system/build-update.py --cage "$TODDLERBOX_BUILD_DIR/toddlerbox-cage" \
             --app "$TODDLERBOX_BUILD_DIR/toddlerbox-app-$id.tar.gz" --output "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
           sha256sum "$TODDLERBOX_BUILD_DIR/toddlerbox-installer.iso" "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
+      - name: Pass the exact built candidate to update qualification
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dev-update-candidate
+          retention-days: 1
+          if-no-files-found: error
+          path: |
+            build/dev/ToddlerBox-update.pyz
+            build/dev/ToddlerBox-update.pyz.source.json
       - name: Qualify fresh installation without networking
         run: uv run --frozen python scripts/qualify-release-vm.py --image-dir build/dev --output build/dev-qa
       - name: Keep synthetic evidence briefly
@@ -60,3 +69,56 @@ jobs:
             build/dev-qa/results.json
             build/dev/release-id
             build/dev/packages.tsv
+  update-chain:
+    needs: fresh-install
+    if: contains(github.event.head_commit.message, '[vm]')
+    concurrency:
+      group: dev-update-vm-${{ github.ref }}
+      cancel-in-progress: false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
+        with:
+          version: '0.12.19'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: dev-update-candidate
+          path: build/dev-candidate
+      - name: Prepare the pinned VM tools and interpreter
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends tesseract-ocr
+          uv sync --frozen --group dev --python /usr/bin/python3
+          source system/versions.env
+          docker build --platform linux/amd64 --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt \
+            --build-arg "UBUNTU_IMAGE=$UBUNTU_IMAGE" --build-arg "UBUNTU_SNAPSHOT=$UBUNTU_SNAPSHOT" \
+            -f system/Dockerfile.tools -t toddlerbox-image-tools .
+      - name: Fetch public installer and signed release inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v0.4.0 --repo famulare/ToddlerBox --dir build/published/installer \
+            --pattern toddlerbox-installer.iso --pattern INSTALLER-SHA256SUMS
+          for tag in v0.5.0 v0.5.1; do
+            gh release download "$tag" --repo famulare/ToddlerBox --dir "build/published/$tag" \
+              --pattern stable.json --pattern stable.json.sig --pattern ToddlerBox-update.pyz
+          done
+      - name: Qualify signed update chain, unsigned recovery and journal resets
+        run: |
+          uv run --frozen python scripts/qualify-patch-update.py build/dev-candidate build/responsive-update-vm-dev \
+            --baseline-image-dir build/published/installer --baseline-version 0.4.0 --baseline-sequence 2 \
+            --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 \
+            --candidate-version "$(uv run --frozen python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" \
+            --candidate-sequence 5
+      - name: Keep selected synthetic update evidence briefly
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dev-update-chain-evidence
+          retention-days: 14
+          if-no-files-found: ignore
+          path: |
+            build/responsive-update-vm-dev/checkpoint-*.png
+            build/responsive-update-vm-dev/results.json
