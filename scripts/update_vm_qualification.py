@@ -70,6 +70,8 @@ def parse_args(argv=None):
                    help='Ordered signed hop TAG:VERSION:SEQUENCE; repeatable')
     p.add_argument('--candidate-version', required=True)
     p.add_argument('--candidate-sequence', type=int, required=True, help='VM-only signed sequence')
+    p.add_argument('--candidate-revision', help='Exact built Git revision for a harness-only retry')
+    p.add_argument('--candidate-sha256', help='Pinned bundle checksum for that retry')
     return p.parse_args(argv)
 
 
@@ -101,8 +103,15 @@ def validate_inputs(args, root=ROOT):
     if not manifest.get('app') or not re.fullmatch(r'[0-9a-f]{16}', manifest['source']['content']):
         raise ValueError('Qualification requires a combined app/system candidate')
     revision = subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+    if args.candidate_revision or args.candidate_sha256:
+        if (not re.fullmatch(r'[0-9a-f]{40}', args.candidate_revision or '')
+                or not re.fullmatch(r'[0-9a-f]{64}', args.candidate_sha256 or '')):
+            raise ValueError('Retry requires both exact built revision and bundle checksum')
+        revision = args.candidate_revision
+        if sha(bundle) != args.candidate_sha256:
+            raise ValueError('Retry candidate checksum mismatch')
     if manifest['source']['git'] != revision:
-        raise ValueError('Candidate must have been built from this exact checkout revision')
+        raise ValueError('Candidate differs from the exact built Git revision')
     if manifest['source']['content'] != checkout_source(root):
         raise ValueError('Candidate content differs from the checkout under qualification')
     return out, checksum, manifest
@@ -149,6 +158,7 @@ class UpdateChain:
         self.report = {'status': 'running', 'checks': [], 'inputs': {
             'installer_version': args.baseline_version, 'installer_sha256': checksum,
             'signed_hops': args.release, 'candidate_git': self.manifest['source']['git'],
+            'qualification_git': subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip(),
             'candidate_source': self.candidate['source'], 'candidate_sha256': self.candidate['sha256'],
             'candidate_version': args.candidate_version, 'vm_sequence': args.candidate_sequence},
             'platform': 'Ubuntu 24.04 x86-64 Q35/UEFI/TCG, 2 CPUs, 4 GiB, no NIC, disposable overlay',
@@ -214,9 +224,22 @@ class UpdateChain:
                        'qemu-img', 'create', '-f', 'qcow2', '-F', 'qcow2', '-b',
                        '/vm/published-baseline.qcow2', '/vm/target.qcow2')
         self.qa.start()
+        self.wait_serial()
         self.qa.mode('parent')
         self.mount()
         self.passed('Preserved published baseline; all candidate writes use a disposable overlay')
+
+    def wait_serial(self, timeout=60):
+        end = time.monotonic() + timeout
+        while time.monotonic() < end:
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as probe:
+                probe.settimeout(.5)
+                try:
+                    probe.connect(str(self.qa.out / 'serial.sock'))
+                    return
+                except (FileNotFoundError, ConnectionRefusedError, socket.timeout):
+                    time.sleep(.5)
+        raise TimeoutError('Restarted QEMU serial socket did not become ready')
 
     def install_candidate(self, boundary=None, background=False):
         args = ['--directory', '/qa/candidate', '--sequence', str(self.args.candidate_sequence)]

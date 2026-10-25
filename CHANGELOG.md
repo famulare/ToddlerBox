@@ -27,6 +27,8 @@
 - Development: qualify the published installer → signed 0.5.0 → signed 0.5.1 →
   dev candidate chain, explicit unsigned recovery, rollback and real VM resets at
   durable update/restore boundaries. Historical checkpoint qualification remains available.
+- Harness-only retries can reuse an exact checksum-pinned candidate after a successful
+  fresh-install job, while requiring unchanged runtime source bytes. VM restart waits are bounded.
 - Accept the published updater's app-install call without its newer `--journaled`
   argument only after authenticating its live root parent, exclusive kernel update
   lock, applying journal and matching staged app. Direct-install guards remain enforced.

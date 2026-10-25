@@ -169,7 +169,7 @@ def test_vm_workflow_keeps_read_only_permissions_and_allowlisted_evidence():
     import subprocess
     import yaml
     workflow = yaml.load((ROOT / '.github/workflows/dev-vm-qualify.yml').read_text(), Loader=yaml.BaseLoader)
-    assert workflow['permissions'] == {'contents': 'read'}
+    assert workflow['permissions'] == {'contents': 'read', 'actions': 'read'}
     job = workflow['jobs']['update-chain']
     assert job['needs'] == 'fresh-install'
     assert job['concurrency']['cancel-in-progress'] == 'false'
@@ -193,3 +193,99 @@ def test_recovery_zip_resolves_the_installed_resident_modules(harness):
     assert calls == [(['env', 'PYTHONPATH=/usr/local/lib/toddlerbox-system', 'python3',
                       '/qa/candidate/ToddlerBox-update.pyz', '--sha256', 'a' * 64,
                       '--unsigned-recovery'], {'timeout': 900})]
+
+
+def test_harness_retry_requires_pinned_bytes_and_identical_runtime_source(harness, inputs, monkeypatch):
+    args, root = inputs
+    args.candidate_revision = 'a' * 40
+    args.candidate_sha256 = harness.sha(args.candidate / 'ToddlerBox-update.pyz')
+    monkeypatch.setattr(harness.subprocess, 'check_output', lambda *a, **k: 'd' * 40)
+    harness.validate_inputs(args, root)  # Different driver, identical runtime input bytes.
+    monkeypatch.setattr(harness, 'checkout_source', lambda root: 'e' * 16)
+    with pytest.raises(ValueError, match='content'): harness.validate_inputs(args, root)
+
+
+@pytest.mark.parametrize('fault', ['missing-checksum', 'wrong-checksum', 'bad-revision'])
+def test_retry_identity_cannot_bypass_candidate_validation(harness, inputs, fault):
+    args, root = inputs
+    args.candidate_revision = 'a' * 40
+    args.candidate_sha256 = harness.sha(args.candidate / 'ToddlerBox-update.pyz')
+    if fault == 'missing-checksum': args.candidate_sha256 = None
+    if fault == 'wrong-checksum': args.candidate_sha256 = '0' * 64
+    if fault == 'bad-revision': args.candidate_revision = 'main'
+    with pytest.raises(ValueError): harness.validate_inputs(args, root)
+    assert not args.output.exists()
+
+
+def test_restart_waits_for_a_listening_serial_socket(harness, tmp_path, monkeypatch):
+    chain = harness.UpdateChain.__new__(harness.UpdateChain)
+    chain.qa = SimpleNamespace(out=tmp_path)
+    attempts = []
+    class Socket:
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def settimeout(self, timeout): assert timeout == .5
+        def connect(self, path):
+            attempts.append(path)
+            if len(attempts) == 1: raise FileNotFoundError()
+            if len(attempts) == 2: raise ConnectionRefusedError()
+    monkeypatch.setattr(harness.socket, 'socket', lambda *a: Socket())
+    monkeypatch.setattr(harness.time, 'sleep', lambda delay: None)
+    chain.wait_serial()
+    assert attempts == [str(tmp_path / 'serial.sock')] * 3
+
+
+def test_serial_readiness_wait_is_bounded(harness, tmp_path, monkeypatch):
+    chain = harness.UpdateChain.__new__(harness.UpdateChain)
+    chain.qa = SimpleNamespace(out=tmp_path)
+    clock = iter([0, 0, 1])
+    class Socket:
+        def __enter__(self): return self
+        def __exit__(self, *a): pass
+        def settimeout(self, timeout): pass
+        def connect(self, path): raise FileNotFoundError()
+    monkeypatch.setattr(harness.socket, 'socket', lambda *a: Socket())
+    monkeypatch.setattr(harness.time, 'monotonic', lambda: next(clock))
+    monkeypatch.setattr(harness.time, 'sleep', lambda delay: None)
+    with pytest.raises(TimeoutError, match='serial socket'): chain.wait_serial(timeout=.5)
+
+
+@pytest.fixture
+def pinned_candidate():
+    record = {'run_id': 123, 'git': 'a' * 40, 'content': 'b' * 16, 'sha256': 'c' * 64}
+    run = {'head_sha': record['git'], 'status': 'completed', 'head_branch': 'dev/test',
+           'path': '.github/workflows/dev-vm-qualify.yml', 'repository': {'full_name': 'famulare/ToddlerBox'}}
+    jobs = {'jobs': [{'name': 'fresh-install', 'status': 'completed', 'conclusion': 'success'}]}
+    return record, run, jobs
+
+
+def test_retry_accepts_only_a_completed_dev_build_with_fresh_install_success(pinned_candidate):
+    reuse = load('reuse_qa', ROOT / 'scripts/reuse-vm-candidate.py')
+    reuse.validate(*pinned_candidate)
+
+
+@pytest.mark.parametrize('fault', ['run-id', 'git', 'hash', 'workflow', 'branch', 'repository', 'running', 'fresh-failed'])
+def test_retry_provenance_fails_closed(pinned_candidate, fault):
+    reuse = load('reuse_qa', ROOT / 'scripts/reuse-vm-candidate.py')
+    record, run, jobs = pinned_candidate
+    if fault == 'run-id': record['run_id'] = '../123'
+    if fault == 'git': run['head_sha'] = 'd' * 40
+    if fault == 'hash': record['sha256'] = 'bad'
+    if fault == 'workflow': run['path'] = '.github/workflows/another.yml'
+    if fault == 'branch': run['head_branch'] = 'main'
+    if fault == 'repository': run['repository']['full_name'] = 'someone/else'
+    if fault == 'running': run['status'] = 'in_progress'
+    if fault == 'fresh-failed': jobs['jobs'][0]['conclusion'] = 'failure'
+    with pytest.raises(ValueError): reuse.validate(record, run, jobs)
+
+
+def test_retry_bundle_is_verified_again_after_download(inputs):
+    args, root = inputs
+    reuse = load('reuse_qa', ROOT / 'scripts/reuse-vm-candidate.py')
+    path = args.candidate / 'ToddlerBox-update.pyz'
+    record = {'git': 'a' * 40, 'content': 'b' * 16, 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+    reuse.check_bundle(record, path)
+    record['content'] = 'd' * 16
+    with pytest.raises(ValueError, match='source mismatch'): reuse.check_bundle(record, path)
+    record['sha256'] = '0' * 64
+    with pytest.raises(ValueError, match='checksum mismatch'): reuse.check_bundle(record, path)

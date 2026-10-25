@@ -2195,3 +2195,50 @@ recovery command. No VM pass is claimed for it. The correction changes only
 the qualification driver and its focused check; application/system content is
 unchanged. The focused update/recovery suite then passed **87 tests**, with lint
 clean, before starting a corrected full workflow.
+
+Corrected run `40229180735` at `9d12352306ccb6b234a5c556415a26c1e3d1cc38`:
+
+- CI `40229180881`: **735 passed** on Ubuntu Python 3.12.3, **86 passed** against
+  apt Pillow 10.2.0, lint clean.
+- **Fresh-install job passed.** Actual ISO installation, setup, the six-app
+  standalone Cage session, Music/Math HDA output and Home silence, stopped-app
+  parent escape, watchdog recovery and accepted setup reboot were checked. The
+  rebooted launcher and stopped-app Parent-greeter screenshots were inspected.
+- Built ISO SHA-256: `5cd84934bc8b70b32d8d7e09d26a839ec0a4d9d560cf9d81e69edcb539bd0bb6`.
+- Bundle: 91,220,839 bytes, SHA-256
+  `3c15949eb546e0ffb6ea0a03701e4c34f23e8316a84ae3fb703b760c077dc035`.
+  Embedded app SHA-256:
+  `2089b2feee24be9c49e259231a98b87c7874acd9420f3e19d9079e5775eaf07e`.
+  The downloaded artifact's sidecar/embedded manifests, all eleven payload hashes,
+  ten source payloads (the compiled Cage binary was checked by hash), app archive
+  hash and version 0.5.1 were independently checked on the Mac.
+- Package-manifest SHA-256:
+  `36c1e45b42c042e832471b68795094af6d26be388bac4f4215cba6873ec19a85`.
+  Runtime packages include Python 3.12.3-1ubuntu0.17, kernel 6.8.0-142.142,
+  PipeWire 1.0.5-1ubuntu3.3, WirePlumber 0.4.17-1ubuntu4.1 and apt Pillow
+  10.2.0-1ubuntu1.3. Builder inputs remain the pinned `system/versions.env` image
+  digests and Ubuntu snapshot 20260926T000000Z.
+- **Update job failed after its published chain passed.** It installed checksum-
+  verified v0.4.0 (ISO SHA-256
+  `b0e8e0652e51cb13506aa462b7a673ae93911dd16af77576ad3c71dce5805b01`) and
+  verified/accepted signed v0.5.0 sequence 3 and v0.5.1 sequence 4 under the shipped
+  key. After preserving that baseline, it connected to QEMU before the new serial
+  socket existed. This was a harness startup race (`FileNotFoundError`), before
+  any dev candidate install; no candidate or interruption pass is claimed.
+
+The driver now waits up to sixty seconds for a listening serial socket after
+that VM restart. Missing/refused sockets and the deadline have focused checks.
+The retry uses the original verified bundle and fresh-install evidence rather
+than rebuilding unchanged runtime inputs. Read-only `actions: read` is added for
+cross-run artifact download. The pinned run's repository, workflow, dev branch,
+built revision and successful fresh-install job are verified; downloaded hash
+and embedded source are checked again. The driver still rejects a changed
+application/system content ID, and records its own Git revision separately.
+Production files remain exactly the built `9d12352` content; no production
+timeout, recovery guard or signature check is weakened.
+
+Before the harness-only retry: the complete Mac suite passed **731 tests**, with
+20 Linux-only skips, in 64.52 s; the focused update/recovery suite passed **103**
+tests; pinned ruff was clean. The provenance helper was also run against the
+actual completed Actions run and the downloaded bundle, and the current content
+ID remained `1f8bc04e1db6f2df`.

@@ -351,6 +351,9 @@ kept). Every value the previous release accepted keeps its meaning. A named conf
   may trust a synthetic key only in the disposable guest, without changing the
   release key, version, sequence or destination tables in source. Interrupted
   updates are tested by resetting the VM after real durable journal writes.
+- A qualification-driver-only retry may reuse a prior successful fresh-install
+  candidate only with its exact recorded Git identity, bundle checksum and unchanged
+  application/system content ID. Record the driver and built revisions separately.
 - The app installer supports historical journaled callers without `--journaled`
   only when its live root parent owns the exact exclusive update lock, the resident
   journal validates as applying, and the staged app matches that journal's source.

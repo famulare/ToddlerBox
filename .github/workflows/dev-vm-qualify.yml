@@ -8,9 +8,10 @@ on:
     branches: ['dev/**']
 permissions:
   contents: read
+  actions: read  # Read the pinned artifact for a harness-only retry; no write token.
 jobs:
   fresh-install:
-    if: contains(github.event.head_commit.message, '[vm]')
+    if: contains(github.event.head_commit.message, '[vm]') && !contains(github.event.head_commit.message, '[reuse-candidate]')
     # Job-level: a later push without [vm] skips this job and never cancels a running one.
     concurrency:
       group: dev-vm-${{ github.ref }}
@@ -71,7 +72,7 @@ jobs:
             build/dev/packages.tsv
   update-chain:
     needs: fresh-install
-    if: contains(github.event.head_commit.message, '[vm]')
+    if: always() && contains(github.event.head_commit.message, '[vm]') && (needs.fresh-install.result == 'success' || contains(github.event.head_commit.message, '[reuse-candidate]'))
     concurrency:
       group: dev-update-vm-${{ github.ref }}
       cancel-in-progress: false
@@ -82,10 +83,27 @@ jobs:
       - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff
         with:
           version: '0.12.19'
+      - name: Validate pinned candidate provenance for a harness-only retry
+        if: contains(github.event.head_commit.message, '[reuse-candidate]')
+        id: reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run --no-project --python /usr/bin/python3 scripts/reuse-vm-candidate.py docs/dev/update-vm-candidate.json --github-output "$GITHUB_OUTPUT"
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        if: "!contains(github.event.head_commit.message, '[reuse-candidate]')"
         with:
           name: dev-update-candidate
           path: build/dev-candidate
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        if: contains(github.event.head_commit.message, '[reuse-candidate]')
+        with:
+          name: dev-update-candidate
+          path: build/dev-candidate
+          run-id: ${{ steps.reuse.outputs.run_id }}
+          github-token: ${{ github.token }}
+      - name: Verify the downloaded retry candidate
+        if: contains(github.event.head_commit.message, '[reuse-candidate]')
+        run: uv run --no-project --python /usr/bin/python3 scripts/reuse-vm-candidate.py docs/dev/update-vm-candidate.json --bundle build/dev-candidate/ToddlerBox-update.pyz
       - name: Prepare the pinned VM tools and interpreter
         run: |
           sudo apt-get update
@@ -106,12 +124,19 @@ jobs:
               --pattern stable.json --pattern stable.json.sig --pattern ToddlerBox-update.pyz
           done
       - name: Qualify signed update chain, unsigned recovery and journal resets
+        env:
+          REUSE_GIT: ${{ steps.reuse.outputs.git }}
+          REUSE_SHA256: ${{ steps.reuse.outputs.sha256 }}
         run: |
+          retry=()
+          if [[ -n "$REUSE_GIT" ]]; then
+            retry=(--candidate-revision "$REUSE_GIT" --candidate-sha256 "$REUSE_SHA256")
+          fi
           uv run --frozen python scripts/qualify-patch-update.py build/dev-candidate build/responsive-update-vm-dev \
             --baseline-image-dir build/published/installer --baseline-version 0.4.0 --baseline-sequence 2 \
             --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 \
             --candidate-version "$(uv run --frozen python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" \
-            --candidate-sequence 5
+            --candidate-sequence 5 "${retry[@]}"
       - name: Keep selected synthetic update evidence briefly
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

@@ -30,6 +30,8 @@ It builds only the pinned VM tools again, not another candidate image. See
 - **Trigger.** Pushes to `dev/**` whose commit message contains `[vm]`, so ordinary pushes
   run only `ci.yml`.
 - **Permissions.** `contents: read`. No tags, releases, `stable.json` or signing keys.
+- **Retry permissions.** `actions: read` also permits downloading a pinned candidate
+  artifact from a previous run. Every token permission remains read-only.
   Evidence goes only to workflow artifacts, which expire after 14 days.
 - **Jobs.**
   1. **Build.** `system/build-compact.sh`, then the app tarball and `ToddlerBox-update.pyz`,
@@ -89,6 +91,23 @@ qualified 0.5.0 checkpoint described in the 0.5.1 validation record. Evidence
 artifacts contain only selected `checkpoint-*.png` screenshots and `results.json`;
 no VM disks, raw serial logs or signing keys are uploaded. The candidate transfer
 artifact expires after one day; evidence expires after fourteen days.
+
+For a **harness-only retry**, a push containing both `[vm]` and
+`[reuse-candidate]` skips the fresh build and fresh-install job. Update
+`docs/dev/update-vm-candidate.json` deliberately to the exact prior run, built Git
+revision, content ID and bundle SHA-256. `scripts/reuse-vm-candidate.py` checks
+the completed dev workflow's repository/revision and successful fresh-install
+job before downloading; the checksum and embedded source identity are checked
+again after download. The qualification command receives
+`--candidate-revision BUILT_GIT --candidate-sha256 BUNDLE_SHA256`. It still
+requires the current checkout's entire application/system content ID to match,
+so a runtime or README change cannot reuse that old bundle. The results record
+built and qualification-driver Git revisions separately. The published installer
+chain is repeated on a fresh disk, with no resume or fabricated journal bypass.
+
+After preserving the published baseline, the harness waits at most sixty seconds
+for the newly started QEMU serial socket to listen before authenticating. This
+wait applies only to the test VM; production recovery deadlines are unchanged.
 
 ## Route B (fallback): Codex drives UTM on the owner's Mac
 
