@@ -1,0 +1,45 @@
+{
+  "status": "passed",
+  "checks": [
+    "Verified published installer, authenticated setup and genuine supervised child/escape",
+    "Shipped-key verified v0.5.0, sequence 3, installed and supervised acceptance",
+    "Shipped-key verified v0.5.1, sequence 4, installed and supervised acceptance",
+    "Preserved published baseline; all candidate writes use a disposable overlay",
+    "Exact dev bundle installed by the baseline updater after VM-only signature verification and supervised acceptance",
+    "Unsigned refusal, explicit checksum-verified recovery bootstrap, supervised acceptance and exact rollback",
+    "QMP reset after durable applying: resident recovery and exact known-good pair/data checks",
+    "QMP reset after durable system-replaced: resident recovery and exact known-good pair/data checks",
+    "QMP reset after durable pending: resident recovery and exact known-good pair/data checks",
+    "QMP reset after durable restoring: resident recovery and exact known-good pair/data checks",
+    "Final exact candidate accepted reboot, healthy child frames and unchanged synthetic work/config/resident code"
+  ],
+  "inputs": {
+    "installer_version": "0.4.0",
+    "installer_sha256": "b0e8e0652e51cb13506aa462b7a673ae93911dd16af77576ad3c71dce5805b01",
+    "signed_hops": [
+      [
+        "v0.5.0",
+        "0.5.0",
+        3
+      ],
+      [
+        "v0.5.1",
+        "0.5.1",
+        4
+      ]
+    ],
+    "candidate_git": "9d12352306ccb6b234a5c556415a26c1e3d1cc38",
+    "qualification_git": "489f6bc0d1164dc49d1080cabb7f6e7304e55168",
+    "candidate_source": "1f8bc04e1db6f2df",
+    "candidate_sha256": "3c15949eb546e0ffb6ea0a03701e4c34f23e8316a84ae3fb703b760c077dc035",
+    "candidate_version": "0.5.1",
+    "vm_sequence": 5
+  },
+  "platform": "Ubuntu 24.04 x86-64 Q35/UEFI/TCG, 2 CPUs, 4 GiB, no NIC, disposable overlay",
+  "limits": [
+    "Synthetic VM signing identity; no production signing key used",
+    "Class C remains from the published installer",
+    "No physical HP input, Wi-Fi or acoustic validation",
+    "No fresh qualification of unchanged Music PCM; separate fresh-install job covers it"
+  ]
+}

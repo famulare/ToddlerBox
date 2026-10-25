@@ -2129,6 +2129,12 @@ reach appliances only through a fresh installer.
 
 ### Portable signed upgrade qualification — continuation, 2026-10-25
 
+**Completed:** fresh-install job `40229180735` and signed update/recovery job
+`40233346604` passed on the identical built candidate. The latest CI run
+`40233346634` passed 751 tests plus 86 apt-Pillow worker tests. Exact identities,
+the two harness corrections and final evidence are recorded below. This is dev
+VM evidence with synthetic signing; physical HP acceptance remains unverified.
+
 Baseline before this continuation: `c435d5d1ef1b04cd81471c424990f4157139a497`.
 Live GitHub checks confirmed CI run `40075465856` passed at that revision and
 fresh-install run `40071568094` passed at `9667fcbaa4d3096e398241f7f50d99576731667e`.
@@ -2180,8 +2186,8 @@ QMP resets at durable `applying`, changed system-installer replacement,
 `pending`, and partial `restoring`; exact known-good system/app link and file-mode/
 hash restoration; exact synthetic Paint/Typing, config and resident class-C
 bytes; final accepted reboot and supervised child frames. Disks and raw serial
-logs are excluded from artifacts. VM evidence remains pending until an actual
-successful run is recorded; no physical HP validation is claimed.
+logs are excluded from artifacts. At this initial stage VM evidence was pending;
+the subsequent successful runs are recorded below. No physical HP validation is claimed.
 
 First continuation push: `326fd908ee82ef86bdef8ec7f178985e0037180f`, application/
 system content `1f8bc04e1db6f2df`. Linux CI `40228529858` passed: **734 tests**,
@@ -2242,3 +2248,72 @@ Before the harness-only retry: the complete Mac suite passed **731 tests**, with
 tests; pinned ruff was clean. The provenance helper was also run against the
 actual completed Actions run and the downloaded bundle, and the current content
 ID remained `1f8bc04e1db6f2df`.
+
+#### Successful update/recovery result
+
+[Run 40233346604](https://github.com/famulare/ToddlerBox/actions/runs/40233346604)
+passed with qualification driver
+`489f6bc0d1164dc49d1080cabb7f6e7304e55168`. It reused the exact built candidate
+`9d12352306ccb6b234a5c556415a26c1e3d1cc38` / content `1f8bc04e1db6f2df` and
+SHA-256 `3c15949eb546e0ffb6ea0a03701e4c34f23e8316a84ae3fb703b760c077dc035`
+from the successful fresh-install job in
+[run 40229180735](https://github.com/famulare/ToddlerBox/actions/runs/40229180735).
+The fresh build was deliberately skipped for this retry; no runtime input changed.
+
+Actual checks, all passed:
+
+- Install the checksum-verified published v0.4.0 ISO, authenticate the parent,
+  complete supervised first setup and independent child/parent escape.
+- Verify signed v0.5.0 sequence 3 and v0.5.1 sequence 4 with the shipped key;
+  install each with the installed updater and accept genuine supervised frames.
+- Preserve the accepted published baseline and write only a disposable overlay.
+- Refuse the synthetic signature before guest key injection. Then verify and
+  install the exact dev bundle through the real baseline updater, including the
+  actual Linux pidfd/parent-owned-flock compatibility check, and accept it.
+- Refuse an unsigned direct call; explicitly install through the checksum-verified
+  `--unsigned-recovery` zip bootstrap, test/accept, then roll back exactly.
+- Confirm the real update process is stopped at the matching durable candidate
+  journal before each QMP reset: `applying` before replacement, changed installer
+  replacement while `applying`, committed `pending`, and partially `restoring`.
+- On each reboot, verify the resident outcome. Applying/partial replacement/
+  restore return to the exact known-good system/app pair; pending remains an
+  unaccepted candidate in parent mode until explicitly rolled back. All eleven
+  system files' hashes/modes and both app links match their baseline after rollback.
+- Through every transition, preserve exact synthetic Paint/Typing archives,
+  configuration and the original installer's resident class-C files.
+- Reinstall and accept the exact candidate, reboot, require fresh healthy child
+  frames and the accepted source identity. The signed, unsigned-recovery and
+  final reboot launcher screenshots were inspected.
+
+Log completion: `UPDATE_CHAIN_VM_PASS` at 2026-10-25 21:33:38 UTC. Results JSON
+SHA-256 is `a86a1f2c1fde66680fd396014f46a63aecba2f0362e4e4cec277fce7e03a8c98`.
+Compact original artifacts are retained in source:
+
+- [`fresh-install.json`](docs/dev/qualification-2026-10-25/fresh-install.json)
+- [`update-chain.json`](docs/dev/qualification-2026-10-25/update-chain.json)
+- [`packages.tsv`](docs/dev/qualification-2026-10-25/packages.tsv)
+
+The full screenshots are in the fourteen-day workflow artifacts. Disks, raw
+serial logs and private keys are not artifacts. The candidate transfer artifact
+expires after one day. These synthetic VM tests do not authorize a production
+release or establish physical touch, Wi-Fi, speaker balance or sleep behavior.
+The additional image fault scenarios in the VM work plan are separate, not
+claimed by this update-chain test. Class C still requires a fresh installation.
+
+Repeat the successful update-only test on an isolated x86-64 Linux/Docker builder
+with the documented public inputs and pinned candidate:
+
+```sh
+uv run --frozen python scripts/qualify-patch-update.py build/dev-candidate build/responsive-update-vm-NEW \
+  --baseline-image-dir build/published/installer --baseline-version 0.4.0 --baseline-sequence 2 \
+  --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 \
+  --candidate-version 0.5.1 --candidate-sequence 5 \
+  --candidate-revision 9d12352306ccb6b234a5c556415a26c1e3d1cc38 \
+  --candidate-sha256 3c15949eb546e0ffb6ea0a03701e4c34f23e8316a84ae3fb703b760c077dc035
+```
+
+[CI run 40233346634](https://github.com/famulare/ToddlerBox/actions/runs/40233346634)
+at the successful driver's revision passed **751 tests in 48.49 s**, including
+every Linux-only test, **86 apt-Pillow worker tests**, and pinned ruff. The final
+local suite remained **731 passed / 20 Linux-only skips**; focused update/recovery
+checks were **103 passed**. Documentation closeout changes no built runtime bytes.

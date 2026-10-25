@@ -25,6 +25,15 @@ candidate bundle built by `fresh-install` and starts from public release assets.
 It builds only the pinned VM tools again, not another candidate image. See
 `VALIDATION.md` for execution evidence; implementation alone is not qualification.
 
+**Verified 2026-10-25:** fresh-install job `40229180735` and update-chain retry
+`40233346604` passed on the exact same built bundle. Built Git revision is
+`9d12352`, application/system content `1f8bc04e1db6f2df`; the successful update
+driver is `489f6bc`. The signed/public chain, dev signature, unsigned recovery,
+exact rollback, all four real reset boundaries and final accepted reboot passed.
+Compact results and the package manifest are preserved in
+[`qualification-2026-10-25/`](qualification-2026-10-25/). Physical HP acceptance
+and the separately listed image fault scenarios remain unverified by these runs.
+
 - **File.** `.github/workflows/dev-vm-qualify.yml`, present only on `dev/**` branches.
   `workflow_dispatch` would require the file on the default branch, so the trigger is a push.
 - **Trigger.** Pushes to `dev/**` whose commit message contains `[vm]`, so ordinary pushes

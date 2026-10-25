@@ -5,13 +5,17 @@ Dev-only working plan. It is not a release document and is not intended for `mai
 - **Base:** `origin/main` `b3d87f9` (0.5.1).
 - **Status:** agreed between Claude (implementer) and Codex `gpt-6-astra` (reviewer),
   2026-10-23, after three review rounds.
-- **Progress (2026-10-23):** WP12, WP1, WP2, WP5, WP7, WP3, WP4, WP10, WP6, WP11, WP8 and
+- **Progress (2026-10-25):** WP12, WP1, WP2, WP5, WP7, WP3, WP4, WP10, WP6, WP11, WP8 and
   WP9 are implemented and committed with tests, plus fixes for Codex implementation
   reviews 1–3. Linux CI and the fresh-install VM qualification have passed (see
-  `VALIDATION.md`). Remaining: the signed update chain in a VM, and physical HP acceptance.
+  `VALIDATION.md`). The signed update chain, explicit unsigned recovery, rollback
+  and all four interrupted-update/restore VM checks also passed. Physical HP
+  acceptance remains separate; the additional image fault scenarios in the VM
+  work plan are not claimed by this update qualification.
 
 Update-chain continuation (2026-10-25): the portable harness and second Actions
-job are implemented; execution results are recorded in `VALIDATION.md`. The
+job passed in run `40233346604`, using the exact candidate built and fresh-install
+qualified in run `40229180735`. Execution results are recorded in `VALIDATION.md`. The
 actual published updater exposed an upgrade compatibility failure: it calls the
 new installer without `--journaled` while holding the update lock. The installer
 now authenticates this historical call through the live root parent's exact
