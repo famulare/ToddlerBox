@@ -2182,3 +2182,16 @@ hash restoration; exact synthetic Paint/Typing, config and resident class-C
 bytes; final accepted reboot and supervised child frames. Disks and raw serial
 logs are excluded from artifacts. VM evidence remains pending until an actual
 successful run is recorded; no physical HP validation is claimed.
+
+First continuation push: `326fd908ee82ef86bdef8ec7f178985e0037180f`, application/
+system content `1f8bc04e1db6f2df`. Linux CI `40228529858` passed: **734 tests**,
+plus **86 root-worker tests** against apt Pillow 10.2.0. Local uv is 0.13.5;
+pygame-ce 2.5.8, Pillow 12.3.0, PyYAML 6.0.3, pytest 9.1.1 and cryptography 46.0.3.
+The Actions build uses pinned uv 0.12.19 and Ubuntu Python 3.12.3.
+
+VM run `40228529867` was deliberately cancelled during the image build after a
+harness review caught a missing resident-module `PYTHONPATH` on the explicit zip
+recovery command. No VM pass is claimed for it. The correction changes only
+the qualification driver and its focused check; application/system content is
+unchanged. The focused update/recovery suite then passed **87 tests**, with lint
+clean, before starting a corrected full workflow.

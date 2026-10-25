@@ -223,6 +223,14 @@ class UpdateChain:
         if boundary: args += ['--boundary', boundary]
         self.guest('install', *args, background=background)
 
+    def unsigned_candidate(self):
+        # The executable zip carries update_bundle, while the independently
+        # installed resident boot gate remains on the system module path.
+        command = shlex.join(['env', 'PYTHONPATH=/usr/local/lib/toddlerbox-system', 'python3',
+                              '/qa/candidate/ToddlerBox-update.pyz', '--sha256',
+                              self.candidate['sha256'], '--unsigned-recovery'])
+        self.serial(command, timeout=900)
+
     def rollback(self, baseline):
         self.guest('rollback')
         self.qa.mode('parent')
@@ -299,7 +307,7 @@ class UpdateChain:
             self.rollback(baseline)
             # Recovery bootstrap explicitly executes the checksum-verified dev
             # zip: the historical baseline command predates this CLI flag.
-            self.serial(f'python3 {bundle} --sha256 {digest} --unsigned-recovery', timeout=900)
+            self.unsigned_candidate()
             self.version(self.args.candidate_version, self.candidate['source'], 'pending')
             self.observe('dev-unsigned-recovery')
             self.rollback(baseline)

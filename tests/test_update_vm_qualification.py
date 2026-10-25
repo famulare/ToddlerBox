@@ -181,3 +181,15 @@ def test_vm_workflow_keeps_read_only_permissions_and_allowlisted_evidence():
     assert evidence['retention-days'] == '14'
     assert evidence['path'].split() == ['build/responsive-update-vm-dev/checkpoint-*.png',
                                         'build/responsive-update-vm-dev/results.json']
+
+
+def test_recovery_zip_resolves_the_installed_resident_modules(harness):
+    import shlex
+    chain = harness.UpdateChain.__new__(harness.UpdateChain)
+    chain.candidate = {'sha256': 'a' * 64}
+    calls = []
+    chain.serial = lambda command, **kwargs: calls.append((shlex.split(command), kwargs))
+    chain.unsigned_candidate()
+    assert calls == [(['env', 'PYTHONPATH=/usr/local/lib/toddlerbox-system', 'python3',
+                      '/qa/candidate/ToddlerBox-update.pyz', '--sha256', 'a' * 64,
+                      '--unsigned-recovery'], {'timeout': 900})]
