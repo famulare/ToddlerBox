@@ -2,6 +2,11 @@
 
 ## Unreleased (dev/review-hardening)
 
+- The USB installer mounts only the ISO9660 volume labelled `TODDLERBOX`, so a hybrid USB's second
+  partition with the same label can no longer be picked as installer media. Builds also produce
+  `flash-installer.sh`, a Linux USB writer with the ISO checksum embedded that refuses mounted,
+  partitioned or undersized targets, requires the typed `ERASE /dev/<target>` phrase, and checks
+  every written byte.
 - Paint encodes PNGs in memory so a full or failing disk can never replace the previous painting
   with a truncated file. Archives never overwrite an existing name; interrupted saves are recovered
   as Recall archives or kept as `corrupt-` media. Restore never crash-loops.

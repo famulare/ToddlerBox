@@ -48,6 +48,7 @@ Outputs under ignored `build/`:
 | `toddlerbox.qcow2` | Baseline VM disk; use overlays for tests |
 | `toddlerbox.img` | Sparse, 12 GiB GPT system disk |
 | `toddlerbox-installer.iso` | Bootable USB installer with the compressed identical disk |
+| `flash-installer.sh` | Standalone Linux USB writer with this ISO's checksum embedded |
 | `SHA256SUMS` | Checksums of system artifacts |
 | `packages.tsv`, `release-id` | Package versions and source release identity |
 | `toddlerbox-app-<id>.tar.gz`, `APP-SHA256SUMS` | App release bundle and checksum |
@@ -56,6 +57,24 @@ The installer boots through GRUB in BIOS or UEFI mode, but the installed system
 requires **x86-64 UEFI**. The initial qualification uses **Secure Boot disabled**;
 the installer GRUB is unsigned. Do not infer Secure Boot qualification from the
 signed Ubuntu shim/kernel present on the installed disk.
+
+To flash a USB installer on Linux, copy `flash-installer.sh` and
+`toddlerbox-installer.iso` from the same build into one folder on that computer,
+then run from a terminal:
+
+```bash
+bash flash-installer.sh
+```
+
+The script requests sudo, verifies the ISO checksum, lists disks, and asks for
+the whole target disk and the exact phrase `ERASE /dev/<target>`. It refuses
+mounted disks, active swap/device mappings, partitions, and undersized or
+read-only targets. Unmount the target's volumes first. If the transfer drive is
+also the flash target, copy both files to the computer before running. The
+script writes the ISO, flushes it, and checks every written byte before reporting
+success. This erases the USB drive; booting the installer later requires a
+separate confirmation to erase the PC's disk. Linux needs Bash, coreutils, and
+util-linux (included in ordinary Ubuntu installations).
 
 ## VM development
 

@@ -90,5 +90,9 @@ menuentry 'Power off' { halt }
 EOF
 grub-mkrescue -o toddlerbox-installer.iso -volid TODDLERBOX iso
 sha256sum toddlerbox.img toddlerbox.qcow2 toddlerbox-installer.iso >SHA256SUMS
+iso_sha=$(sha256sum toddlerbox-installer.iso)
+iso_sha=${iso_sha%% *}
+sed "s/^EXPECTED_SHA256=''/EXPECTED_SHA256='$iso_sha'/" /source/system/flash-installer.sh >flash-installer.sh
+chmod a+rx flash-installer.sh
 chmod a+r toddlerbox.img toddlerbox.qcow2 toddlerbox-installer.iso SHA256SUMS APP-SHA256SUMS packages.tsv release-id
 echo 'Created toddlerbox.qcow2, toddlerbox.img, and toddlerbox-installer.iso'
