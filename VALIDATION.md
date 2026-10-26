@@ -2317,3 +2317,9 @@ at the successful driver's revision passed **751 tests in 48.49 s**, including
 every Linux-only test, **86 apt-Pillow worker tests**, and pinned ruff. The final
 local suite remained **731 passed / 20 Linux-only skips**; focused update/recovery
 checks were **103 passed**. Documentation closeout changes no built runtime bytes.
+
+Installer media fix (`4649a15`, folded in from the Codex installer WIP): CI run
+40265739520 passed both jobs, and VM run 40265739556 passed both the fresh-install
+and update-chain jobs. The VM boots the installer as a CD-ROM, so this shows the
+ISO9660-only media lookup still works on that path. Only a physical USB boot
+exercises the hybrid-partition case it fixes; that is in the HP acceptance checklist.
