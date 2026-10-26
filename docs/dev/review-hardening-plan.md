@@ -22,6 +22,18 @@ now authenticates this historical call through the live root parent's exact
 kernel lock, valid applying journal and matching staged app. The 11-file tables,
 release version/sequence and class-C delivery boundary are unchanged.
 
+## Branches
+
+There is one development path:
+- `main` is the published 0.5.1 release. It changes only through a release PR
+  that Mike approves.
+- `dev/review-hardening` is the single integration branch for everything still to
+  do. Commit to it directly. Use a short-lived `dev/<topic>` branch only for parallel
+  work, cut from this branch and merged back promptly, then deleted locally and on
+  GitHub.
+- A `[vm]` anywhere in a head commit message starts the VM workflow; write that
+  literal only when a run is intended.
+
 Constraints are inherited from `AGENTS.md`:
 - Preserve child work first.
 - No pruning, deletion propagation or rollback of child data.
