@@ -2373,3 +2373,13 @@ qualification. No pass is claimed before the actual workflow completes. The exis
 maintainer private signing key is not available to this executor; a replacement key
 will not be generated. Production signing, publication, live-device backup/update
 and supervised physical acceptance are separate explicit gates.
+
+
+## 0.5.2 signing-identity recovery
+
+The maintainer explicitly authorized a replacement Ed25519 identity after the
+original private key could not be located. Only its public key is added to source,
+alongside the existing public key. The previous candidate at 752168e891eed25e1b0c5c9a9e8173efe7fd352f
+is superseded for publication: a fresh build and VM qualification are required.
+No private key or appliance evidence is included. Older appliances must explicitly
+recover their trust anchor before accepting metadata signed solely by the new key.

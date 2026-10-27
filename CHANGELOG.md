@@ -104,3 +104,11 @@ the existing-appliance delivery boundary. No new production release is published
 - Added screenshot gallery to README with inline GitHub-rendered images.
 - Added `Pillow` dependency for EXIF metadata parsing.
 - `pytest` is included in core dependencies for always-available test runs in the project venv.
+
+### Release trust recovery (0.5.2 candidate)
+
+- Include the explicitly authorized replacement release public key alongside the
+  previous public key after loss of the old private key. Existing appliances need
+  an explicit local trust-anchor recovery before accepting the new signer.
+- Rebuild and requalify the candidate because its public-key payload changed;
+  previous candidate hashes no longer identify the release to publish.
