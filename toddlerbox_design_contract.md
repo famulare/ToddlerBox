@@ -124,7 +124,7 @@ included in ToddlerBox 0.4.
 - Library path: `data_root/photos/library`
 - Thumbnail cache path: `data_root/photos/thumbs`
 - Supported extensions: `.png .jpg .jpeg .bmp .gif`
-- Thumbnails are generated/cached and reused by mtime
+- Thumbnails are generated off the UI thread and reused only when the source-content digest and requested derivative size match. Imports that preserve timestamps or replace a file in place must not leave a stale thumbnail. Older untagged cache entries are regenerated; only discardable derivatives change.
 - Strip supports drag/wheel scrolling
 - Tap-release on thumbnail selects image
 - Horizontal drag in main image area changes image index

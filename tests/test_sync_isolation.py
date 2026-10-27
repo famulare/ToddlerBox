@@ -121,11 +121,22 @@ def test_quarantined_local_media_is_skipped_without_withholding_the_manifest(tmp
     assert any(name.endswith("/manifest.json") for name in creations(drive, status))
 
 
-def test_initial_backup_resumes_across_bounded_runs_without_starving_creations(tmp_path):
+def test_initial_backup_resumes_across_bounded_runs_without_starving_creations(tmp_path, monkeypatch):
+    from system.tbx_sync import worker
+
     photos = {f"p{i:02d}.png": png((i * 20, 0, 0)) for i in range(10)}
     locations = installed(tmp_path, photos=photos)
     drive = MemoryDrive()
-    drive.before_put = lambda source, remote: time.sleep(0.12) if remote.startswith("Initial backup/") else None
+    # Charge transfers to the phase clock without making fsync speed part of
+    # this scheduling test. Actual subprocess deadline enforcement is tested below.
+    clock = [1000.0]
+    monkeypatch.setattr(worker, "time", SimpleNamespace(monotonic=lambda: clock[0]))
+
+    def transfer_time(source, remote):
+        if remote.startswith("Initial backup/"):
+            clock[0] += 0.12
+
+    drive.before_put = transfer_time
     runs = 0
     while not load(locations.state / "initial.json").get("complete"):
         runs += 1

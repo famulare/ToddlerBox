@@ -99,7 +99,9 @@ invocation and `--resume`/`--resume-recovery` are retained solely for the histor
 qualified 0.5.0 checkpoint described in the 0.5.1 validation record. Evidence
 artifacts contain only selected `checkpoint-*.png` screenshots and `results.json`;
 no VM disks, raw serial logs or signing keys are uploaded. The candidate transfer
-artifact expires after one day; evidence expires after fourteen days.
+candidate artifact and evidence now expire after fourteen days, preserving the
+exact qualified bundle while maintainer signing is arranged. Historical runs
+used a one-day candidate lifetime; their recorded retention is unchanged.
 
 For a **harness-only retry**, a push containing both `[vm]` and
 `[reuse-candidate]` skips the fresh build and fresh-install job. Update

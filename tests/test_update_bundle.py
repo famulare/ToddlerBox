@@ -248,7 +248,9 @@ def test_combined_update_uses_real_app_installer_and_rolls_back_links(updater, m
         calls.append(args)
         if "toddlerbox-install-release" in args[0]:
             installer.install(Path(args[1]), args[2], root=machine / module.APP,
-                              mode_file=machine / "run/toddlerbox-system/mode")
+                              mode_file=machine / "run/toddlerbox-system/mode",
+                              state=machine / "var/lib/toddlerbox-system",
+                              journaled="--journaled" in args)
     monkeypatch.setattr(module, "command", real_app)
     before = protected(machine)
     module.run(archive, module.sha(archive), root=machine)

@@ -2,6 +2,15 @@
 
 Dev-only working plan. It is not a release document and is not intended for `main` as-is.
 
+Release-preparation continuation (2026-10-27): target **0.5.2 / sequence 5** as
+an in-place signed update. Preserve the class-C boundary below. Photos thumbnail
+cache freshness is corrected with a streamed source-content digest and requested
+size; synthetic replacement, resize and concurrent-import regressions are covered.
+Release fixtures now use synthetic resident state, and initial-backup scheduling
+uses a controlled test clock. Production guards and resident sync are unchanged
+by these corrections. Exact-artifact CI/VM evidence and maintainer signing remain
+release gates; see `docs/releases/v0.5.2.md` and the latest `VALIDATION.md` entry.
+
 - **Base:** `origin/main` `b3d87f9` (0.5.1).
 - **Status:** agreed between Claude (implementer) and Codex `gpt-6-astra` (reviewer),
   2026-10-23, after three review rounds.

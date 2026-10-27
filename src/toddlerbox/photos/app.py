@@ -4,6 +4,7 @@ from collections import OrderedDict
 from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
+import hashlib
 import json
 from pathlib import Path
 import time
@@ -14,6 +15,7 @@ import pygame
 from toddlerbox.runtime import health, control
 try:
     from PIL import Image, ImageOps
+    from PIL.PngImagePlugin import PngInfo
 except Exception:
     Image = None
 
@@ -123,17 +125,31 @@ def _load_photo_surface(path: Path, *, for_thumbnail: bool = False) -> pygame.Su
 
 
 def _prepare_thumbnail(path: Path, thumb_path: Path, size: Tuple[int, int]):
+    def source_stamp():
+        # Timestamps and even sizes can survive an in-place replacement.
+        # Stream the digest in this background worker; never hash in drawing.
+        with path.open("rb") as source:
+            digest = hashlib.file_digest(source, "sha256").hexdigest()
+        return json.dumps([digest, list(size)])
+
+    stamp = source_stamp()
     try:
-        if thumb_path.stat().st_mtime_ns >= path.stat().st_mtime_ns:
+        with Image.open(thumb_path) as cached:
+            matches = cached.info.get("toddlerbox-source-v1") == stamp
+        if matches:
             return _decode_photo(thumb_path, size)
     except DECODE_ERRORS:
         pass
     pixels = _decode_photo(path, size)
     try:
+        if source_stamp() != stamp:
+            return pixels  # A concurrent import must not stamp stale pixels as current.
         thumb_path.parent.mkdir(parents=True, exist_ok=True)
         image = Image.frombytes("RGBA", pixels[1], pixels[0])
+        metadata = PngInfo()
+        metadata.add_text("toddlerbox-source-v1", stamp)
         tmp_path = thumb_path.with_suffix(".tmp")
-        image.save(tmp_path, format="PNG")
+        image.save(tmp_path, format="PNG", pnginfo=metadata)
         tmp_path.replace(thumb_path)
     except OSError:
         pass  # A discardable disk cache must not prevent displaying a photo.

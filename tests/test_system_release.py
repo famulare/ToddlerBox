@@ -12,7 +12,7 @@ import pytest
 
 
 @pytest.fixture
-def release_installer(monkeypatch):
+def release_installer(monkeypatch, tmp_path):
     system = Path(__file__).parents[1] / "system"
     spec = importlib.util.spec_from_file_location("controller", system / "controller.py")
     controller = importlib.util.module_from_spec(spec)
@@ -24,6 +24,14 @@ def release_installer(monkeypatch):
     # Importing the executable must not attempt an installation.
     spec.loader.exec_module(installer)
     monkeypatch.setattr(installer.os, "sync", lambda: None)
+    real_install = installer.install
+
+    def isolated_install(*args, **kwargs):
+        # Synthetic release trees must never consult the host's resident state.
+        kwargs.setdefault("state", tmp_path / "system-state")
+        return real_install(*args, **kwargs)
+
+    monkeypatch.setattr(installer, "install", isolated_install)
     return installer, controller
 
 

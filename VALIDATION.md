@@ -1,4 +1,4 @@
-> Evidence is chronological. Historical installer IDs and pending items below belong to their recorded checkpoints; the [final 0.3.0 section](#toddlerbox-030-appliance-qualification--2026-10-04) defines the current qualification and remaining limits. Previously qualified artifacts remain preserved.
+> Evidence is chronological. The latest section records the pending 0.5.2 update-only candidate; it is not a publication or physical-hardware acceptance claim. Earlier installer IDs, passes and pending items belong to their recorded checkpoints. Previously qualified artifacts remain preserved.
 
 ## Pending audio patch — 2026-10-09
 
@@ -2323,3 +2323,53 @@ Installer media fix (`4649a15`, folded in from the Codex installer WIP): CI run
 and update-chain jobs. The VM boots the installer as a CD-ROM, so this shows the
 ISO9660-only media lookup still works on that path. Only a physical USB boot
 exercises the hybrid-partition case it fixes; that is in the HP acceptance checklist.
+
+
+## 0.5.2 update-only release preparation — 2026-10-27
+
+Candidate target: version 0.5.2, sequence 5, v1 data schema, existing eleven-file
+update/restore boundary. No resident boot-gate, sync-worker, firstboot, sysctl or
+GRUB migration is delivered. No production stable metadata, tag, release asset
+or private signing identity has been changed. The current public stable remains
+0.5.1 / sequence 4. This section contains synthetic development evidence only.
+
+Baseline: dev/review-hardening 981b2f5a4ce2d740d83627a4a16759b92edc5eea.
+The existing photo-replacement and bounded-initial-backup tests failed on that
+unchanged source. Three additional deterministic cache regressions also fail on
+the old code: same-size/timestamp-preserving source replacement, a larger requested
+derivative, and replacement during decode. The fix uses a streamed SHA-256 plus
+requested size stored with the discardable PNG; old untagged caches regenerate.
+Both hashing and decoding remain in the existing background worker. Source files
+are never changed. A changed source during decode is not stamped as a current cache.
+
+Installer fixtures inject their temporary resident-state root; the real production
+Linux/path/permission guards are unchanged. The scheduling test advances only a
+worker-local clock for simulated transfers instead of making disk fsync latency
+part of a 1.2-second wall-clock assertion. Real subprocess deadline checks remain
+in the suite. The resident worker code is unchanged.
+
+Commands (uv 0.12.19, CPython 3.12.3, locked dependencies):
+
+```sh
+uv sync --frozen --group dev --python /usr/bin/python3
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider tests/test_photos.py tests/test_system_release.py tests/test_update_guards.py tests/test_update_bundle.py tests/test_sync_isolation.py
+uv tool run ruff@0.12.0 check --no-cache . system/bin/toddlerbox-maintenance system/bin/toddlerbox-install-release system/bin/toddlerbox-mode
+```
+
+Focused result: **90 passed**; pinned lint passed. Dependency versions are unchanged
+by the version bump (only the local project changes from 0.5.1 to 0.5.2 in uv.lock):
+pygame-ce 2.5.8, Pillow 12.3.0, PyYAML 6.0.3, pytest 9.1.1, cryptography 46.0.3.
+The complete Linux suite passed **774 tests, zero skips, in 257.26 s**. Command: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider. The real AF_UNIX/SCM_CREDENTIALS checks ran with ordinary parent-user privileges outside the executor sandbox; no Linux checks were skipped or mocked to obtain this result. The VM synthetic-signing test now snapshots the production sequence floor and proves it unchanged instead of assuming a permanent floor of 4. The independent root-worker suite passed **86 tests** against the actual Ubuntu Pillow 10.2.0 at /usr/lib/python3/dist-packages (not the app Pillow). It used a temporary --system-site-packages Python 3.12.3 environment with pygame-ce 2.5.8, PyYAML 6.0.3 and pytest 9.1.1; no system packages were installed for this check. Candidate transfer artifacts now retain for fourteen days to preserve exact bytes while maintainer signing is arranged.
+
+Genuine old/new photo preparation was compared on identical synthetic red/blue
+120×60 JPEGs for all eight EXIF orientations at 40×40 and 80×80 requested sizes:
+**16 derivative pixel arrays matched byte-for-byte**, and source JPEG bytes were
+unchanged. Empty and single-photo 640×480 Photos frames also matched byte-for-byte
+(**2 complete frames**). Only freshness metadata in discardable derivatives differs.
+
+Pending: committed exact source identity, builder package manifest, bundle/app
+checksums, final candidate CI and disposable-VM install/update/rollback/interruption
+qualification. No pass is claimed before the actual workflow completes. The existing
+maintainer private signing key is not available to this executor; a replacement key
+will not be generated. Production signing, publication, live-device backup/update
+and supervised physical acceptance are separate explicit gates.

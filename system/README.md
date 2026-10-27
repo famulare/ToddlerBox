@@ -195,16 +195,16 @@ archive writes leave a 16 MiB reserve for current saves.
 
 App code and its uv-created environment live in `/opt/toddlerbox/releases/<id>`.
 For ordinary parent maintenance, use the [combined update bundle](../docs/updates.md).
+The [0.5.2 update](../docs/releases/v0.5.2.md) uses the existing eleven-file
+destination table and preserves resident boot recovery, sync, private state and
+image-only configuration. It requires exact-artifact update/recovery qualification
+and parent acceptance; a fresh-image VM pass does not establish hardware acceptance.
 It can carry system controls and an optional app release in one checked download,
 preserving work/private configuration and retaining system/app rollback backups.
 Runtime directly executes the installed Python environment and does not resolve
-or download dependencies. To update from a trusted build of the same system ABI,
-enter parent mode, copy the app bundle, and use its independently checked checksum:
-
-```bash
-sudo toddlerbox-install-release toddlerbox-app-<id>.tar.gz <expected-sha256>
-sudo toddlerbox-mode child
-```
+or download dependencies. Normal updates use Setup & Maintenance's signed update
+flow. Direct app-tar installation is an advanced explicit unsigned recovery path,
+not an alternative normal update procedure.
 
 On appliance images (`/var/lib/toddlerbox-system/appliance-v1`), releases change
 only through the journaled signed update: a direct install needs

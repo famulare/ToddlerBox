@@ -1,6 +1,18 @@
 # Changelog
 
-## Unreleased (dev/review-hardening)
+## 0.5.2 candidate — unreleased (dev/review-hardening)
+
+The target is a signed in-place app/system update, sequence 5. App and allowlisted
+root-tool changes below are delivered by that update. Entries explicitly marked
+fresh-image/installer, including resident sync and boot recovery, remain outside
+the existing-appliance delivery boundary. No new production release is published yet.
+
+- Photos thumbnails use a source-content digest and requested size instead of
+  timestamp ordering. In-place replacements, timestamp-preserving imports and
+  larger derivative requests invalidate the cache without changing photo originals.
+- Isolate release-install tests from the host appliance state, and make the
+  initial-backup scheduling test independent of wall-clock disk speed. Production
+  guards and resident sync code are unchanged by these test corrections.
 
 - The USB installer mounts only the ISO9660 volume labelled `TODDLERBOX`, so a hybrid USB's second
   partition with the same label can no longer be picked as installer media. Builds also produce
@@ -20,7 +32,7 @@
   defaults used, and child work stays in `/var/lib/toddlerbox`. Parents can run
   `python -m toddlerbox.config --check FILE`.
 - One damaged Reading picture no longer disables Reading (Pillow `SyntaxError` is now handled).
-- Drive sync uploads the child's creations before downloading photos, isolates every bad photo as a
+- Fresh-image resident Drive sync uploads the child's creations before downloading photos, isolates every bad photo as a
   named issue, withholds the manifest after a failed creation, cleans up after killed jobs, and
   explains wrong clocks. iPhone HEIC photos must be exported as JPEG (documented).
 - Maintenance shows the actual refusal reason; a refused rollback no longer wedges the appliance;

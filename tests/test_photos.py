@@ -14,6 +14,64 @@ def test_thumb_name():
     assert _thumb_name(path) == "Summer_jpg.png"
 
 
+def test_thumbnail_refreshes_replacement_with_preserved_mtime(tmp_path):
+    import os
+
+    source = tmp_path / "source.bmp"
+    cached = tmp_path / "thumb.png"
+    Image.new("RGB", (40, 20), "red").save(source)
+    original = source.stat()
+    photos_module._prepare_thumbnail(source, cached, (80, 80))
+    # Both BMPs have the same byte length. Imports may preserve an old timestamp.
+    replacement = tmp_path / "replacement.bmp"
+    Image.new("RGB", (20, 40), "blue").save(replacement)
+    os.utime(replacement, ns=(original.st_atime_ns, original.st_mtime_ns))
+    replacement.replace(source)
+    assert source.stat().st_size == original.st_size
+    pixels, size = photos_module._prepare_thumbnail(source, cached, (80, 80))
+    assert size == (20, 40)
+    assert Image.frombytes("RGBA", size, pixels).getpixel((0, 0)) == (0, 0, 255, 255)
+
+
+def test_thumbnail_reuses_unchanged_source(tmp_path, monkeypatch):
+    source = tmp_path / "source.png"
+    cached = tmp_path / "thumb.png"
+    Image.new("RGB", (40, 20), "red").save(source)
+    expected = photos_module._prepare_thumbnail(source, cached, (80, 80))
+    decode = photos_module._decode_photo
+
+    def cached_only(path, *args, **kwargs):
+        assert path == cached, "An unchanged source should not be decoded again"
+        return decode(path, *args, **kwargs)
+
+    monkeypatch.setattr(photos_module, "_decode_photo", cached_only)
+    assert photos_module._prepare_thumbnail(source, cached, (80, 80)) == expected
+
+
+def test_thumbnail_rebuilds_for_larger_requested_size(tmp_path):
+    source = tmp_path / "source.png"
+    cached = tmp_path / "thumb.png"
+    Image.new("RGB", (120, 60), "red").save(source)
+    assert photos_module._prepare_thumbnail(source, cached, (40, 40))[1] == (40, 20)
+    assert photos_module._prepare_thumbnail(source, cached, (80, 80))[1] == (80, 40)
+
+
+def test_thumbnail_does_not_stamp_source_replaced_during_decode(tmp_path, monkeypatch):
+    source = tmp_path / "source.png"
+    cached = tmp_path / "thumb.png"
+    Image.new("RGB", (40, 20), "red").save(source)
+    decode = photos_module._decode_photo
+
+    def replace_during_decode(path, *args, **kwargs):
+        result = decode(path, *args, **kwargs)
+        Image.new("RGB", (20, 40), "blue").save(source)
+        return result
+
+    monkeypatch.setattr(photos_module, "_decode_photo", replace_during_decode)
+    photos_module._prepare_thumbnail(source, cached, (80, 80))
+    assert not cached.exists()
+
+
 def test_is_image():
     assert _is_image(Path("photo.PNG"))
     assert not _is_image(Path("notes.txt"))

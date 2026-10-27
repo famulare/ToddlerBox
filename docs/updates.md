@@ -1,5 +1,11 @@
 # Updates without reinstalling Ubuntu
 
+The next [0.5.2 candidate](releases/v0.5.2.md) is an **in-place app/system update**,
+not an installer migration. Its qualification and publication are pending; 0.5.1
+remains the current published update until signed stable metadata is advanced.
+The resident sync worker, boot recovery gate, firstboot, sysctl and GRUB are
+preserved. Do not expect this update to deliver fixes to those image-only files.
+
 For the current 0.5.1 application update, follow the
 [existing-install instructions](releases/v0.5.1.md). Earlier USB setup/DNS repair
 instructions remain in the [0.5.0 guide](releases/v0.5.0.md). Pulling the checkout alone

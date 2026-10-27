@@ -94,6 +94,7 @@ def test_release_arguments_are_bounded_path_and_shell_safe(harness, text):
 
 
 def test_synthetic_signer_writes_only_public_material_and_authenticates_exact_bundle(harness, inputs, monkeypatch, modules):
+    production_floor = (ROOT / 'system/release-sequence').read_bytes()
     args, root = inputs
     args.release = []
     out, _, manifest = harness.validate_inputs(args, root)
@@ -111,7 +112,8 @@ def test_synthetic_signer_writes_only_public_material_and_authenticates_exact_bu
     with pytest.raises(ValueError, match='signature'):
         client.verify(data + b' ', signature, public)
     assert all(b'PRIVATE KEY' not in path.read_bytes() for path in share.rglob('*') if path.is_file())
-    assert value['sequence'] == 5 and (ROOT / 'system/release-sequence').read_text().strip() == '4'
+    assert value['sequence'] == 5
+    assert (ROOT / 'system/release-sequence').read_bytes() == production_floor
 
 
 @pytest.mark.parametrize('boundary', ['applying', 'system-replaced', 'pending', 'restoring'])
