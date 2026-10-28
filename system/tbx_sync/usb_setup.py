@@ -12,12 +12,8 @@ import subprocess
 import tempfile
 
 from .install import setup
-from .safeio import MAX_TOTAL, SafeTree, atomic_json, parts, reserve
-from .state import Paths, initialize, now
-
-
-class Refused(ValueError):
-    pass
+from .safeio import MAX_TOTAL, Refused, SafeTree, atomic_json, parts, reserve
+from .state import Paths, initialize, lock, now, sweep_staging
 
 
 def identity(info):
@@ -159,13 +155,18 @@ def flow(paths, *, find=discover, ask=input, tell=print, minimum=512*1024**2):
         tell('Cancelled. Nothing installed.')
         return None
     initialize(paths)
-    with tempfile.TemporaryDirectory(prefix='usb-', dir=paths.state / 'staging') as temporary:
-        archive, expected = snapshot(candidates[selected], temporary, minimum=minimum)
-        tell(f'Full SHA-256 verified: {expected}')
-        with parent_install():
-            result = setup(paths, archive, expected, minimum=minimum)  # Never consume transfer originals.
-            atomic_json(paths.state / 'setup-receipt.json', {'version':1, 'at':now(),
-                        'package_sha256':expected, **result})
+    # Hold the job lock for the whole copy: the staged package holds credentials,
+    # and only lock holders may create or sweep staging.
+    with lock(paths):
+        sweep_staging(paths)
+        with tempfile.TemporaryDirectory(prefix='usb-', dir=paths.state / 'staging') as temporary:
+            archive, expected = snapshot(candidates[selected], temporary, minimum=minimum)
+            tell(f'Full SHA-256 verified: {expected}')
+            with parent_install():
+                # Never consume transfer originals.
+                result = setup(paths, archive, expected, minimum=minimum, locked=True)
+                atomic_json(paths.state / 'setup-receipt.json', {'version':1, 'at':now(),
+                            'package_sha256':expected, **result})
     if result['result'] == 'already-installed':
         tell('Already installed. 0 new photos imported; existing work and credentials preserved.')
     else:

@@ -10,6 +10,7 @@ import time
 from functools import lru_cache
 
 import pygame
+from toddlerbox.runtime import retained
 from toddlerbox.ui import theme
 
 
@@ -41,6 +42,12 @@ class AppChannel:
     def _save_result(self, nonce, callback, deadline):
         try:
             result = False if self.clock() >= deadline else (True if callback is None else callback())
+            # Work parked by an earlier activity counts too: memory is never durable.
+            parked = retained.status()
+            if result is not False and parked == retained.FAILED:
+                result = False
+            elif result is True and parked == retained.PENDING:
+                result = SAVE_PENDING
         except Exception:
             result = False
         if result is SAVE_PENDING and self.clock() < deadline:
@@ -54,8 +61,10 @@ class AppChannel:
     def service(self, save_current=None):
         if not hasattr(self, "pending_saves"):
             self.pending_saves = {}
-        for nonce, (callback, deadline) in list(self.pending_saves.items()):
-            if self._save_result(nonce, callback, deadline):
+        # Judge pending requests by the current owner: since the request arrived,
+        # work may have been parked in the launcher or adopted by a new activity.
+        for nonce, (_requested_by, deadline) in list(self.pending_saves.items()):
+            if self._save_result(nonce, save_current, deadline):
                 del self.pending_saves[nonce]
         for _ in range(16):
             try:

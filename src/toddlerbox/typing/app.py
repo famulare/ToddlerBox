@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import json
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import wait as wait_futures
 from dataclasses import dataclass
 from datetime import datetime
 from heapq import nlargest
@@ -22,14 +23,25 @@ RECALL_READ_BYTES = 16 * 1024 * 1024
 from toddlerbox.config import load_config
 from toddlerbox.paths import ensure_directories, get_data_root
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
-from toddlerbox.runtime import health, control
-from toddlerbox.runtime.persistence import has_archive_reserve, write_bytes, sync_directory
+from toddlerbox.runtime import health, control, retained
+from toddlerbox.runtime.persistence import (
+    confirm_durable,
+    has_archive_reserve,
+    is_work_name,
+    publish_new_bytes,
+    quarantine,
+    recover_orphans,
+    sync_directory,
+    write_bytes,
+)
+from toddlerbox.runtime.workers import DaemonExecutor
 from toddlerbox.ui import theme
 from toddlerbox.ui.common import (
     Button,
     PointerInput,
     create_fullscreen_window,
     draw_home_button,
+    escape_exits,
     is_primary_pointer_event,
     pointer_event_pos,
 )
@@ -62,6 +74,7 @@ class RecallSession:
     preview: str
     rich_lines: List[List[Glyph]]
     is_current: bool = False
+    source: Optional[Path] = None
 
 
 @dataclass
@@ -151,29 +164,49 @@ def _serialize_rich_lines(lines: List[List[Glyph]]) -> List[List[dict]]:
     ]
 
 
-def _deserialize_rich_lines(payload: object) -> Optional[List[List[Glyph]]]:
-    if not isinstance(payload, list):
+# New input stops at these bounds; existing larger documents are never truncated.
+MAX_GLYPHS = 20_000
+MAX_LINES = 2_000
+MAX_GLYPH_SIZE = 1000
+
+
+def _parse_glyph(raw_glyph: object) -> Optional[Glyph]:
+    if not isinstance(raw_glyph, dict):
         return None
+    char, size, style = raw_glyph.get("char"), raw_glyph.get("size"), raw_glyph.get("style")
+    if not isinstance(char, str) or len(char) != 1:
+        return None
+    if type(size) is not int or not 1 <= size <= MAX_GLYPH_SIZE:
+        return None
+    if not isinstance(style, str) or style not in {"plain", "bold", "italic"}:
+        return None
+    return Glyph(char=char, size=size, style=style)
+
+
+def _salvage_rich_lines(payload: object) -> Tuple[Optional[List[List[Glyph]]], int]:
+    """Keep every valid glyph; returns (lines or None if unparseable, glyphs dropped)."""
+    if not isinstance(payload, list):
+        return None, 0
     parsed: List[List[Glyph]] = []
+    dropped = 0
     for raw_line in payload:
         if not isinstance(raw_line, list):
-            return None
+            dropped += 1
+            continue
         parsed_line: List[Glyph] = []
         for raw_glyph in raw_line:
-            if not isinstance(raw_glyph, dict):
-                return None
-            char = raw_glyph.get("char")
-            size = raw_glyph.get("size")
-            style = raw_glyph.get("style")
-            if not isinstance(char, str) or len(char) != 1:
-                return None
-            if not isinstance(size, int) or size <= 0:
-                return None
-            if style not in {"plain", "bold", "italic"}:
-                return None
-            parsed_line.append(Glyph(char=char, size=size, style=style))
+            glyph = _parse_glyph(raw_glyph)
+            if glyph is None:
+                dropped += 1
+            else:
+                parsed_line.append(glyph)
         parsed.append(parsed_line)
-    return parsed if parsed else [[]]
+    return (parsed if parsed else [[]]), dropped
+
+
+def _deserialize_rich_lines(payload: object) -> Optional[List[List[Glyph]]]:
+    lines, dropped = _salvage_rich_lines(payload)
+    return None if dropped else lines
 
 
 def _clone_rich_lines(lines: List[List[Glyph]]) -> List[List[Glyph]]:
@@ -184,12 +217,52 @@ def _rich_to_text(lines: List[List[Glyph]]) -> str:
     return "\n".join("".join(g.char for g in line) for line in lines)
 
 
+CURRENT_READ_LIMIT = 64 * 1024 * 1024
+EXIT_GRACE_SECONDS = 1.0  # A healthy save finishes well within this; then Home parks the work.
+SHUTDOWN_WAIT_SECONDS = 0.75  # Per wait at TERM; the launcher must ack within the controller's grace.
+KNOWN_ARCHIVES = 8
+
+
+def _lines_digest(serialized_lines: list) -> str:
+    # Content only: timestamps, cursor and the next-typed style are not work.
+    return hashlib.sha256(json.dumps(serialized_lines, ensure_ascii=False,
+                                     separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def _archive_duplicate(directory: Path, digest: str, known: Tuple[Tuple[Path, str], ...]) -> bool:
+    """Identical to an archive that still exists: nothing new to preserve."""
+    for path, known_digest in known:
+        if known_digest == digest and path.exists():
+            # A visible archive whose commit was uncertain does not yet replace current work.
+            return confirm_durable(path)
+    archives = _archive_files(directory) if directory.is_dir() else []
+    if not archives:
+        return False
+    try:
+        newest = max(archives, key=lambda path: path.stat().st_mtime_ns)
+        if newest.stat().st_size > RECALL_READ_BYTES:
+            return False
+        record = json.loads(newest.read_bytes())
+        same = isinstance(record, dict) and _lines_digest(record.get("rich_lines")) == digest
+    except Exception:
+        return False
+    return same and confirm_durable(newest)
+
+
+def _valid_document(raw: bytes) -> bool:
+    return _recall_session(raw) is not None
+
+
+def _archive_files(directory: Path) -> List[Path]:
+    return [path for path in directory.glob("*.json") if is_work_name(path.name)]
+
+
 def _recall_session(raw: bytes) -> Optional[RecallSession]:
     try:
         record = json.loads(raw)
         if not isinstance(record, dict) or record.get("version", 1) != 1:
             return None
-        rich_lines = _deserialize_rich_lines(record.get("rich_lines"))
+        rich_lines, _dropped = _salvage_rich_lines(record.get("rich_lines"))
         if rich_lines is None:
             return None
         return RecallSession(
@@ -197,7 +270,7 @@ def _recall_session(raw: bytes) -> Optional[RecallSession]:
             preview=_preview_text(_rich_to_text(rich_lines)),
             rich_lines=rich_lines,
         )
-    except (ValueError, UnicodeError):
+    except (ValueError, UnicodeError, RecursionError):
         return None
 
 
@@ -212,7 +285,7 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
         return []
     recent: List[RecallSession] = []
     budget = RECALL_READ_BYTES
-    for archive in nlargest(limit, (path.parent / "archive").glob("*.json")):
+    for archive in nlargest(limit, _archive_files(path.parent / "archive")):
         if budget <= 0:
             break
         try:
@@ -224,6 +297,7 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
             budget -= len(raw)
             item = _recall_session(raw)
             if item is not None:
+                item.source = archive
                 recent.append(item)
         except OSError:
             continue
@@ -244,6 +318,7 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
         for raw in reversed(records):
             item = _recall_session(raw)
             if item is not None:
+                item.source = path
                 recent.append(item)
                 if len(recent) == limit:
                     break
@@ -251,8 +326,14 @@ def _load_recent_sessions(path: Path, *, limit: int = 200) -> List[RecallSession
         pass
     return recent
 
-def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, options: dict) -> None:
+def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, options: dict,
+                     digest: Optional[str] = None,
+                     known: Tuple[Tuple[Path, str], ...] = ()) -> Optional[Path]:
+    """Returns the new archive, or None when this content is already preserved."""
     directory = typing_dir / "archive"
+    # Checked before capacity so repeated New/Recall taps never fill the archive.
+    if digest is not None and _archive_duplicate(directory, digest, known):
+        return None
     try:
         max_archives = max(0, int(options.get("max_archives", 200)))
         max_bytes = max(0, int(options.get("max_archive_bytes", 256 * 1024 * 1024)))
@@ -263,7 +344,7 @@ def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, opti
     count, total_bytes = 0, len(payload)
     if sessions_path.exists():
         total_bytes += sessions_path.stat().st_size
-    for archive in directory.glob("*.json"):
+    for archive in _archive_files(directory):
         count += 1
         total_bytes += archive.stat().st_size
         if count >= max_archives or total_bytes > max_bytes:
@@ -274,7 +355,7 @@ def _archive_payload(typing_dir: Path, sessions_path: Path, payload: bytes, opti
         raise OSError("Typing archive reserve reached")
     directory.mkdir(exist_ok=True)
     sync_directory(typing_dir)
-    write_bytes(directory / f"{time.time_ns()}.json", payload)
+    return publish_new_bytes(directory / f"{time.time_ns()}.json", payload)
 
 
 
@@ -300,8 +381,11 @@ class TypingApp:
         self._save_worker = None
         self._save_pending = None
         self._save_failed = False
+        self._exit_since: Optional[float] = None
         self._transition_request = None
         self._transition_pending = None
+        # (archive, content digest) pairs whose document is already durably archived.
+        self._known_archives: List[Tuple[Path, str]] = []
         self._exit_requested = False
         self._layout_key = None
         self._layout_revision = 0
@@ -415,7 +499,12 @@ class TypingApp:
         self.text_pad_top = 20
         self.line_gap = 6
         self.recall_button.image = self._build_recall_button_thumbnail()
-        self._restore_current()
+        self._recover_interrupted_saves()
+        parked = retained.adopt("typing")
+        if parked is not None:
+            self._resume_parked(parked)
+        else:
+            self._restore_current()
 
     def _handle_resume(self, reason: str) -> None:
         self.logger.info(f"Typing resume handling triggered: {reason}")
@@ -519,7 +608,21 @@ class TypingApp:
         self._sync_text_line(row)
         return removed
 
+    def _glyph_count(self) -> int:
+        return sum(len(line) for line in self.rich_lines)
+
+    def _accepts(self, char: str) -> bool:
+        # A held key or stuck keyboard must not grow the document without bound,
+        # and every glyph must be one renderable code point the loader accepts.
+        if char == "\n":
+            return len(self.rich_lines) < MAX_LINES
+        if len(char) != 1 or not char.isprintable() or self._glyph_count() >= MAX_GLYPHS:
+            return False
+        return self._get_font(self.current_text_size, self.text_style).size(char)[0] > 0
+
     def _insert_char(self, char: str) -> None:
+        if not self._accepts(char):
+            return
         if char == "\n":
             op = EditOp(
                 kind="insert",
@@ -607,13 +710,18 @@ class TypingApp:
                 "cursor": [self.cursor_row, self.cursor_col],
                 "size": self.current_text_size, "style": self.text_style}
 
-    def _save_current(self) -> bool:
-        self._finish_pending_save(wait=True)
-        if self._save_blocked:
+    def _save_current(self, timeout: Optional[float] = None) -> bool:
+        # With a timeout (shutdown), the write runs on the worker and is bounded.
+        self._finish_pending_save(wait=True, timeout=timeout)
+        if self._save_pending is not None or self._save_blocked:
             return False
         payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
         if payload == self._saved_payload:
             return True
+        if timeout is not None:
+            self._request_autosave()
+            self._finish_pending_save(wait=True, timeout=timeout)
+            return self._saved_payload == payload
         try:
             write_bytes(self.current_path, payload)
         except OSError:
@@ -623,11 +731,13 @@ class TypingApp:
         self._save_failed = False
         return True
 
-    def _finish_pending_save(self, *, wait: bool = False) -> None:
+    def _finish_pending_save(self, *, wait: bool = False, timeout: Optional[float] = None) -> None:
         if self._save_pending is None:
             return
         payload, future = self._save_pending
-        if not wait and not future.done():
+        if wait:
+            wait_futures([future], timeout=timeout)
+        if not future.done():
             return
         self._save_pending = None
         try:
@@ -647,7 +757,7 @@ class TypingApp:
         if payload == self._saved_payload:
             return
         if self._save_worker is None:
-            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="typing-save")
+            self._save_worker = DaemonExecutor("typing-save")
         self._save_failed = False
         self._save_pending = (payload, self._save_worker.submit(write_bytes, self.current_path, payload))
 
@@ -666,53 +776,129 @@ class TypingApp:
     def _begin_transition(self, kind: str, item=None) -> None:
         if self._transition_request is not None or self._transition_pending is not None or self._exit_requested:
             return
-        self._transition_request = (kind, _clone_rich_lines(item.rich_lines) if item is not None else None)
+        self._transition_request = (kind, _clone_rich_lines(item.rich_lines) if item is not None else None,
+                                    item.source if item is not None else None)
 
     def _service_transition(self) -> None:
         self._finish_pending_save()
         if self._save_pending is not None:
             return
         if self._transition_pending is not None:
-            kind, lines, future = self._transition_pending
+            kind, lines, future, source, digest = self._transition_pending
             if not future.done():
                 return
             self._transition_pending = None
             try:
-                future.result()
+                published = future.result()
             except Exception:
                 self.logger.exception("Typing transition failed; preserving current document")
                 return
+            if published is not None:
+                self._remember_archive(published, digest)
             # Never clear or replace work until its archive is durably committed.
-            if kind == "new":
-                self._clear_text()
-            else:
-                self._set_recalled_lines(lines)
-            self._request_autosave()
+            self._finish_transition(kind, lines, source)
         if self._transition_request is None:
             return
-        kind, lines = self._transition_request
+        kind, lines, source = self._transition_request
         self._transition_request = None
+        serialized = _serialize_rich_lines(self.rich_lines)
+        if not any(serialized):
+            self._finish_transition(kind, lines, source)  # Blank: nothing to preserve.
+            return
         record = {"version": 1, "timestamp": datetime.now().isoformat(timespec="seconds"),
-                  "rich_lines": _serialize_rich_lines(self.rich_lines)}
+                  "rich_lines": serialized}
         payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
+        digest = _lines_digest(serialized)
         if self._save_worker is None:
-            self._save_worker = ThreadPoolExecutor(max_workers=1, thread_name_prefix="typing-save")
+            self._save_worker = DaemonExecutor("typing-save")
         future = self._save_worker.submit(_archive_payload, self.typing_dir, self.sessions_path,
-                                          payload, self.config.get("typing", {}).copy())
-        self._transition_pending = (kind, lines, future)
+                                          payload, self.config.get("typing", {}).copy(),
+                                          digest, tuple(self._known_archives))
+        self._transition_pending = (kind, lines, future, source, digest)
+
+    def _finish_transition(self, kind: str, lines, source: Optional[Path]) -> None:
+        if kind == "new":
+            self._clear_text()
+        else:
+            self._set_recalled_lines(lines)
+            if source is not None:
+                self._remember_archive(source, _lines_digest(_serialize_rich_lines(self.rich_lines)))
+        self._request_autosave()
+
+    def _remember_archive(self, path: Path, digest: str) -> None:
+        self._known_archives = [*self._known_archives[-(KNOWN_ARCHIVES - 1):], (path, digest)]
 
     def _poll_exit(self) -> bool:
-        if not self._exit_requested or self._transition_request is not None or self._transition_pending is not None:
+        if not self._exit_requested:
             return False
-        saved = self._save_for_control()
-        if saved is False:
-            self._exit_requested = False
-        return saved is True
+        if self._exit_since is None:
+            self._exit_since = time.monotonic()
+        waiting = time.monotonic() - self._exit_since < EXIT_GRACE_SECONDS
+        if self._transition_request is not None or self._transition_pending is not None:
+            if waiting:
+                return False
+            self._abandon_transition()
+        self._finish_pending_save()
+        payload = json.dumps(self._record(), ensure_ascii=False).encode("utf-8")
+        if payload == self._saved_payload:
+            return True
+        if not self._save_blocked and not self._save_failed and waiting:
+            self._request_autosave()
+            return False
+        # Home never waits on storage: the launcher keeps and keeps saving this document.
+        self._park_unsaved(payload)
+        return True
+
+    def _abandon_transition(self) -> None:
+        # Home wins over a stalled New/Recall: the current document is parked unchanged;
+        # a late archive still lands on disk but can no longer alter any document.
+        if self._transition_pending is not None:
+            self.logger.warning("Typing New/Recall still saving at exit; current document kept unchanged")
+        self._transition_request = None
+        self._transition_pending = None
+
+    def _park_unsaved(self, payload: bytes) -> None:
+        state = (_clone_rich_lines(self.rich_lines), (self.cursor_row, self.cursor_col),
+                 self.current_text_size, self.text_style, payload)
+        retained.park(retained.ParkedWork(
+            "typing", self.current_path, lambda: payload, state,
+            prior=None if self._save_pending is None else self._save_pending[1],
+            write_disabled=self._save_blocked))
+        self._save_pending = None
+        self._saved_payload = payload  # Ownership moved to the launcher.
+        self.logger.warning("Typing save unfinished at exit; work kept in memory and saving continues")
+
+    def _resume_parked(self, parked) -> None:
+        lines, (row, col), size, style, payload = parked.state
+        self.current_path = parked.target
+        self._save_blocked = self._save_blocked or parked.write_disabled
+        self.rich_lines = _clone_rich_lines(lines)
+        self._sync_all_text_lines()
+        self.cursor_row, self.cursor_col = row, col
+        if size in self.size_values and style in {"plain", "bold", "italic"}:
+            self.current_text_size, self.text_style = size, style
+        if parked.writer is not None:
+            self._save_pending = (payload, parked.writer)
+        self.logger.info("Typing resumed parked work")
+
+    def _recover_interrupted_saves(self) -> None:
+        archive = self.typing_dir / "archive"
+        try:
+            archive.mkdir(exist_ok=True)
+            for directory in (self.typing_dir, archive):
+                for recovered in recover_orphans(directory, suffix=".json", validate=_valid_document,
+                                                 recovered_dir=archive):
+                    self.logger.warning(f"Preserved interrupted Typing save as {recovered.name}")
+        except Exception:
+            self._save_blocked = True
+            self.logger.exception("Cannot classify interrupted Typing save; current saves disabled")
 
     def _restore_current(self) -> None:
         if not self.current_path.exists():
             return
         try:
+            if self.current_path.stat().st_size > CURRENT_READ_LIMIT:
+                raise ValueError("Typing document exceeds restore limit")
             record = json.loads(self.current_path.read_text(encoding="utf-8"))
             if isinstance(record, dict) and record.get("version", 1) != 1:
                 # Rollbacks must never classify a newer save as corrupt or
@@ -728,9 +914,14 @@ class TypingApp:
                 self.current_path = fallback
                 self._restore_current()
                 return
-            restored = _deserialize_rich_lines(record.get("rich_lines"))
+            restored, dropped = _salvage_rich_lines(record.get("rich_lines"))
             if restored is None or record.get("version") != 1:
                 raise ValueError("invalid current document")
+            if dropped:
+                # Preserve the exact original first; then continue with every valid glyph.
+                original = self.current_path.read_bytes()
+                kept = publish_new_bytes(self.typing_dir / f"corrupt-{time.time_ns()}.json", original)
+                self.logger.warning(f"Typing document had {dropped} unusable glyphs; original kept as {kept.name}")
             self.rich_lines = restored
             self._sync_all_text_lines()
             cursor = record.get("cursor", [0, 0])
@@ -739,23 +930,36 @@ class TypingApp:
             size, style = record.get("size"), record.get("style")
             if size in self.size_values and style in {"plain", "bold", "italic"}:
                 self.current_text_size, self.text_style = size, style
-        except (OSError, ValueError, TypeError, AttributeError, IndexError):
+        except Exception:
+            # Includes RecursionError/KeyError from hostile structure: never a crash loop.
             self.logger.exception("Preserving unreadable typing document")
-            self.current_path.rename(self.typing_dir / f"corrupt-{time.time_ns()}.json")
-            sync_directory(self.typing_dir)
+            self._clear_text()
+            try:
+                quarantine(self.current_path)
+            except OSError:
+                self._save_blocked = True
+                self.logger.exception("Cannot preserve unreadable typing document; current saves disabled")
 
     def _archive_session(self) -> bool:
+        serialized = _serialize_rich_lines(self.rich_lines)
+        if not any(serialized):
+            return True  # Blank: nothing to preserve.
         record = {
             "version": 1,
             "timestamp": datetime.now().isoformat(timespec="seconds"),
-            "rich_lines": _serialize_rich_lines(self.rich_lines),
+            "rich_lines": serialized,
         }
         payload = json.dumps(record, ensure_ascii=False).encode("utf-8")
+        digest = _lines_digest(serialized)
         try:
-            _archive_payload(self.typing_dir, self.sessions_path, payload, self.config.get("typing", {}).copy())
+            published = _archive_payload(self.typing_dir, self.sessions_path, payload,
+                                         self.config.get("typing", {}).copy(), digest,
+                                         tuple(self._known_archives))
         except OSError:
             self.logger.warning("Typing session archive write failed; keeping current document")
             return False
+        if published is not None:
+            self._remember_archive(published, digest)
         return True
 
     def _current_text(self) -> str:
@@ -1103,6 +1307,8 @@ class TypingApp:
         if not self._archive_session():
             return
         self._set_recalled_lines(item.rich_lines)
+        if item.source is not None:
+            self._remember_archive(item.source, _lines_digest(_serialize_rich_lines(self.rich_lines)))
         self._save_current()
 
     def _set_recalled_lines(self, lines) -> None:
@@ -1219,8 +1425,11 @@ class TypingApp:
             border = theme.ACCENT if item.is_current else theme.BORDER
             pygame.draw.rect(self.screen, border, rect, width=3 if item.is_current else 2)
 
-            label_surface = self.ui_font.render(item.label, True, theme.INK)
-            self.screen.blit(label_surface, (rect.left + preview_x_pad, rect.top + preview_y_pad))
+            try:
+                label_surface = self.ui_font.render(item.label, True, theme.INK)
+                self.screen.blit(label_surface, (rect.left + preview_x_pad, rect.top + preview_y_pad))
+            except pygame.error:
+                pass  # Zero-advance text from older saves: draw nothing rather than crash.
 
             preview_top = rect.top + preview_y_pad + self.ui_font.get_height() + 6
             max_width = rect.width - preview_x_pad * 2
@@ -1232,7 +1441,10 @@ class TypingApp:
                 y = preview_top + line_idx * line_step
                 if y + self.ui_font.get_height() > rect.bottom - preview_y_pad:
                     break
-                line_surface = self.ui_font.render(line, True, theme.INK)
+                try:
+                    line_surface = self.ui_font.render(line, True, theme.INK)
+                except pygame.error:
+                    continue  # Zero-advance text from older saves: draw nothing rather than crash.
                 self.screen.blit(line_surface, (rect.left + preview_x_pad, y))
 
     def _render(self) -> None:
@@ -1276,7 +1488,12 @@ class TypingApp:
                 x = text_x
                 for glyph, glyph_w in zip(line.glyphs, line.widths):
                     font = self._get_font(glyph.size, glyph.style)
-                    surf = font.render(glyph.char, True, theme.INK)
+                    try:
+                        surf = font.render(glyph.char, True, theme.INK)
+                    except pygame.error:
+                        # Zero-advance code points from older saves: keep them, draw nothing.
+                        x += glyph_w
+                        continue
                     glyph_y = y + (line.height - font.get_height())
                     self.screen.blit(surf, (x, glyph_y))
                     x += glyph_w
@@ -1296,12 +1513,15 @@ class TypingApp:
         finally:
             if self._transition_pending is not None:
                 try:
-                    self._transition_pending[2].result()
+                    self._transition_pending[2].result(timeout=SHUTDOWN_WAIT_SECONDS)
                 except Exception:
                     self.logger.exception("Typing archive did not finish at shutdown")
-                self._service_transition()
+                    self._abandon_transition()
+                else:
+                    self._service_transition()
             self._transition_request = None
-            self._save_current()
+            if not self._save_current(timeout=SHUTDOWN_WAIT_SECONDS):
+                self._park_unsaved(json.dumps(self._record(), ensure_ascii=False).encode("utf-8"))
             if self._save_worker is not None:
                 self._save_worker.shutdown(wait=False, cancel_futures=True)
             if quit_on_exit:
@@ -1340,7 +1560,8 @@ class TypingApp:
                     continue
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        self._exit_requested = True
+                        if escape_exits():
+                            self._exit_requested = True
                     elif event.key == pygame.K_BACKSPACE:
                         op = self._delete_backward()
                         if op:
@@ -1428,6 +1649,7 @@ class TypingApp:
 def main() -> None:
     try:
         TypingApp().run(quit_on_exit=True)
+        retained.flush(5.0)
     except Exception:
         logger = get_runtime_logger(get_data_root(load_config()))
         logger.exception("Typing app crashed in main()")

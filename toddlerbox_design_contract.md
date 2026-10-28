@@ -48,6 +48,14 @@ included in ToddlerBox 0.4.
 
 - App exits return to launcher home view.
 - Pointer down/up events are cleared on return and pointer input is briefly debounced to avoid accidental relaunch.
+- The launcher resets the shared window's clip and key repeat after every activity.
+- Home always leaves an activity. A Paint/Typing save still in flight gets a one-second grace while frames
+  continue; after that, or after a failed or impossible save, the document is parked in the launcher
+  process, keeps saving in the background, is resumed exactly on re-entry and is flushed (bounded) at
+  shutdown. A stalled New/Recall is abandoned at Home with the current document parked unchanged.
+  Save-current never acknowledges parked work until it is written.
+- Esc exits Paint, Typing and Photos only in desktop development (`TODDLERBOX_APP_CONTROL` unset);
+  the supervised child session ignores it.
 
 ## 2. Paint App
 
@@ -76,13 +84,21 @@ included in ToddlerBox 0.4.
 - Stores in `data_root/paint/`
 - `latest.png` autosaved periodically (default 10s)
 - Archived snapshots named `YYYY-MM-DD_HHMMSS(.+counter).png`
-- Atomic PNG replacement with file and directory fsync
-- Existing `latest.png` is restored on app start; Home and termination attempt a save
+- Atomic PNG replacement with file and directory fsync; PNGs are encoded in memory and only complete
+  bytes are written, so a short write can never replace the previous painting
+- Archives are published without ever replacing an existing name. Temporaries left by an interrupted
+  process are classified once per process before reuse: complete ones become `recovered-*` Recall
+  archives, partial ones `corrupt-*` media
+- Existing `latest.png` is restored on app start; Home and termination attempt a save. Restore never
+  raises; if an unreadable save cannot be quarantined, writes over it are disabled for the session
 - New clears only after successful archive; failures before replacement preserve the previous file. Directory-fsync failure after replacement reports uncertain durability of the new visible file.
 - Periodic saves use one immutable background snapshot and skip unchanged canvases. Input reset never postpones an outstanding save deadline.
 - New/Recall archive snapshots off the display thread and gate editing/repeated transitions until the archive is durable. At most one transition and one current-save snapshot share a single writer; queued old snapshots cannot overtake final saves. Home keeps rendering while its newest save completes.
 - Fill preserves exact colors and four-neighbour boundaries. Opaque restored PNGs behave like fresh canvases; translucent/non-production pixel formats retain conservative exact handling. Fountain optimizations must preserve all input points and rendered geometry.
 - Archive limits are nondestructive capacities: Paint defaults to 100 and clamps zero to one. Full capacity refuses replacement without clearing work; quarantined corrupt files are excluded.
+- New/Recall never archive a blank canvas or one identical to an archive that still exists and is
+  confirmed durable (the recalled source, this session's archives, or the newest on disk), checked
+  before capacity, so repeated taps cannot fill the archive. Parent status reports archive counts.
 
 ### 2.4 Recall UX
 
@@ -108,7 +124,7 @@ included in ToddlerBox 0.4.
 - Library path: `data_root/photos/library`
 - Thumbnail cache path: `data_root/photos/thumbs`
 - Supported extensions: `.png .jpg .jpeg .bmp .gif`
-- Thumbnails are generated/cached and reused by mtime
+- Thumbnails are generated off the UI thread and reused only when the source-content digest and requested derivative size match. Imports that preserve timestamps or replace a file in place must not leave a stale thumbnail. Older untagged cache entries are regenerated; only discardable derivatives change.
 - Strip supports drag/wheel scrolling
 - Tap-release on thumbnail selects image
 - Horizontal drag in main image area changes image index
@@ -152,6 +168,11 @@ included in ToddlerBox 0.4.
 - Current text, rich styling, and cursor are restored on app start
 - Current saves and New/Recall archives use bounded immutable snapshots in one writer. New/Recall gate editing until archive durability; Home continues rendering until successful current save. Failure preserves the current document and archived work.
 - Archives: `data_root/typing/archive/*.json`; legacy `sessions.jsonl` remains readable
+- The same no-clobber publication, orphan recovery, guarded quarantine and blank/duplicate archive
+  rules as Paint apply. New input is limited to single printable code points with a visible advance,
+  up to 20,000 glyphs and 2,000 lines (larger existing documents are kept intact). Rendering skips
+  zero-advance glyphs from older saves. A save with some unusable glyphs keeps its exact original as
+  `corrupt-*` media and continues with every valid glyph.
 - Each record stores:
   - `timestamp`
   - `rich_lines` (glyph arrays)
@@ -279,11 +300,21 @@ data_root/
   preserved by updates; louder defaults require an explicit authenticated parent
   action, with a durable original-config backup. Parent GNOME keeps ordinary controls.
 
+Loading never raises: a damaged file, a non-mapping section, a value a reader would fail to convert,
+or a launcher entry that is not a mapping (or has an unparseable command) is logged and replaced by
+its default (the standard six activities when `launcher.apps` is unusable; an explicit empty list is
+kept). Every value the previous release accepted keeps its meaning. A named config
+(`KIDBOX_CONFIG`) never falls back to a development file, and the child session pins
+`TODDLERBOX_DATA_ROOT=/var/lib/toddlerbox`. Parents check edits with
+`python -m toddlerbox.config --check FILE`.
+
 ## 7. Error handling
 
 - App `main()` wrappers catch exceptions, write diagnostic logs under `data_root/logs/`, and call `pygame.quit()` in standalone mode
 - Embedded launcher path catches app exceptions, logs them, and returns to launcher
 - Child-facing UIs do not show error dialogs
+- Every Pillow decode failure, including `SyntaxError` from damaged PNG chunks, is handled through one
+  `DECODE_ERRORS` contract (Reading, Paint, Photos, Math and the sync worker)
 - Resume from sleep/focus changes clears stale pointer-drag state before normal interaction resumes
 
 ## 8. Bootable system
@@ -310,6 +341,22 @@ data_root/
   and are reviewed before opening a public issue. Family work/credentials stay private.
 - Cleanup acknowledgement and a bounded five-second grace precede forced termination; launcher identity is pinned with pidfds.
 - Release changes are serialized and directory-synced, with declared data-schema compatibility. Rollback retains an identifiable previous target and requires parent mode.
+- On appliance images releases change only through the journaled signed path; unsigned bundles and
+  direct installs require `--unsigned-recovery` and never run beside an update in progress. A
+  refused rollback writes no marker. After acceptance, missing historical rollback material only
+  marks rollback unavailable; malformed or tampered journals still fail closed.
+- `kernel.sysrq=16`, a 5 s recordfail timeout, and bounded first-boot password retries.
+- Qualification of upgrades uses the published installer's resident recovery code,
+  signed intermediate releases and the exact candidate bundle. Development tests
+  may trust a synthetic key only in the disposable guest, without changing the
+  release key, version, sequence or destination tables in source. Interrupted
+  updates are tested by resetting the VM after real durable journal writes.
+- A qualification-driver-only retry may reuse a prior successful fresh-install
+  candidate only with its exact recorded Git identity, bundle checksum and unchanged
+  application/system content ID. Record the driver and built revisions separately.
+- The app installer supports historical journaled callers without `--journaled`
+  only when its live root parent owns the exact exclusive update lock, the resident
+  journal validates as applying, and the staged app matches that journal's source.
 - See `system/README.md` for exact behavior, artifact identity, and qualification limits.
 
 ## 9. Explicit private Drive copies
@@ -336,6 +383,16 @@ data_root/
 - Root worker runs only on explicit request, with one job/transfer, low CPU/I/O
   priority, bounded retries, disk reserve and a 15-minute service timeout.
   No automatic boot/network/timer/watcher/restart-triggered sync exists.
+- Each job finishes 60 s before the service timeout and copies in a fixed order:
+  initial originals (resumable per item, at most half the job), creations, then
+  photos, each with its own error boundary and byte budget. One bad item is an
+  issue with its name in root-only status and never stops the other phases; only
+  authorization, offline, timeout and clock/certificate failures end the job.
+  A run with any failed creation withholds `manifest.json`; deterministic local
+  exclusions (quarantined media, unexportable documents) are listed as
+  `excluded` instead. SIGTERM records `interrupted`, and every job-lock holder
+  sweeps staging first, so killed jobs never leave copies of work or credentials.
+  A clock earlier than the image build is refused with a parent explanation.
 - A credential- and process-checked save-current request uses the active app's
   normal save path. Wait at most five seconds, then stage stable durable files;
   missing/failed acknowledgement marks the result partial. Independent parent

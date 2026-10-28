@@ -20,12 +20,16 @@ import struct
 import subprocess
 import sys
 import time
+import tomllib
 
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'system'))
 from qmp import command
+
+# The installed app must be exactly the source version under qualification.
+EXPECTED_VERSION = tomllib.loads((ROOT/'pyproject.toml').read_text())['project']['version']
 
 
 class Qualification:
@@ -48,9 +52,13 @@ class Qualification:
             self.docker('run','--rm','--network=none','-v',f'{self.out}:/vm','toddlerbox-image-tools',
                         'bash','-c',f'cp /usr/share/OVMF/OVMF_VARS_4M.fd /vm/OVMF.fd; qemu-img create -f qcow2 /vm/target.qcow2 16G; chown -R {os.getuid()}:{os.getgid()} /vm')
         media=['-cdrom','/build/toddlerbox-installer.iso','-boot','d'] if installer else []
+        share = getattr(self, 'share', None)
+        shared = ['-v', f'{share}:/qa:ro'] if share else []
+        devices = (['-fsdev', 'local,id=qa,path=/qa,security_model=none,readonly=on',
+                    '-device', 'virtio-9p-pci,fsdev=qa,mount_tag=qa'] if share else [])
         # Use software CPU emulation intentionally: this evidence never assumes nested KVM.
         self.docker('run','-d','--name',self.name,'--user',f'{os.getuid()}:{os.getgid()}',
-                    '--network=none','-v',f'{self.image}:/build:ro','-v',f'{self.out}:/vm',
+                    '--network=none','-v',f'{self.image}:/build:ro','-v',f'{self.out}:/vm',*shared,
                     'toddlerbox-image-tools','qemu-system-x86_64','-accel','tcg,thread=multi',
                     '-machine','q35','-cpu','qemu64','-smp','2','-m','4096',
                     '-drive','if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.fd',
@@ -61,7 +69,7 @@ class Qualification:
                     '-device','hda-duplex,audiodev=audio','-display','none',
                     '-qmp','unix:/vm/qmp.sock,server=on,wait=off',
                     '-chardev','socket,id=serial,path=/vm/serial.sock,server=on,wait=off,logfile=/vm/serial.log',
-                    '-serial','chardev:serial',*media,stdout=subprocess.DEVNULL)
+                    '-serial','chardev:serial',*devices,*media,stdout=subprocess.DEVNULL)
 
     def stop(self):
         subprocess.run(['docker','rm','-f',self.name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
@@ -237,6 +245,9 @@ class Qualification:
         test -z "$(ip -o link show | grep -v 'lo:')"
         test -x /usr/local/libexec/toddlerbox-cage
         test "$(stat -c %a /var/lib/toddlerbox-system)" = 700
+        test "$(sysctl -n kernel.sysrq)" = 16
+        grep -q '^GRUB_RECORDFAIL_TIMEOUT=5$' /etc/default/grub.d/toddlerbox.cfg
+        grep -q 'TODDLERBOX_DATA_ROOT=/var/lib/toddlerbox' /usr/local/libexec/toddlerbox-session
         /opt/toddlerbox/current/.venv/bin/python - <<'INNER'
 from toddlerbox.config import load_config
 from toddlerbox.music.library import load_library
@@ -244,7 +255,7 @@ from toddlerbox.math.speech import NumberBank
 from unittest.mock import Mock
 from pathlib import Path
 import importlib.metadata
-assert importlib.metadata.version('ToddlerBox')=='0.4.0'
+assert importlib.metadata.version('ToddlerBox')=='@EXPECTED_VERSION@'
 import os
 os.environ['KIDBOX_CONFIG']='/etc/toddlerbox/config.yaml'
 assert len(load_config()['launcher']['apps'])==6
@@ -253,7 +264,7 @@ assert all(NumberBank(Mock()).get(n) for n in range(101))
 assert all(NumberBank(Mock()).operator(n) for n in ('plus','minus','equals'))
 INNER
         toddlerbox-maintenance --action test
-        ''')
+        '''.replace('@EXPECTED_VERSION@', EXPECTED_VERSION))
         self.wait_text('Paint','Math','Reading')
         self.wait_health()
         self.shot('six-activity-launcher')

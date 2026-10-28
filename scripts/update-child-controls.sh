@@ -3,6 +3,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 [[ $EUID == 0 ]] || { echo 'Run with sudo from parent mode.' >&2; exit 1; }
+# Appliance images receive controls only through journaled signed updates.
+[[ ! -e /var/lib/toddlerbox-system/appliance-v1 ]] || { echo 'Use ToddlerBox Setup & Maintenance > Install update.' >&2; exit 1; }
 [[ $(cat /run/toddlerbox-system/mode) == parent ]] || { echo 'Enter parent mode first; save parent work before applying.' >&2; exit 1; }
 source /etc/os-release
 [[ $ID == ubuntu && $VERSION_ID == 24.04 && $(uname -m) == x86_64 ]] || exit 1

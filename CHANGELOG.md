@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.5.2 candidate — unreleased (dev/review-hardening)
+
+The target is a signed in-place app/system update, sequence 5. App and allowlisted
+root-tool changes below are delivered by that update. Entries explicitly marked
+fresh-image/installer, including resident sync and boot recovery, remain outside
+the existing-appliance delivery boundary. No new production release is published yet.
+
+- Photos thumbnails use a source-content digest and requested size instead of
+  timestamp ordering. In-place replacements, timestamp-preserving imports and
+  larger derivative requests invalidate the cache without changing photo originals.
+- Isolate release-install tests from the host appliance state, and make the
+  initial-backup scheduling test independent of wall-clock disk speed. Production
+  guards and resident sync code are unchanged by these test corrections.
+
+- The USB installer mounts only the ISO9660 volume labelled `TODDLERBOX`, so a hybrid USB's second
+  partition with the same label can no longer be picked as installer media. Builds also produce
+  `flash-installer.sh`, a Linux USB writer with the ISO checksum embedded that refuses mounted,
+  partitioned or undersized targets, requires the typed `ERASE /dev/<target>` phrase, and checks
+  every written byte.
+- Paint encodes PNGs in memory so a full or failing disk can never replace the previous painting
+  with a truncated file. Archives never overwrite an existing name; interrupted saves are recovered
+  as Recall archives or kept as `corrupt-` media. Restore never crash-loops.
+- New/Recall skip blank and already-archived documents, so mashing New no longer fills the archive
+  and disables New and Recall. Parent status shows archive counts.
+- Home always leaves Paint and Typing: unsaved work is kept in the launcher and keeps saving.
+  Esc no longer exits activities in the supervised child session.
+- Typing accepts only renderable single code points, caps new input at 20,000 glyphs, and salvages
+  older documents glyph by glyph instead of quarantining them whole.
+- A damaged config file or launcher icon no longer stops the child session; problems are logged,
+  defaults used, and child work stays in `/var/lib/toddlerbox`. Parents can run
+  `python -m toddlerbox.config --check FILE`.
+- One damaged Reading picture no longer disables Reading (Pillow `SyntaxError` is now handled).
+- Fresh-image resident Drive sync uploads the child's creations before downloading photos, isolates every bad photo as a
+  named issue, withholds the manifest after a failed creation, cleans up after killed jobs, and
+  explains wrong clocks. iPhone HEIC photos must be exported as JPEG (documented).
+- Maintenance shows the actual refusal reason; a refused rollback no longer wedges the appliance;
+  unsigned update paths require `--unsigned-recovery`; torn release installs are set aside.
+- Fresh images: SysRq limited to sync, recordfail wait capped at 5 s, first-boot password retries,
+  and the boot gate no longer blocks child mode when old releases are cleaned up after acceptance.
+- Development: Python pinned to 3.12, Linux-only tests skip elsewhere, CI on every push including the
+  root worker against Ubuntu's Pillow, and a dev-only VM qualification workflow.
+- Development: qualify the published installer → signed 0.5.0 → signed 0.5.1 →
+  dev candidate chain, explicit unsigned recovery, rollback and real VM resets at
+  durable update/restore boundaries. Historical checkpoint qualification remains available.
+- Harness-only retries can reuse an exact checksum-pinned candidate after a successful
+  fresh-install job, while requiring unchanged runtime source bytes. VM restart waits are bounded.
+- Accept the published updater's app-install call without its newer `--journaled`
+  argument only after authenticating its live root parent, exclusive kernel update
+  lock, applying journal and matching staged app. Direct-install guards remain enforced.
+
 ## 0.5.1 - 2026-10-12
 
 - Reading opens its selector in picture view and prepares bounded previews in the background instead of decoding in drawing.
@@ -54,3 +104,11 @@
 - Added screenshot gallery to README with inline GitHub-rendered images.
 - Added `Pillow` dependency for EXIF metadata parsing.
 - `pytest` is included in core dependencies for always-available test runs in the project venv.
+
+### Release trust recovery (0.5.2 candidate)
+
+- Include the explicitly authorized replacement release public key alongside the
+  previous public key after loss of the old private key. Existing appliances need
+  an explicit local trust-anchor recovery before accepting the new signer.
+- Rebuild and requalify the candidate because its public-key payload changed;
+  previous candidate hashes no longer identify the release to publish.

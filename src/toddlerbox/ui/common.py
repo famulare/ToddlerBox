@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple
@@ -106,11 +107,15 @@ def load_image(path: str, size: Optional[Tuple[int, int]] = None) -> Optional[py
     if not path:
         return None
     resolved = Path(path)
-    if not resolved.exists():
+    try:
+        if not resolved.is_file():
+            return None
+        image = pygame.image.load(str(resolved)).convert_alpha()
+        if size:
+            image = pygame.transform.smoothscale(image, size)
+    except (pygame.error, OSError, ValueError):
+        # A damaged custom icon gets the placeholder tile, never a failed launcher.
         return None
-    image = pygame.image.load(str(resolved)).convert_alpha()
-    if size:
-        image = pygame.transform.smoothscale(image, size)
     return image
 
 
@@ -183,6 +188,11 @@ def pointer_event_pos(event: pygame.event.Event, screen_rect: pygame.Rect) -> Op
             int(event.y * screen_rect.height),
         )
     return None
+
+
+def escape_exits() -> bool:
+    """Esc is a desktop-development exit only; a mashed keyboard must not leave an activity."""
+    return os.environ.get("TODDLERBOX_APP_CONTROL") != "1"
 
 
 def ignore_system_shortcut(event: pygame.event.Event) -> bool:

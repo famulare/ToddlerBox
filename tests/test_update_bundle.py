@@ -161,7 +161,7 @@ def test_interrupted_update_requires_explicit_rollback(updater, machine, tmp_pat
     job, state = module.latest(machine / module.STATE)
     state["status"] = "applying"
     module.record(job / "state.json", state)
-    with pytest.raises(ValueError, match="Interrupted update"):
+    with pytest.raises(ValueError, match="update was interrupted.*Rollback"):
         module.run(archive, digest, root=machine)
     module.run(rollback=True, root=machine)
     assert (machine / module.FILES["controller.py"][0]).read_bytes() == b"old-controller.py"
@@ -248,7 +248,9 @@ def test_combined_update_uses_real_app_installer_and_rolls_back_links(updater, m
         calls.append(args)
         if "toddlerbox-install-release" in args[0]:
             installer.install(Path(args[1]), args[2], root=machine / module.APP,
-                              mode_file=machine / "run/toddlerbox-system/mode")
+                              mode_file=machine / "run/toddlerbox-system/mode",
+                              state=machine / "var/lib/toddlerbox-system",
+                              journaled="--journaled" in args)
     monkeypatch.setattr(module, "command", real_app)
     before = protected(machine)
     module.run(archive, module.sha(archive), root=machine)

@@ -12,7 +12,7 @@ from typing import Any, Callable, Dict, List, Optional
 
 import pygame
 
-from toddlerbox.config import load_config
+from toddlerbox.config import config_errors, load_config
 from toddlerbox.music.app import run_embedded as run_music_embedded
 from toddlerbox.math.app import run_embedded as run_math_embedded
 from toddlerbox.reading.app import run_embedded as run_reading_embedded
@@ -21,7 +21,7 @@ from toddlerbox.paths import get_data_root
 from toddlerbox.paint.app import run_embedded as run_paint_embedded
 from toddlerbox.photos.app import PhotosApp, run_embedded as run_photos_embedded
 from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
-from toddlerbox.runtime import health, control
+from toddlerbox.runtime import health, control, retained
 from toddlerbox.typing.app import run_embedded as run_typing_embedded
 from toddlerbox.ui.common import (
     Button,
@@ -137,6 +137,13 @@ def _build_buttons(apps: List[LauncherApp], screen_rect: pygame.Rect) -> List[Bu
     return buttons
 
 
+def _reset_shared_display_state(screen: pygame.Surface) -> None:
+    # Activities share one window: a crash mid-draw or a per-activity input
+    # setting must not leak into the launcher or the next activity.
+    screen.set_clip(None)
+    pygame.key.set_repeat(0, 0)
+
+
 def _launch_app(
     app: LauncherApp,
     screen: pygame.Surface,
@@ -227,6 +234,8 @@ def _draw_launcher_frame(
 def main() -> None:
     config = load_config()
     logger = get_runtime_logger(get_data_root(config))
+    for problem in config_errors():
+        logger.warning(f"Config: {problem}")
     apps = _load_apps(config)
     screen, screen_rect = create_fullscreen_window()
     clock = pygame.time.Clock()
@@ -296,6 +305,7 @@ def main() -> None:
                             used_subprocess, photos_app = _launch_app(
                                 app, screen, screen_rect, clock, logger, photos_app=photos_app,
                             )
+                            _reset_shared_display_state(screen)
                             if used_subprocess:
                                 screen, screen_rect = _restore_launcher_window()
                                 buttons = _build_buttons(apps, screen_rect)
@@ -320,12 +330,16 @@ def main() -> None:
                     except Exception:
                         logger.exception("Photos prewarm thumbnail load failed")
                         break
+            retained.status()  # Non-blocking retry of work an activity could not save.
             clock.tick(60)
             health.frame_complete()
 
     finally:
         if photos_app is not None:
             photos_app.close()
+        # Inside the controller's shutdown grace: one bounded attempt for parked work.
+        if retained.flush(3.0) != retained.DURABLE:
+            logger.warning("Parked activity work could not be saved before shutdown")
         pygame.quit()
         health.shutdown_complete()
 

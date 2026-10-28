@@ -1,4 +1,4 @@
-> Evidence is chronological. Historical installer IDs and pending items below belong to their recorded checkpoints; the [final 0.3.0 section](#toddlerbox-030-appliance-qualification--2026-10-04) defines the current qualification and remaining limits. Previously qualified artifacts remain preserved.
+> Evidence is chronological. The latest section records the pending 0.5.2 update-only candidate; it is not a publication or physical-hardware acceptance claim. Earlier installer IDs, passes and pending items belong to their recorded checkpoints. Previously qualified artifacts remain preserved.
 
 ## Pending audio patch — 2026-10-09
 
@@ -2072,3 +2072,344 @@ and downloaded all90,878,804 bytes with the exact SHA. No GitHub login or manual
 hash checking is needed on the appliance. Scope remains update-only; #19's
 future clean-image diagnostic package check and #15/#23 physical input retests
 remain open.
+
+## Dev branch `dev/review-hardening` — local evidence only, 2026-10-23
+
+Not a release. Base `b3d87f9` (0.5.1). Plan and delivery classes:
+`docs/dev/review-hardening-plan.md`. Implementation by Claude. The plan was agreed
+with Codex `gpt-6-astra`, which reviewed the implementation at two checkpoints;
+every review-1 finding has a regression test that fails on the previous commit.
+
+Environment: macOS arm64, uv-managed CPython 3.12.15 (pinned by `.python-version`),
+Pillow 12.3.0, pygame-ce 2.5.8, SDL dummy video/audio.
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider
+```
+
+Result: 674 passed, 20 skipped. The 20 skips are `linux_only` tests (pidfd,
+`SCM_CREDENTIALS`, `/proc`, 108-byte AF_UNIX paths); each was reproduced on macOS
+as a platform failure before being marked. `test_audio_polish.py::test_key_sustains_beyond_original_sample_then_releases_for_600ms[True]`
+is a pre-existing wall-clock flake: it failed 3 of 5 runs on the unchanged base
+under Python 3.14 as well.
+
+Real faults used: RLIMIT_FSIZE short writes in a subprocess, read-only
+directories, failing fsync/directory fsync, stalled writers, hard-linked
+orphan temporaries, SIGTERM of a real worker process, damaged PNG chunks that
+raise `SyntaxError`, and a fake rclone binary reporting certificate dates.
+
+Linux CI (GitHub Actions, ubuntu-24.04, `/usr/bin/python3` 3.12):
+- Run 40071386034 at `14c5445`: the full suite, including every `linux_only` test, passed.
+  The apt-Pillow root-worker job (Ubuntu `python3-pil` 10.2.0, asserted at runtime)
+  failed one fixture check. Pillow 10.2 keeps the MPO primary size after `seek(1)`,
+  which stopped the test before its bounded-decoding assertions.
+- Run 40071568065 at `9667fcb`, after making that fixture check version-aware: both jobs
+  passed, so the MPO bounded-decoding assertions now run under the worker's Pillow too.
+
+Dev VM workflow (`dev-vm-qualify.yml`, run 40071386069 at `14c5445`, TCG, no network):
+passed. It built the disk, installer and unsigned update bundle from this source, then
+qualified:
+- fresh ISO installation with payload checksum and exact-target confirmation
+- the boot gate, including `kernel.sysrq=16`, `GRUB_RECORDFAIL_TIMEOUT=5` and the
+  session's `TODDLERBOX_DATA_ROOT` pin
+- the six-activity child session, Music (18 songs, Free Play, HDA output, Home silence)
+  and Math speech
+- supervised first setup, independent escape from a stopped launcher, and watchdog recovery
+- setup persistence across reboot without network, and a standalone Cage session with no
+  child GNOME shell
+
+Run 40071568094 re-qualified the final code at `9667fcb` and also passed.
+Evidence is a 14-day workflow artifact.
+
+Not yet run: the signed update chain in a VM (requires parameterising
+`scripts/qualify-patch-update.py`), and any physical HP check. VM results are not
+hardware validation.
+Resident and image changes (sync worker, boot gate, SysRq, recordfail, first boot)
+reach appliances only through a fresh installer.
+
+### Portable signed upgrade qualification — continuation, 2026-10-25
+
+**Completed:** fresh-install job `40229180735` and signed update/recovery job
+`40233346604` passed on the identical built candidate. The latest CI run
+`40233346634` passed 751 tests plus 86 apt-Pillow worker tests. Exact identities,
+the two harness corrections and final evidence are recorded below. This is dev
+VM evidence with synthetic signing; physical HP acceptance remains unverified.
+
+Baseline before this continuation: `c435d5d1ef1b04cd81471c424990f4157139a497`.
+Live GitHub checks confirmed CI run `40075465856` passed at that revision and
+fresh-install run `40071568094` passed at `9667fcbaa4d3096e398241f7f50d99576731667e`.
+
+Implemented a portable route in `scripts/qualify-patch-update.py` with explicit
+installer baseline, ordered signed releases, candidate version/sequence and
+new-output inputs. The old checkpoint/resume route is retained for historical
+0.5.1 evidence. The new `update-chain` job consumes the exact candidate built by
+`fresh-install`, verifies the public v0.4.0 installer against its checksum file,
+then installs signed v0.5.0 and v0.5.1 under the shipped key before trusting the
+synthetic guest key. Production version 0.5.1, sequence 4, public key and both
+11-file destination tables remain unchanged. The synthetic sequence is 5;
+no production private key is read or generated. The test private key exists
+only in host process memory; candidate bundle bytes are unchanged.
+
+Actual published `b3d87f9:system/update_bundle.py` reproduced a real upgrade
+failure against the unchanged candidate installer: its three-argument installer
+call omits `--journaled` and hits the lock it already holds. A narrow installer
+compatibility path authenticates a live root parent through a pidfd and the
+exact exclusive flock in Linux `/proc/<parent>/fdinfo`, validates the resident
+applying journal and checks the root-owned staged app's hash/source. Missing
+Linux support fails closed; the local host has neither pidfds nor `/proc`.
+Direct-install and concurrent-update refusal tests remain enforced.
+
+Under identical valid synthetic tar/zip inputs, the genuine published updater
+fails against the genuine `c435d5d` installer and installs the expected app with
+the new installer. macOS supplies a mocked positive kernel-parent proof for
+that comparison; real proof remains a VM check. Genuine old/new QEMU command
+arrays match exactly for installer and normal boots when the optional public
+9p share is absent. The new CLI help and all workflow shell blocks parse.
+
+Local commands (uv-managed CPython 3.12.15, macOS arm64, synthetic inputs):
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider
+uvx ruff@0.12.0 check --no-cache .
+```
+
+Final complete result: **714 passed, 20 Linux-only skips** in 56.01 s; lint passed.
+The focused update/recovery suite passed **86 tests**. Hook tests exercise the actual updater's
+durable records and file replacement, without fabricating journal state. Local
+parent-proof fixtures cover wrong UID/PID/inode, shared or waiting locks, exited
+parents, oversized records and absent Linux support. Actual kernel proof,
+signed installation and reset recovery require the Actions VM run below.
+
+Planned VM checks: accepted signed candidate, explicit unsigned-recovery zip
+bootstrap and rollback; stopped-process/journal verification followed by real
+QMP resets at durable `applying`, changed system-installer replacement,
+`pending`, and partial `restoring`; exact known-good system/app link and file-mode/
+hash restoration; exact synthetic Paint/Typing, config and resident class-C
+bytes; final accepted reboot and supervised child frames. Disks and raw serial
+logs are excluded from artifacts. At this initial stage VM evidence was pending;
+the subsequent successful runs are recorded below. No physical HP validation is claimed.
+
+First continuation push: `326fd908ee82ef86bdef8ec7f178985e0037180f`, application/
+system content `1f8bc04e1db6f2df`. Linux CI `40228529858` passed: **734 tests**,
+plus **86 root-worker tests** against apt Pillow 10.2.0. Local uv is 0.13.5;
+pygame-ce 2.5.8, Pillow 12.3.0, PyYAML 6.0.3, pytest 9.1.1 and cryptography 46.0.3.
+The Actions build uses pinned uv 0.12.19 and Ubuntu Python 3.12.3.
+
+VM run `40228529867` was deliberately cancelled during the image build after a
+harness review caught a missing resident-module `PYTHONPATH` on the explicit zip
+recovery command. No VM pass is claimed for it. The correction changes only
+the qualification driver and its focused check; application/system content is
+unchanged. The focused update/recovery suite then passed **87 tests**, with lint
+clean, before starting a corrected full workflow.
+
+Corrected run `40229180735` at `9d12352306ccb6b234a5c556415a26c1e3d1cc38`:
+
+- CI `40229180881`: **735 passed** on Ubuntu Python 3.12.3, **86 passed** against
+  apt Pillow 10.2.0, lint clean.
+- **Fresh-install job passed.** Actual ISO installation, setup, the six-app
+  standalone Cage session, Music/Math HDA output and Home silence, stopped-app
+  parent escape, watchdog recovery and accepted setup reboot were checked. The
+  rebooted launcher and stopped-app Parent-greeter screenshots were inspected.
+- Built ISO SHA-256: `5cd84934bc8b70b32d8d7e09d26a839ec0a4d9d560cf9d81e69edcb539bd0bb6`.
+- Bundle: 91,220,839 bytes, SHA-256
+  `3c15949eb546e0ffb6ea0a03701e4c34f23e8316a84ae3fb703b760c077dc035`.
+  Embedded app SHA-256:
+  `2089b2feee24be9c49e259231a98b87c7874acd9420f3e19d9079e5775eaf07e`.
+  The downloaded artifact's sidecar/embedded manifests, all eleven payload hashes,
+  ten source payloads (the compiled Cage binary was checked by hash), app archive
+  hash and version 0.5.1 were independently checked on the Mac.
+- Package-manifest SHA-256:
+  `36c1e45b42c042e832471b68795094af6d26be388bac4f4215cba6873ec19a85`.
+  Runtime packages include Python 3.12.3-1ubuntu0.17, kernel 6.8.0-142.142,
+  PipeWire 1.0.5-1ubuntu3.3, WirePlumber 0.4.17-1ubuntu4.1 and apt Pillow
+  10.2.0-1ubuntu1.3. Builder inputs remain the pinned `system/versions.env` image
+  digests and Ubuntu snapshot 20260926T000000Z.
+- **Update job failed after its published chain passed.** It installed checksum-
+  verified v0.4.0 (ISO SHA-256
+  `b0e8e0652e51cb13506aa462b7a673ae93911dd16af77576ad3c71dce5805b01`) and
+  verified/accepted signed v0.5.0 sequence 3 and v0.5.1 sequence 4 under the shipped
+  key. After preserving that baseline, it connected to QEMU before the new serial
+  socket existed. This was a harness startup race (`FileNotFoundError`), before
+  any dev candidate install; no candidate or interruption pass is claimed.
+
+The driver now waits up to sixty seconds for a listening serial socket after
+that VM restart. Missing/refused sockets and the deadline have focused checks.
+The retry uses the original verified bundle and fresh-install evidence rather
+than rebuilding unchanged runtime inputs. Read-only `actions: read` is added for
+cross-run artifact download. The pinned run's repository, workflow, dev branch,
+built revision and successful fresh-install job are verified; downloaded hash
+and embedded source are checked again. The driver still rejects a changed
+application/system content ID, and records its own Git revision separately.
+Production files remain exactly the built `9d12352` content; no production
+timeout, recovery guard or signature check is weakened.
+
+Before the harness-only retry: the complete Mac suite passed **731 tests**, with
+20 Linux-only skips, in 64.52 s; the focused update/recovery suite passed **103**
+tests; pinned ruff was clean. The provenance helper was also run against the
+actual completed Actions run and the downloaded bundle, and the current content
+ID remained `1f8bc04e1db6f2df`.
+
+#### Successful update/recovery result
+
+[Run 40233346604](https://github.com/famulare/ToddlerBox/actions/runs/40233346604)
+passed with qualification driver
+`489f6bc0d1164dc49d1080cabb7f6e7304e55168`. It reused the exact built candidate
+`9d12352306ccb6b234a5c556415a26c1e3d1cc38` / content `1f8bc04e1db6f2df` and
+SHA-256 `3c15949eb546e0ffb6ea0a03701e4c34f23e8316a84ae3fb703b760c077dc035`
+from the successful fresh-install job in
+[run 40229180735](https://github.com/famulare/ToddlerBox/actions/runs/40229180735).
+The fresh build was deliberately skipped for this retry; no runtime input changed.
+
+Actual checks, all passed:
+
+- Install the checksum-verified published v0.4.0 ISO, authenticate the parent,
+  complete supervised first setup and independent child/parent escape.
+- Verify signed v0.5.0 sequence 3 and v0.5.1 sequence 4 with the shipped key;
+  install each with the installed updater and accept genuine supervised frames.
+- Preserve the accepted published baseline and write only a disposable overlay.
+- Refuse the synthetic signature before guest key injection. Then verify and
+  install the exact dev bundle through the real baseline updater, including the
+  actual Linux pidfd/parent-owned-flock compatibility check, and accept it.
+- Refuse an unsigned direct call; explicitly install through the checksum-verified
+  `--unsigned-recovery` zip bootstrap, test/accept, then roll back exactly.
+- Confirm the real update process is stopped at the matching durable candidate
+  journal before each QMP reset: `applying` before replacement, changed installer
+  replacement while `applying`, committed `pending`, and partially `restoring`.
+- On each reboot, verify the resident outcome. Applying/partial replacement/
+  restore return to the exact known-good system/app pair; pending remains an
+  unaccepted candidate in parent mode until explicitly rolled back. All eleven
+  system files' hashes/modes and both app links match their baseline after rollback.
+- Through every transition, preserve exact synthetic Paint/Typing archives,
+  configuration and the original installer's resident class-C files.
+- Reinstall and accept the exact candidate, reboot, require fresh healthy child
+  frames and the accepted source identity. The signed, unsigned-recovery and
+  final reboot launcher screenshots were inspected.
+
+Log completion: `UPDATE_CHAIN_VM_PASS` at 2026-10-25 21:33:38 UTC. Results JSON
+SHA-256 is `a86a1f2c1fde66680fd396014f46a63aecba2f0362e4e4cec277fce7e03a8c98`.
+Compact original artifacts are retained in source:
+
+- [`fresh-install.json`](docs/dev/qualification-2026-10-25/fresh-install.json)
+- [`update-chain.json`](docs/dev/qualification-2026-10-25/update-chain.json)
+- [`packages.tsv`](docs/dev/qualification-2026-10-25/packages.tsv)
+
+The full screenshots are in the fourteen-day workflow artifacts. Disks, raw
+serial logs and private keys are not artifacts. The candidate transfer artifact
+expires after one day. These synthetic VM tests do not authorize a production
+release or establish physical touch, Wi-Fi, speaker balance or sleep behavior.
+The additional image fault scenarios in the VM work plan are separate, not
+claimed by this update-chain test. Class C still requires a fresh installation.
+
+Repeat the successful update-only test on an isolated x86-64 Linux/Docker builder
+with the documented public inputs and pinned candidate:
+
+```sh
+uv run --frozen python scripts/qualify-patch-update.py build/dev-candidate build/responsive-update-vm-NEW \
+  --baseline-image-dir build/published/installer --baseline-version 0.4.0 --baseline-sequence 2 \
+  --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 \
+  --candidate-version 0.5.1 --candidate-sequence 5 \
+  --candidate-revision 9d12352306ccb6b234a5c556415a26c1e3d1cc38 \
+  --candidate-sha256 3c15949eb546e0ffb6ea0a03701e4c34f23e8316a84ae3fb703b760c077dc035
+```
+
+[CI run 40233346634](https://github.com/famulare/ToddlerBox/actions/runs/40233346634)
+at the successful driver's revision passed **751 tests in 48.49 s**, including
+every Linux-only test, **86 apt-Pillow worker tests**, and pinned ruff. The final
+local suite remained **731 passed / 20 Linux-only skips**; focused update/recovery
+checks were **103 passed**. Documentation closeout changes no built runtime bytes.
+
+Installer media fix (`4649a15`, folded in from the Codex installer WIP): CI run
+40265739520 passed both jobs, and VM run 40265739556 passed both the fresh-install
+and update-chain jobs. The VM boots the installer as a CD-ROM, so this shows the
+ISO9660-only media lookup still works on that path. Only a physical USB boot
+exercises the hybrid-partition case it fixes; that is in the HP acceptance checklist.
+
+
+## 0.5.2 update-only release preparation — 2026-10-27
+
+Candidate target: version 0.5.2, sequence 5, v1 data schema, existing eleven-file
+update/restore boundary. No resident boot-gate, sync-worker, firstboot, sysctl or
+GRUB migration is delivered. No production stable metadata, tag, release asset
+or private signing identity has been changed. The current public stable remains
+0.5.1 / sequence 4. This section contains synthetic development evidence only.
+
+Baseline: dev/review-hardening 981b2f5a4ce2d740d83627a4a16759b92edc5eea.
+The existing photo-replacement and bounded-initial-backup tests failed on that
+unchanged source. Three additional deterministic cache regressions also fail on
+the old code: same-size/timestamp-preserving source replacement, a larger requested
+derivative, and replacement during decode. The fix uses a streamed SHA-256 plus
+requested size stored with the discardable PNG; old untagged caches regenerate.
+Both hashing and decoding remain in the existing background worker. Source files
+are never changed. A changed source during decode is not stamped as a current cache.
+
+Installer fixtures inject their temporary resident-state root; the real production
+Linux/path/permission guards are unchanged. The scheduling test advances only a
+worker-local clock for simulated transfers instead of making disk fsync latency
+part of a 1.2-second wall-clock assertion. Real subprocess deadline checks remain
+in the suite. The resident worker code is unchanged.
+
+Commands (uv 0.12.19, CPython 3.12.3, locked dependencies):
+
+```sh
+uv sync --frozen --group dev --python /usr/bin/python3
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider tests/test_photos.py tests/test_system_release.py tests/test_update_guards.py tests/test_update_bundle.py tests/test_sync_isolation.py
+uv tool run ruff@0.12.0 check --no-cache . system/bin/toddlerbox-maintenance system/bin/toddlerbox-install-release system/bin/toddlerbox-mode
+```
+
+Focused result: **90 passed**; pinned lint passed. Dependency versions are unchanged
+by the version bump (only the local project changes from 0.5.1 to 0.5.2 in uv.lock):
+pygame-ce 2.5.8, Pillow 12.3.0, PyYAML 6.0.3, pytest 9.1.1, cryptography 46.0.3.
+The complete Linux suite passed **774 tests, zero skips, in 257.26 s**. Command: SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy uv run --frozen pytest -q -p no:cacheprovider. The real AF_UNIX/SCM_CREDENTIALS checks ran with ordinary parent-user privileges outside the executor sandbox; no Linux checks were skipped or mocked to obtain this result. The VM synthetic-signing test now snapshots the production sequence floor and proves it unchanged instead of assuming a permanent floor of 4. The independent root-worker suite passed **86 tests** against the actual Ubuntu Pillow 10.2.0 at /usr/lib/python3/dist-packages (not the app Pillow). It used a temporary --system-site-packages Python 3.12.3 environment with pygame-ce 2.5.8, PyYAML 6.0.3 and pytest 9.1.1; no system packages were installed for this check. Candidate transfer artifacts now retain for fourteen days to preserve exact bytes while maintainer signing is arranged.
+
+Genuine old/new photo preparation was compared on identical synthetic red/blue
+120×60 JPEGs for all eight EXIF orientations at 40×40 and 80×80 requested sizes:
+**16 derivative pixel arrays matched byte-for-byte**, and source JPEG bytes were
+unchanged. Empty and single-photo 640×480 Photos frames also matched byte-for-byte
+(**2 complete frames**). Only freshness metadata in discardable derivatives differs.
+
+Pending: committed exact source identity, builder package manifest, bundle/app
+checksums, final candidate CI and disposable-VM install/update/rollback/interruption
+qualification. No pass is claimed before the actual workflow completes. The existing
+maintainer private signing key is not available to this executor; a replacement key
+will not be generated. Production signing, publication, live-device backup/update
+and supervised physical acceptance are separate explicit gates.
+
+
+## 0.5.2 signing-identity recovery
+
+The maintainer explicitly authorized a replacement Ed25519 identity after the
+original private key could not be located. Only its public key is added to source,
+alongside the existing public key. The previous candidate at 752168e891eed25e1b0c5c9a9e8173efe7fd352f
+is superseded for publication: a fresh build and VM qualification are required.
+No private key or appliance evidence is included. Older appliances must explicitly
+recover their trust anchor before accepting metadata signed solely by the new key.
+
+
+## Exact 0.5.2 replacement-key candidate — 2026-10-28
+
+Built and qualified commit `94f852a24556e25b88dd7795bb03651d58140a8d`,
+content `fad63c88b47f97b6`, version 0.5.2, sequence 5. Both jobs passed in
+https://github.com/famulare/ToddlerBox/actions/runs/40588182123 .
+The candidate is 91,221,839 bytes, SHA-256
+`48f7dd008d05294b1533808a0780c672fcf64ded0fdbf870db9f38b6ec928fec`.
+All eleven payload hashes, source/content identity, embedded app digest and version
+were checked against the preserved artifact and frozen source.
+
+Fresh installation passed standalone Cage, six activities, Music/Math virtual HDA
+checks, independent parent escape, watchdog and offline reboot. The update-chain
+job passed published signed 0.5.0/0.5.1 hops, the exact candidate, unsigned refusal
+and explicit recovery, rollback, resets at applying/system-replaced/pending/restoring,
+and accepted reboot with unchanged synthetic work/config/resident code.
+Commands and pinned toolchain are in `.github/workflows/dev-vm-qualify.yml` at the
+built commit; full result records and package manifest are in
+`docs/dev/qualification-2026-10-27/`. Artifact IDs, archive digests, app and payload
+digests are in `docs/releases/v0.5.2-source.json`.
+
+The production manifest was signed with the explicitly authorized replacement key
+and independently verified against the installed public ring; the bundle hash and
+manifest source/sequence matched. VM signatures were synthetic, separately from
+production signing. No publication or live candidate installation has occurred.
+Physical input, Wi-Fi and listening acceptance remain pending, as does a verified
+private backup before a live update. This evidence does not establish HP hardware
+qualification. The tag must identify the built commit above, not a later records
+commit; docs-only evidence changes do not change its content ID.

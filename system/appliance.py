@@ -1,9 +1,11 @@
 """Parent-only setup and candidate lifecycle; no child-writable imports."""
+import datetime
 import json
 import fcntl
 from contextlib import contextmanager
 import os
 from pathlib import Path
+import re
 import socket
 import subprocess
 import time
@@ -22,6 +24,27 @@ def mode(message):
         reply = client.recv(1024)
         if reply != b"OK":
             raise ValueError("Session change refused; inspect parent status")
+
+
+def clock_problem(root=Path("/"), *, now=None):
+    """A sentence for the parent when the clock predates this system's build, else None.
+
+    A flat CMOS battery resets old laptops' clocks; TLS and apt then fail with
+    errors that never mention the date.
+    """
+    try:
+        text = (root / "opt/toddlerbox/versions.env").read_text()
+    except OSError:
+        return None
+    match = re.search(r"^UBUNTU_SNAPSHOT=(\d{8}T\d{6}Z)$", text, re.M)
+    if not match:
+        return None
+    built = datetime.datetime.strptime(match.group(1), "%Y%m%dT%H%M%SZ").replace(tzinfo=datetime.timezone.utc)
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    if now >= built:
+        return None
+    return (f"The laptop clock says {now:%Y-%m-%d}, before this system was built ({built:%Y-%m-%d}). "
+            "Set the date and time in Settings, then retry.")
 
 
 def guard(root=Path("/"), *, readonly=False, allow_apt=False, allow_recovery=False):

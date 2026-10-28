@@ -30,6 +30,10 @@ STATE = Path("var/lib/toddlerbox-system")
 SETUP_VISIBLE = Path("run/toddlerbox-system/setup-complete")
 
 
+class MissingRollbackMaterial(ValueError):
+    """A backup or previous release is gone: rollback is impossible, nothing is unsafe."""
+
+
 def safe(root, relative):
     path = root / relative
     for parent in (path, *path.parents):
@@ -114,10 +118,23 @@ def validate(root, job, value):
         raise ValueError("Invalid restore destination")
     if type(value.get("attempts")) is not int or not 0 <= value["attempts"] <= 2 or type(value.get("observed")) is not bool:
         raise ValueError("Invalid candidate state")
+    # Validate everything before reporting absence: one missing item must never
+    # hide a tampered backup or unsafe link elsewhere in the same journal.
+    missing = []
     for name, old in files.items():
         safe(root, DESTINATIONS[name][0])
         if old is not None:
+            # The journal's own record must be well formed before absence is trusted.
+            if (not isinstance(old, dict) or set(old) != {"sha256", "mode"} or old["mode"] != DESTINATIONS[name][1]
+                    or not isinstance(old["sha256"], str) or len(old["sha256"]) != 64
+                    or any(c not in "0123456789abcdef" for c in old["sha256"])):
+                raise ValueError("Invalid backup record")
             source = safe(root, job.relative_to(root) / name)
+            if not os.path.lexists(source):
+                missing.append(name)
+                continue
+            if not stat.S_ISREG(source.lstat().st_mode):
+                raise ValueError("Backup is not a regular file")
             if source.stat().st_size > 16 * 1024 ** 2:
                 raise ValueError("Oversized system backup")
             with source.open("rb") as handle:
@@ -132,8 +149,13 @@ def validate(root, job, value):
         if release is not None:
             if not isinstance(release, str) or Path(release).name != release or release in {".", ".."}:
                 raise ValueError("Unsafe release name")
-            if not safe(root, Path("opt/toddlerbox/releases") / release).is_dir():
-                raise ValueError("Missing previous release")
+            target = safe(root, Path("opt/toddlerbox/releases") / release)
+            if not os.path.lexists(target):
+                missing.append(release)
+            elif target.is_symlink() or not target.is_dir():
+                raise ValueError("Previous release is not a directory")
+    if missing:
+        raise MissingRollbackMaterial("Missing rollback backup or previous release")
 
 
 def restore(root, job, value):
@@ -183,8 +205,17 @@ def gate(root=Path("/"), *, failure=False):
             status = value["status"]
             if status not in {"applying", "restoring", "pending", "accepted", "rolled-back"}:
                 raise ValueError("Unknown recovery state")
+            unavailable = safe(root, STATE / "rollback-unavailable")
             if status != "rolled-back":
-                validate(root, job, value)
+                try:
+                    validate(root, job, value)
+                    unavailable.unlink(missing_ok=True)
+                except MissingRollbackMaterial:
+                    if status != "accepted":
+                        raise
+                    # After acceptance the old pair is only a convenience. Losing it
+                    # (a parent cleaning up old releases) must never block child mode.
+                    atomic(unavailable, b"accepted update has no complete rollback material\n")
             if status in {"applying", "restoring"} or (failure and status == "pending"):
                 restore(root, job, value)
                 atomic(state / "parent-mode", b"Update restored; inspect before child use\n")

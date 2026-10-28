@@ -1,5 +1,14 @@
 """Shared header/decoder limits; no global Pillow bomb-limit changes."""
+import struct
+import zlib
+
+from PIL import Image
+
 MAX_PHOTO_PIXELS = 40_000_000
+# Pillow reports damaged files through several types. SyntaxError (broken PNG
+# chunks) is neither OSError nor ValueError, so narrower handlers let it escape.
+DECODE_ERRORS = (OSError, ValueError, SyntaxError, EOFError, struct.error, zlib.error,
+                 Image.DecompressionBombError, Image.DecompressionBombWarning)
 MAX_JPEG_HEADER_PIXELS = 80_000_000
 
 

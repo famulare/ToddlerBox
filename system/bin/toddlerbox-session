@@ -9,6 +9,8 @@ export SDL_VIDEODRIVER=wayland XDG_SESSION_TYPE=wayland LIBSEAT_BACKEND=logind
 export WLR_RENDERER=pixman SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR=0
 export PYGAME_HIDE_SUPPORT_PROMPT=1 KIDBOX_CONFIG=/etc/toddlerbox/config.yaml
 export TODDLERBOX_APP_CONTROL=1
+# Child work lives where sync and setup expect it, whatever the editable config says.
+export TODDLERBOX_DATA_ROOT=/var/lib/toddlerbox
 export TODDLERBOX_HEALTH_SOCKET=/run/toddlerbox-health.sock
 # One audio route for both activities; the child user manager owns the server.
 # Bound startup so an unavailable audio device cannot strand session recovery.

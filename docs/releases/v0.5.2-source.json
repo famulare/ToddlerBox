@@ -1,0 +1,47 @@
+{
+  "status": "qualified and production-signed; unpublished; physical acceptance pending",
+  "version": "0.5.2",
+  "sequence": 5,
+  "git": "94f852a24556e25b88dd7795bb03651d58140a8d",
+  "content": "fad63c88b47f97b6",
+  "artifact": {
+    "run_id": 40588182123,
+    "artifact_id": 12772004849,
+    "zip_sha256": "0b4b1c740a8ad474d80a6ae592c3c024baaa1fb73ca538864acc45a87923e6f6",
+    "expires_at": "2026-11-10T21:53:06Z"
+  },
+  "artifacts": {
+    "ToddlerBox-update.pyz": {
+      "bytes": 91221839,
+      "sha256": "48f7dd008d05294b1533808a0780c672fcf64ded0fdbf870db9f38b6ec928fec"
+    }
+  },
+  "app_sha256": "e5d9f0dbd00762a33e1233773d21f4ccf8706b55b4d8395e21e3dc276bcb59e2",
+  "system_payload_sha256": {
+    "appliance.py": "837f53861ee5bcd963f89490221e8cd42a53cf6ac59d9c34b0433b06d1d21f4f",
+    "controller.py": "cc282d7bd39ccd81770777262f0699b008c2fa6e3513071fb05c735c47323126",
+    "release-public-key.pem": "5c313ebaf46ea1b92581674fc66d4386b3264796481fe610c7932020ba5ee109",
+    "release_client.py": "48705fe16b09698d55d7a86b175ec054bb3a13f1c07f22d70f04716f306aa992",
+    "toddlerbox-cage": "1f415b196c3502ac8e41f5785aa3f4c088fd3df10f53e5fd3dbf1712c2b0ffee",
+    "toddlerbox-install-release": "dda961d491c142342831bb883f13d75aaa872cf2fd73701871ce90ba98bdc7ca",
+    "toddlerbox-maintenance": "29804cf5d6b3c36726c6660e5cfc2a13d9a7abafef9efe97407894e3d677d956",
+    "toddlerbox-session": "2478321e8f384231b0a5d12229346c4b88eb2063171150080fb93eb74b4373c8",
+    "toddlerbox-update": "692f1b09c06545bc8e7e0476d129ae8d9982b45dc8386fcf7dd92617946b1466",
+    "toddlerbox-volume": "8c061a14e9a7d94d6424f4e0f3c7cae08eb77572829e3f73e3a4ae43110e9e6c",
+    "update_bundle.py": "0b3a1051d4c539c570e25149513aa7eeef4227df112cba6c676a1a4eec23b2f9"
+  },
+  "signature": "production signature verified against installed public trust ring",
+  "installed": false,
+  "qualification": {
+    "run_id": 40588182123,
+    "fresh_evidence_sha256": "b026e1e4565a21d8a4221fbaf265a22fc1cf180585702bfb1501102bb6a5032a",
+    "update_chain_evidence_sha256": "d84e8193f4af2eddc5bbad70b6cce1217ef977c41755affb5c1ef287cd5b6fae",
+    "physical_acceptance": "pending"
+  },
+  "qualification_limits": [
+    "Synthetic VM signing identity; no production signing key used",
+    "Class C remains from the published installer",
+    "No physical HP input, Wi-Fi or acoustic validation",
+    "No fresh qualification of unchanged Music PCM; separate fresh-install job covers it"
+  ]
+}

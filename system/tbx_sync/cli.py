@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import json
 import os
 from pathlib import Path
@@ -11,7 +12,7 @@ import sys
 import uuid
 
 from .install import restore_archives, setup
-from .safeio import atomic_json
+from .safeio import Refused, atomic_json
 from .state import Paths, finalize, initialize, load
 
 
@@ -96,7 +97,17 @@ def main():
     except BlockingIOError:
         print('A sync or import is already running. Try again after it completes.',file=sys.stderr)
         raise SystemExit(2)
-    except (OSError,ValueError,KeyError,TypeError,subprocess.SubprocessError):
+    except Refused as error:
+        print(f'{error}. Existing work and the transfer package are preserved.',file=sys.stderr)
+        raise SystemExit(1)
+    except OSError as error:
+        if error.errno == errno.ENOSPC:
+            print('Not enough free disk space: ToddlerBox keeps 512 MiB free for child work. '
+                  'Free space in parent mode, then retry. Existing work is preserved.',file=sys.stderr)
+        else:
+            print('Operation refused or incomplete. Check the package, checksum, available disk space, and sync status. Existing work and transfer package are preserved.',file=sys.stderr)
+        raise SystemExit(1)
+    except (ValueError,KeyError,TypeError,subprocess.SubprocessError):
         # Never echo token-bearing parser/provider diagnostics.
         print('Operation refused or incomplete. Check the package, checksum, available disk space, and sync status. Existing work and transfer package are preserved.',file=sys.stderr)
         raise SystemExit(1)

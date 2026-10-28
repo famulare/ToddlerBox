@@ -151,6 +151,22 @@ identical files are skipped, while different/case-colliding names are reported a
 conflicts. Give changed cloud photos distinct names. Nested photo directories and
 unsupported files are reported, not flattened. Photos refreshes when entered.
 
+Each job copies in a fixed order: the one-time initial backup (at most half the
+job's time per run, resuming where it stopped), then the child's creations, then
+Drive photos. A problem with one photo — a damaged file, two names differing only
+by case, a failed download — is reported and skipped; it never stops creations
+from uploading. Status lists each such issue with the affected file name (status
+is visible only to root; the shareable maintenance report never contains names).
+If any creation fails to upload, that run does not replace the creations
+`manifest.json`, so a later restore never mixes versions. Quarantined `corrupt-`
+files stay on the device and are counted, not uploaded.
+
+Only JPEG and PNG are imported. iPhone photos are usually HEIC: export them as
+JPEG first (Photos app: File > Export > JPEG, or `sips -s format jpeg IN.HEIC
+--out OUT.jpg` on the Mac) and give them new names. A wrong laptop clock (for
+example after a flat CMOS battery) is reported as `clock-or-certificate`: set
+the date and time in parent mode, then retry.
+
 ## Recovery and maintenance
 
 The parent desktop also has **Sync ToddlerBox Now**, **ToddlerBox Sync Status**,

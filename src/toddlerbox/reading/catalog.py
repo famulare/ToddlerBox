@@ -8,6 +8,8 @@ import wave
 
 from PIL import Image
 
+from toddlerbox.runtime.image_safety import DECODE_ERRORS
+
 RATE = 44100
 WORD_SETS = frozenset({"short_a_cvc", "short_e_cvc", "short_i_cvc", "short_o_cvc",
                        "short_u_cvc", "digraphs", "adjacent_consonants"})
@@ -168,6 +170,6 @@ def load_catalog(root: Path, options: Options, logger) -> list[Card]:
             cards.append(Card(identity, kind, text, tuple(units), image,
                               _speech(root, entry["sequence"], len(units)),
                               _speech(root, entry["replay"], len(units)), tuple(tags), variant))
-        except (OSError, ValueError, TypeError, KeyError, wave.Error, EOFError, Image.DecompressionBombError):
+        except (TypeError, KeyError, wave.Error, *DECODE_ERRORS):
             logger.exception("Skipping damaged Reading card")
     return cards

@@ -1,5 +1,11 @@
 # Updates without reinstalling Ubuntu
 
+The next [0.5.2 candidate](releases/v0.5.2.md) is an **in-place app/system update**,
+not an installer migration. Its qualification and publication are pending; 0.5.1
+remains the current published update until signed stable metadata is advanced.
+The resident sync worker, boot recovery gate, firstboot, sysctl and GRUB are
+preserved. Do not expect this update to deliver fixes to those image-only files.
+
 For the current 0.5.1 application update, follow the
 [existing-install instructions](releases/v0.5.1.md). Earlier USB setup/DNS repair
 instructions remain in the [0.5.0 guide](releases/v0.5.0.md). Pulling the checkout alone
@@ -37,6 +43,16 @@ mode and `sudoedit /etc/toddlerbox/config.yaml` to add this entry under
 Order the six entries Paint, Photos, Music, Typing, Reading, Math for the standard
 two-row layout. A fresh 0.4 installation already has this configuration. Other
 parent settings and all child data remain unchanged.
+
+After any edit, check the file before starting child mode:
+
+```sh
+/opt/toddlerbox/current/.venv/bin/python -m toddlerbox.config --check /etc/toddlerbox/config.yaml
+```
+
+A damaged file never stops the child session: ToddlerBox logs each problem and uses
+built-in defaults for the affected settings (the standard six activities if
+`launcher.apps` is unusable). Child work always stays in `/var/lib/toddlerbox`.
 
 Older images without this embedded trust anchor use the historical manual route
 below, or reinstall the new appliance image after backing up child work.
@@ -86,10 +102,13 @@ parent login screen. Log in and select **Start ToddlerBox** after installation.
 
 ## Later updates and rollback
 
-The first update installs a root-owned command for subsequent bundles:
+Normal updates use **ToddlerBox Setup & Maintenance > Check updates / Install
+update**, which verifies signed release metadata and its monotonic sequence. On an
+appliance image, an unsigned bundle is refused unless you say it is a recovery
+action, because it bypasses that signature and could install an older release:
 
 ```sh
-sudo toddlerbox-update /path/ToddlerBox-update.pyz EXPECTED_SHA256
+sudo toddlerbox-update /path/ToddlerBox-update.pyz EXPECTED_SHA256 --unsigned-recovery
 sudo toddlerbox-update --rollback
 ```
 
@@ -117,6 +136,13 @@ not an Ubuntu release upgrade or a whole-disk snapshot. The qualified USB image
 remains the OS recovery option.
 
 ## What updates preserve
+
+Published updaters before the explicit `--journaled` installer argument remain
+supported. The new installer verifies the calling root parent's Linux process
+identity and exclusive update lock, the resident applying journal and the staged
+app's hash/source before treating that historical call as journaled. A marker or
+a busy lock alone cannot authorize it. Normal direct installs still require
+`--unsigned-recovery` and cannot run alongside an update.
 
 Updates never replace `/var/lib/toddlerbox`, `/etc/toddlerbox/config.yaml`, Drive
 credentials, the device UUID, or sync history/state. Rosie’s photos, drawings and

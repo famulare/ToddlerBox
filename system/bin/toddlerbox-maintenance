@@ -11,7 +11,7 @@ import sys
 import urllib.parse
 
 sys.path.insert(0, "/usr/local/lib/toddlerbox-system")
-from appliance import STEPS, accept, check, command, finish, guard, maintenance_lock, mode, progress
+from appliance import STEPS, accept, check, clock_problem, command, finish, guard, maintenance_lock, mode, progress
 from boot_recovery import STATE, SETUP_VISIBLE, atomic, latest, record, safe
 
 
@@ -28,7 +28,8 @@ def report(root=Path("/")):
     except (OSError, RuntimeError):
         value["current_release"] = "unknown"
     value["free_mib"] = __import__("shutil").disk_usage(root / STATE).free // 1024 ** 2
-    value["maintenance"] = {name: (root / STATE / name).exists() for name in ("maintenance", "apt-maintenance", "recovery-error")}
+    value["maintenance"] = {name: (root / STATE / name).exists()
+                            for name in ("maintenance", "apt-maintenance", "recovery-error", "rollback-unavailable")}
     for service in ("NetworkManager", "wpasupplicant", "gdm3", "toddlerbox-controller", "toddlerbox-sync"):
         result = subprocess.run(["systemctl", "is-active", service], capture_output=True, text=True, timeout=5)
         state = result.stdout.strip()
@@ -52,6 +53,7 @@ def report(root=Path("/")):
     except (OSError, ValueError, KeyError, TypeError):
         value["mode"] = "unknown"
     value["last_save"] = "unavailable; sync save acknowledgement is separate"
+    value["archives"] = archive_counts(root)
     try:
         from tbx_sync.cli import status as sync_status
         from tbx_sync.state import Paths
@@ -69,6 +71,21 @@ def report(root=Path("/")):
         value["last_ubuntu_success"] = "never-run"
     # Deliberately no journal, filenames, identifiers, config, network names or logs.
     return value
+
+
+def archive_counts(root=Path("/")):
+    """Counts only (shareable): New/Recall stop archiving at capacity, never deleting."""
+    counts = {}
+    data = root / "var/lib/toddlerbox"
+    for name, directory, suffix in (("paint", data / "paint", ".png"), ("typing", data / "typing/archive", ".json")):
+        try:
+            counts[name] = sum(1 for entry in os.scandir(directory)
+                               if entry.name.endswith(suffix) and entry.name != "latest.png"
+                               and not entry.name.startswith((".", "corrupt-")) and entry.is_file(follow_symlinks=False))
+        except OSError:
+            counts[name] = "unavailable"
+    counts["default_capacity"] = {"paint": 100, "typing": 200}
+    return counts
 
 
 def ubuntu_updates(root=Path("/")):
@@ -101,6 +118,9 @@ def audio_defaults_available():
 
 def root_action(action, arguments):
     guard(readonly=action == "status", allow_apt=action == "ubuntu", allow_recovery=action == "recover")
+    problem = clock_problem() if action in {"updates", "install", "ubuntu"} else None
+    if problem:
+        raise ValueError(problem)
     if action == "check" and len(arguments) == 2:
         check(*arguments)
     elif action == "finish" and not arguments:
@@ -273,7 +293,18 @@ def main():
             autostart()
         else:
             ui(args.first_run)
-    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError, EOFError) as error:
+    except ValueError as error:
+        # Appliance refusals are fixed sentences written for parents; say which one.
+        raise SystemExit(f"Parent operation stopped: {error} Use Status or the boot recovery option.")
+    except subprocess.CalledProcessError as error:
+        raise SystemExit(f"Parent operation stopped: a system command failed (exit {error.returncode}). "
+                         "Use Status or the boot recovery option.")
+    except OSError as error:
+        if error.__class__.__name__ in {"URLError", "HTTPError"} or isinstance(error, (ConnectionError, TimeoutError)):
+            raise SystemExit("Parent operation stopped: GitHub releases could not be reached. Check Wi-Fi and "
+                             "that the date and time are correct, then try again.")
+        raise SystemExit(f"Parent operation stopped ({type(error).__name__}). Use Status or the boot recovery option.")
+    except (KeyError, TypeError, subprocess.SubprocessError, EOFError) as error:
         raise SystemExit(f"Parent operation stopped ({type(error).__name__}). Use Status or the boot recovery option.")
 
 

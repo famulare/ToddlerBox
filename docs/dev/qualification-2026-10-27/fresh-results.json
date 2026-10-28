@@ -1,0 +1,16 @@
+{
+  "platform": "x86-64 Q35/UEFI/TCG, 2 CPUs, 4GB, no NIC, virtual HDA/USB tablet",
+  "checks": [
+    "fresh ISO installation, payload checksum and exact target confirmation",
+    "18-song library, scroll to last song, Free Play, HDA song output and Home silence",
+    "Math pictures-first, silent reveal, explicit number/equation HDA output, validated operator clips and Home silence",
+    "supervised first setup, independent escape from stopped launcher and watchdog recovery",
+    "setup completion persists and reboot returns to supervised child session without network",
+    "standalone Cage child session with no child GNOME shell"
+  ],
+  "limits": [
+    "HP Wi-Fi/touch gestures/trackpad/speakers/sleep require physical acceptance",
+    "OCR and QMP exercise virtual pointer/keyboard, not physical multi-touch",
+    "Automated PCM checks do not establish human listening approval"
+  ]
+}

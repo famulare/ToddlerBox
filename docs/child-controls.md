@@ -80,6 +80,9 @@ Enter parent mode with Ctrl+Alt+Home and save parent desktop work, then run:
 sudo ./scripts/update-child-controls.sh /path/toddlerbox-cage EXPECTED_SHA256
 ```
 
+This historical patch is for pre-appliance images only; appliance images refuse
+it and receive controls through signed updates.
+
 The script checks Ubuntu 24.04/x86-64 and the binary hash, installs the audio
 packages, checks shared libraries, retains prior root-owned controls in a backup,
 and durably replaces the controller/session/helper/compositor. Controller restart

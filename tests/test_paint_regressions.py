@@ -70,7 +70,7 @@ def test_unchanged_canvas_does_not_encode_again(app, monkeypatch):
     assert app._autosave_latest()
     def unexpected(*_args):
         pytest.fail("unchanged canvas should not be re-encoded")
-    monkeypatch.setattr("toddlerbox.paint.app._save_surface_atomic", unexpected)
+    monkeypatch.setattr("toddlerbox.paint.app._save_pixels_atomic", unexpected)
     assert app._autosave_latest()
 
 

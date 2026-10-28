@@ -13,7 +13,11 @@ install -m 0644 "$source_dir/boot_recovery.py" "$source_dir/appliance.py" "$sour
 install -m 0644 "$source_dir/release-public-key.pem" /etc/toddlerbox/
 install -D -m 0755 "$source_dir/grub-parent-recovery" /etc/grub.d/41_toddlerbox_parent
 install -d /etc/default/grub.d
-printf 'GRUB_TIMEOUT_STYLE=menu\nGRUB_TIMEOUT=5\nGRUB_DEFAULT=0\nGRUB_CMDLINE_LINUX_DEFAULT=""\nGRUB_CMDLINE_LINUX="console=tty0 console=ttyS0,115200"\n' >/etc/default/grub.d/toddlerbox.cfg
+# An unclean shutdown (a toddler holding the power button) must not add a 30 s menu wait.
+printf 'GRUB_TIMEOUT_STYLE=menu\nGRUB_TIMEOUT=5\nGRUB_RECORDFAIL_TIMEOUT=5\nGRUB_DEFAULT=0\nGRUB_CMDLINE_LINUX_DEFAULT=""\nGRUB_CMDLINE_LINUX="console=tty0 console=ttyS0,115200"\n' >/etc/default/grub.d/toddlerbox.cfg
+# Keyboard mashing must not reboot or remount read-only (Alt+SysRq+B/U); keep emergency sync only.
+install -d /etc/sysctl.d
+printf 'kernel.sysrq = 16\n' >/etc/sysctl.d/90-toddlerbox.conf
 install -m 0755 "$source_dir/bin/toddlerbox-maintenance" /usr/local/sbin/
 touch /var/lib/toddlerbox-system/appliance-v1
 printf '{"sequence":%s,"source":"%s"}\n' "$(cat "$source_dir/release-sequence")" "$release_id" >/var/lib/toddlerbox-system/release-sequence.json

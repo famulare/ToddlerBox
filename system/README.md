@@ -48,6 +48,7 @@ Outputs under ignored `build/`:
 | `toddlerbox.qcow2` | Baseline VM disk; use overlays for tests |
 | `toddlerbox.img` | Sparse, 12 GiB GPT system disk |
 | `toddlerbox-installer.iso` | Bootable USB installer with the compressed identical disk |
+| `flash-installer.sh` | Standalone Linux USB writer with this ISO's checksum embedded |
 | `SHA256SUMS` | Checksums of system artifacts |
 | `packages.tsv`, `release-id` | Package versions and source release identity |
 | `toddlerbox-app-<id>.tar.gz`, `APP-SHA256SUMS` | App release bundle and checksum |
@@ -56,6 +57,24 @@ The installer boots through GRUB in BIOS or UEFI mode, but the installed system
 requires **x86-64 UEFI**. The initial qualification uses **Secure Boot disabled**;
 the installer GRUB is unsigned. Do not infer Secure Boot qualification from the
 signed Ubuntu shim/kernel present on the installed disk.
+
+To flash a USB installer on Linux, copy `flash-installer.sh` and
+`toddlerbox-installer.iso` from the same build into one folder on that computer,
+then run from a terminal:
+
+```bash
+bash flash-installer.sh
+```
+
+The script requests sudo, verifies the ISO checksum, lists disks, and asks for
+the whole target disk and the exact phrase `ERASE /dev/<target>`. It refuses
+mounted disks, active swap/device mappings, partitions, and undersized or
+read-only targets. Unmount the target's volumes first. If the transfer drive is
+also the flash target, copy both files to the computer before running. The
+script writes the ISO, flushes it, and checks every written byte before reporting
+success. This erases the USB drive; booting the installer later requires a
+separate confirmation to erase the PC's disk. Linux needs Bash, coreutils, and
+util-linux (included in ordinary Ubuntu installations).
 
 ## VM development
 
@@ -176,16 +195,25 @@ archive writes leave a 16 MiB reserve for current saves.
 
 App code and its uv-created environment live in `/opt/toddlerbox/releases/<id>`.
 For ordinary parent maintenance, use the [combined update bundle](../docs/updates.md).
+The [0.5.2 update](../docs/releases/v0.5.2.md) uses the existing eleven-file
+destination table and preserves resident boot recovery, sync, private state and
+image-only configuration. It requires exact-artifact update/recovery qualification
+and parent acceptance; a fresh-image VM pass does not establish hardware acceptance.
 It can carry system controls and an optional app release in one checked download,
 preserving work/private configuration and retaining system/app rollback backups.
 Runtime directly executes the installed Python environment and does not resolve
-or download dependencies. To update from a trusted build of the same system ABI,
-enter parent mode, copy the app bundle, and use its independently checked checksum:
+or download dependencies. Normal updates use Setup & Maintenance's signed update
+flow. Direct app-tar installation is an advanced explicit unsigned recovery path,
+not an alternative normal update procedure.
 
-```bash
-sudo toddlerbox-install-release toddlerbox-app-<id>.tar.gz <expected-sha256>
-sudo toddlerbox-mode child
-```
+On appliance images (`/var/lib/toddlerbox-system/appliance-v1`), releases change
+only through the journaled signed update: a direct install needs
+`--unsigned-recovery` and is refused while an update or recovery is in progress,
+and `toddlerbox-mode rollback` is refused in favour of Maintenance > Rollback,
+which the boot gate understands. Extracted files are fsynced before a release
+directory is published; a differing release directory that nothing references
+(usually a torn earlier install) is kept as `.conflict-<id>-<time>` and
+reinstalled, never deleted.
 
 New bundles include `data-schema.json`. Installation/rollback refuse incompatible
 schema declarations, serialize changes, and fsync replaced links. Existing
@@ -202,6 +230,14 @@ reinstallation; the USB installer erases its selected disk. App rollback does
 not revert the OS or child data. Qualify a candidate before calling it known-good.
 
 ## Qualification gates
+
+The dev [VM work plan](../docs/dev/vm-and-hardware-work-plan.md) also qualifies
+upgrades from the published installer through signed intermediate releases,
+using the unchanged resident boot gate. A synthetic dev signing identity exists
+only for that isolated test. Real QMP resets cover durable update and restore
+boundaries; the results never establish physical HP acceptance. Historical
+updaters without `--journaled` are authenticated by the new installer's live
+parent/kernel-lock/journal checks; see [updates](../docs/updates.md).
 
 Record results and actual artifact IDs, not just intended behavior:
 

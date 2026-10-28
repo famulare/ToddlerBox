@@ -57,6 +57,10 @@ Tap-to-click and hardware volume/mute keys are handled in the child session.
 See [the HP controls patch](docs/child-controls.md) for updating an existing install.
 Use [one parent update bundle](docs/updates.md) for app/system updates without
 reinstalling Ubuntu or erasing child work.
+The [0.5.2 update](docs/releases/v0.5.2.md) targets this signed update path.
+It includes app and allowlisted system-tool hardening; resident sync/recovery and
+image-only changes are outside its delivery scope. See its release guide for qualification
+and publication status; live candidate acceptance always follows supervised parent testing.
 The old global keyd setup is retired. See [system/README.md](system/README.md).
 
 ---
@@ -327,6 +331,11 @@ The primary target is the [bootable Ubuntu system](system/README.md), built
 with `./system/build.sh` and tested with `./system/vm.sh`. See the
 [validation record and remaining qualification](VALIDATION.md) before installing
 it on hardware. The commands below run individual apps during development.
+
+The dev branch's [VM work plan](docs/dev/vm-and-hardware-work-plan.md) covers both
+fresh installation and upgrades from the published installer. The update job
+uses synthetic signing material only inside its disposable qualification setup;
+published releases still require the owner's offline signing and approval.
 
 ### Requirements
 

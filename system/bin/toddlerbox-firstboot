@@ -7,7 +7,15 @@ echo 'The parent account name is: parent'
 # Power may have failed after passwd succeeded but before our completion write.
 # Inspect password status only, never read/print its hash or reset an existing one.
 if [[ $(passwd -S parent | awk '{print $2}') != P ]]; then
-    passwd parent
+    # A mistyped confirmation must not leave a login screen with no usable account.
+    for attempt in 1 2 3; do
+        passwd parent && break
+        if [[ $attempt == 3 ]]; then
+            echo 'The password was not set. Restart the laptop to try again.'
+            exit 1
+        fi
+        echo 'The two entries did not match or were refused. Try again.'
+    done
 fi
 install -d -m 0700 /var/lib/toddlerbox-system
 touch /var/lib/toddlerbox-system/password-created

@@ -11,15 +11,22 @@ modprobe usb_storage || true
 modprobe uas || true
 udevadm settle
 mkdir -p /media/toddlerbox
+fail() { echo "$*"; echo 'Installation stopped. Power off or use this recovery shell.'; exec sh; }
 media=''
 for attempt in 1 2 3 4 5 6 7 8 9 10; do
-    media=$(blkid -L TODDLERBOX || true)
+    # Hybrid grub-mkrescue USBs also expose an HFS+ partition with this label.
+    # A label-only lookup can select that partition instead of the ISO volume.
+    for candidate in $(blkid -c /dev/null -t TYPE=iso9660 -o device || true); do
+        [ "$(blkid -p -s LABEL -o value "$candidate" || true)" = TODDLERBOX ] || continue
+        if mount -t iso9660 -o ro "$candidate" /media/toddlerbox; then
+            media=$candidate
+            break
+        fi
+    done
     [ -n "$media" ] && break
     sleep 1
 done
-fail() { echo "$*"; echo 'Installation stopped. Power off or use this recovery shell.'; exec sh; }
-[ -n "$media" ] || fail 'Installer media not found.'
-mount -o ro "$media" /media/toddlerbox
+[ -n "$media" ] || fail 'Installer ISO9660 media not found or could not be mounted.'
 cd /media/toddlerbox
 sha256sum -c toddlerbox.img.zst.sha256 || fail 'Installer checksum failed.'
 echo

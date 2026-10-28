@@ -1,12 +1,17 @@
 #!/usr/bin/python3
 """Install an app bundle from this build recipe. Run in parent mode as root."""
+import contextlib
+import fcntl
 import hashlib
+import json
 import os
+import select
 import stat
 from pathlib import Path, PurePosixPath
 import sys
 import tarfile
 import tempfile
+import time
 
 # Shared helpers are root-owned and ship with this system image, not the bundle.
 sys.path.insert(0, "/usr/local/lib/toddlerbox-system")
@@ -56,11 +61,169 @@ def tree_record(directory: Path, *, production: bool) -> dict:
     return result
 
 
+APPLIANCE_REFUSAL = ("On the appliance, releases install through ToddlerBox Setup & Maintenance "
+                     "(signed updates). For recovery only, rerun with --unsigned-recovery.")
+
+
+def parent_update_lock(state: Path) -> bool:
+    """Authenticate the legacy caller by its live root process and kernel lock.
+
+    Published v0.4/0.5 updaters hold this lock but predate --journaled. A busy
+    lock or an applying marker alone is insufficient: this process's actual
+    parent must own the exact exclusive flock. Linux pidfds pin that identity.
+    """
+    if os.geteuid() != 0 or not hasattr(os, "pidfd_open"):
+        return False
+    parent = os.getppid()
+    pidfd = None
+    try:
+        pidfd = os.pidfd_open(parent)
+        poller = select.poll()
+        poller.register(pidfd, select.POLLIN)
+        proc = Path("/proc") / str(parent)
+        status = (proc / "status").read_text()
+        uid = next(line.split()[1:] for line in status.splitlines() if line.startswith("Uid:"))
+        if uid != ["0"] * 4:
+            return False
+        locked = (state / "updates/lock").stat()
+        entries = list((proc / "fdinfo").iterdir())
+        if len(entries) > 1024:
+            return False
+        for entry in entries:
+            with entry.open() as handle:
+                info = handle.read(16385)
+            if len(info) > 16384:
+                continue
+            for line in info.splitlines():
+                if not line.startswith("lock:"):
+                    continue
+                fields = line.split()[1:]
+                if len(fields) != 8 or fields[1:5] != ["FLOCK", "ADVISORY", "WRITE", str(parent)]:
+                    continue
+                device = fields[5].split(":")
+                if len(device) == 3 and (int(device[0], 16), int(device[1], 16), int(device[2])) == (
+                        os.major(locked.st_dev), os.minor(locked.st_dev), locked.st_ino):
+                    return os.getppid() == parent and not poller.poll(0)
+    except (OSError, ValueError, StopIteration):
+        return False
+    finally:
+        if pidfd is not None:
+            os.close(pidfd)
+    return False
+
+
+def legacy_journaled_parent(bundle: Path, expected_digest: str, state: Path, *, root=Path("/")) -> bool:
+    """Allow only the exact staged app belonging to the parent's valid journal."""
+    if not (state / "appliance-v1").exists() or not parent_update_lock(state):
+        return False
+    try:
+        from boot_recovery import latest, safe, validate
+        safe(root, (state / "updates/lock").relative_to(root))
+        item = latest(root)
+        if not item or item[1]["status"] != "applying":
+            return False
+        validate(root, *item)
+        if (bundle.name != "app.tar.gz" or bundle.parent.parent != state / "updates"
+                or not bundle.parent.name.startswith(".stage-")):
+            return False
+        safe(root, bundle.relative_to(root))
+        with bundle.open("rb") as handle:
+            if hashlib.file_digest(handle, "sha256").hexdigest() != expected_digest:
+                return False
+            handle.seek(0)
+            with tarfile.open(fileobj=handle, mode="r:gz") as archive:
+                first = archive.next()
+        return (item[1]["app_changed"] and first is not None
+                and PurePosixPath(first.name).parts[0] == item[1]["source"]["content"])
+    except (OSError, ValueError, KeyError, TypeError, IndexError, tarfile.TarError):
+        return False
+
+
+def journals(state: Path) -> list:
+    records = []
+    for path in sorted((state / "updates").glob("*/state.json")):
+        try:
+            records.append(json.loads(path.read_text()))
+        except (OSError, ValueError):
+            records.append({"status": "unreadable"})
+    return records
+
+
+@contextlib.contextmanager
+def update_lock(state: Path, *, journaled: bool):
+    """Hold the updater's lock so no signed update can start mid-install.
+
+    The journaled updater already holds it and calls this installer as a child.
+    """
+    if journaled or not (state / "appliance-v1").exists():
+        yield
+        return
+    with (state / "updates" / "lock").open("a") as handle:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            raise ValueError("An update or maintenance task is running; try again when it finishes.") from None
+        yield
+
+
+def appliance_guard(state: Path, *, journaled: bool, unsigned_recovery: bool) -> None:
+    """Journal-bypassing installs would leave links the boot gate later overrides."""
+    if journaled or not (state / "appliance-v1").exists():
+        return
+    if not unsigned_recovery:
+        raise ValueError(APPLIANCE_REFUSAL)
+    active = {"applying", "restoring", "pending", "unreadable"}
+    if (state / "maintenance").exists() or any(record.get("status") in active for record in journals(state)):
+        raise ValueError("An update or recovery is in progress; finish it in ToddlerBox Setup & Maintenance first.")
+
+
+def referenced_releases(root: Path, state: Path) -> set:
+    names = set()
+    for link in ("current", "previous"):
+        try:
+            names.add(release_target(root, link).name)
+        except (OSError, ValueError):
+            pass
+    for record in journals(state):
+        links = record.get("old_links")
+        if isinstance(links, dict):
+            names.update(value for value in links.values() if isinstance(value, str))
+    return names
+
+
+def fsync_tree(directory: Path) -> None:
+    # Publish only fully written files: a power cut after the rename must not
+    # leave a release directory of empty files that blocks this ID forever.
+    for parent, directories, files in os.walk(directory):
+        for name in files:
+            path = Path(parent) / name
+            if not path.is_symlink():
+                fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+                try:
+                    os.fsync(fd)
+                finally:
+                    os.close(fd)
+        fd = os.open(parent, os.O_RDONLY | os.O_DIRECTORY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+
+
 def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddlerbox"),
-            mode_file: Path = Path("/run/toddlerbox-system/mode")) -> str:
+            mode_file: Path = Path("/run/toddlerbox-system/mode"),
+            state: Path = Path("/var/lib/toddlerbox-system"),
+            journaled: bool = False, unsigned_recovery: bool = False) -> str:
     # Keep the verified file descriptor open: replacing the bundle pathname after
     # hashing cannot substitute a different archive during extraction.
     verify_ancestors(root)
+    journaled = journaled or legacy_journaled_parent(bundle, expected_digest, state)
+    with update_lock(state, journaled=journaled):
+        appliance_guard(state, journaled=journaled, unsigned_recovery=unsigned_recovery)
+        return _install(bundle, expected_digest, root=root, mode_file=mode_file, state=state)
+
+
+def _install(bundle: Path, expected_digest: str, *, root: Path, mode_file: Path, state: Path) -> str:
     with release_lock(root), bundle.open("rb") as handle:
         if mode_file.read_text().strip() != "parent":
             raise ValueError("Enter parent mode before installing a release.")
@@ -104,12 +267,16 @@ def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddl
                 # Everything is root-owned; child accounts have no release write access.
                 production = root == Path("/opt/toddlerbox")
                 candidate_record = tree_record(candidate, production=production)
-                if destination.exists():
-                    if tree_record(destination, production=production) != candidate_record:
+                if destination.exists() and tree_record(destination, production=production) != candidate_record:
+                    if release_id in referenced_releases(root, state):
                         raise ValueError("Existing release differs from verified archive; no files changed.")
+                    # Usually a torn earlier install. Nothing refers to it: keep it aside, never delete it.
+                    os.rename(destination, root / "releases" / f".conflict-{release_id}-{time.time_ns()}")
+                if destination.exists():
                     if destination == current:
                         return release_id  # Retain the distinct previous fallback.
                 else:
+                    fsync_tree(candidate)
                     os.rename(candidate, destination)
         os.sync()
         sync_directory(root / "releases")
@@ -121,10 +288,13 @@ def install(bundle: Path, expected_digest: str, *, root: Path = Path("/opt/toddl
 
 
 def main() -> None:
-    if os.geteuid() != 0 or len(sys.argv) != 3:
-        sys.exit("Usage: sudo toddlerbox-install-release BUNDLE.tar.gz EXPECTED_SHA256")
+    flags = {"--journaled", "--unsigned-recovery"}
+    arguments = [argument for argument in sys.argv[1:] if argument not in flags]
+    if os.geteuid() != 0 or len(arguments) != 2:
+        sys.exit("Usage: sudo toddlerbox-install-release BUNDLE.tar.gz EXPECTED_SHA256 [--unsigned-recovery]")
     try:
-        release_id = install(Path(sys.argv[1]), sys.argv[2])
+        release_id = install(Path(arguments[0]), arguments[1], journaled="--journaled" in sys.argv,
+                             unsigned_recovery="--unsigned-recovery" in sys.argv)
     except (OSError, ValueError, tarfile.TarError) as error:
         sys.exit(str(error))
     print(f"Installed {release_id}; previous release retained. Start child mode to validate.")

@@ -26,7 +26,7 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 
-def main():
+def legacy_main():
     candidate, out = (Path(p).resolve() for p in sys.argv[1:3])
     resume = sys.argv[3:] in (["--resume"], ["--resume-recovery"])
     recovery_only = sys.argv[3:] == ["--resume-recovery"]
@@ -371,6 +371,16 @@ INNER
         print('PATCH_UPDATE_VM_PASS', flush=True)
     finally:
         qa.stop()
+
+
+def main():
+    # Preserve the historical checkpoint driver and its resume safeguards.
+    if any(arg in {'--baseline-image-dir', '--help', '-h'} or arg.startswith('--baseline-image-dir=')
+           for arg in sys.argv[1:]):
+        from update_vm_qualification import main as chain_main
+        chain_main(module)
+    else:
+        legacy_main()
 
 
 if __name__ == '__main__':
