@@ -2383,3 +2383,33 @@ alongside the existing public key. The previous candidate at 752168e891eed25e1b0
 is superseded for publication: a fresh build and VM qualification are required.
 No private key or appliance evidence is included. Older appliances must explicitly
 recover their trust anchor before accepting metadata signed solely by the new key.
+
+
+## Exact 0.5.2 replacement-key candidate — 2026-10-28
+
+Built and qualified commit `94f852a24556e25b88dd7795bb03651d58140a8d`,
+content `fad63c88b47f97b6`, version 0.5.2, sequence 5. Both jobs passed in
+https://github.com/famulare/ToddlerBox/actions/runs/40588182123 .
+The candidate is 91,221,839 bytes, SHA-256
+`48f7dd008d05294b1533808a0780c672fcf64ded0fdbf870db9f38b6ec928fec`.
+All eleven payload hashes, source/content identity, embedded app digest and version
+were checked against the preserved artifact and frozen source.
+
+Fresh installation passed standalone Cage, six activities, Music/Math virtual HDA
+checks, independent parent escape, watchdog and offline reboot. The update-chain
+job passed published signed 0.5.0/0.5.1 hops, the exact candidate, unsigned refusal
+and explicit recovery, rollback, resets at applying/system-replaced/pending/restoring,
+and accepted reboot with unchanged synthetic work/config/resident code.
+Commands and pinned toolchain are in `.github/workflows/dev-vm-qualify.yml` at the
+built commit; full result records and package manifest are in
+`docs/dev/qualification-2026-10-27/`. Artifact IDs, archive digests, app and payload
+digests are in `docs/releases/v0.5.2-source.json`.
+
+The production manifest was signed with the explicitly authorized replacement key
+and independently verified against the installed public ring; the bundle hash and
+manifest source/sequence matched. VM signatures were synthetic, separately from
+production signing. No publication or live candidate installation has occurred.
+Physical input, Wi-Fi and listening acceptance remain pending, as does a verified
+private backup before a live update. This evidence does not establish HP hardware
+qualification. The tag must identify the built commit above, not a later records
+commit; docs-only evidence changes do not change its content ID.
