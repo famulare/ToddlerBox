@@ -59,6 +59,10 @@ included in ToddlerBox 0.4.
 
 ## 2. Paint App
 
+Benign focus-gained, restored and size notifications do not cancel a drawing
+gesture. Actual focus loss/backgrounding does. Paint may cache unchanged controls,
+but must preserve every accepted stroke sample and the existing brush geometry.
+
 ### 2.1 Layout
 
 - Left tools panel + right canvas area

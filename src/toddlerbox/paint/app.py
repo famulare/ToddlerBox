@@ -48,21 +48,16 @@ Color = Tuple[int, int, int]
 Point = Tuple[int, int]
 
 FINGERMOTION = getattr(pygame, "FINGERMOTION", None)
-WINDOW_FOCUS_GAINED = getattr(pygame, "WINDOWFOCUSGAINED", None)
 WINDOW_FOCUS_LOST = getattr(pygame, "WINDOWFOCUSLOST", None)
-WINDOW_RESTORED = getattr(pygame, "WINDOWRESTORED", None)
-WINDOW_SIZE_CHANGED = getattr(pygame, "WINDOWSIZECHANGED", None)
-APP_DID_ENTER_FOREGROUND = getattr(pygame, "APP_DIDENTERFOREGROUND", None)
 APP_DID_ENTER_BACKGROUND = getattr(pygame, "APP_DIDENTERBACKGROUND", None)
 
+# Only actual loss of input ownership cancels a gesture. SDL also sends benign
+# focus-gained/restored/size notifications while a finger can still be down.
+# Treating those as loss discarded both the stroke and its queued motion/up.
 _INPUT_RESET_EVENTS = {
     event
     for event in (
-        WINDOW_FOCUS_GAINED,
         WINDOW_FOCUS_LOST,
-        WINDOW_RESTORED,
-        WINDOW_SIZE_CHANGED,
-        APP_DID_ENTER_FOREGROUND,
         APP_DID_ENTER_BACKGROUND,
     )
     if event is not None
@@ -1419,37 +1414,48 @@ class PaintApp:
             border_color = theme.ACCENT if idx == 0 else theme.BORDER
             pygame.draw.rect(self.screen, border_color, rect, width=3 if idx == 0 else 2)
 
-    def _render(self) -> None:
-        self.screen.fill(theme.BACKGROUND)
-        pygame.draw.rect(self.screen, self.menu_bg, self.controls_rect, border_radius=18)
-        self.screen.blit(self.canvas_surface, self.canvas_rect.topleft)
-        pygame.draw.rect(self.screen, theme.BORDER, self.canvas_rect, width=1)
+    def _draw_controls(self, surface: pygame.Surface) -> None:
+        surface.fill(theme.BACKGROUND)
+        pygame.draw.rect(surface, self.menu_bg, self.controls_rect, border_radius=18)
 
         for tool, button in self.tool_buttons.items():
-            button.draw(self.screen, selected=tool == self.current_tool)
+            button.draw(surface, selected=tool == self.current_tool)
 
         for size, button in self.size_buttons.items():
-            button.draw(self.screen, selected=size == self.current_size)
+            button.draw(surface, selected=size == self.current_size)
 
         for idx, button in enumerate(self.palette_buttons):
             color = self.palette[idx]
             if color == self.current_color:
-                pygame.draw.rect(self.screen, theme.PAPER, button.rect, border_radius=8)
-                pygame.draw.rect(self.screen, color, button.rect.inflate(-8, -8), border_radius=5)
-                theme.selection(self.screen, button.rect, radius=8)
+                pygame.draw.rect(surface, theme.PAPER, button.rect, border_radius=8)
+                pygame.draw.rect(surface, color, button.rect.inflate(-8, -8), border_radius=5)
+                theme.selection(surface, button.rect, radius=8)
             else:
-                button.draw(self.screen)
+                button.draw(surface)
 
         for key, button in self.action_buttons.items():
             if key == "home":
-                draw_home_button(self.screen, button.rect)
+                continue  # Home overlays the canvas; draw it after the canvas blit.
+            if key in {"new", "undo", "redo"} or (key == "recall" and button.image is None):
+                button.draw(surface, self.font)
             else:
-                if key in {"new", "undo", "redo"}:
-                    button.draw(self.screen, self.font)
-                elif key == "recall" and button.image is None:
-                    button.draw(self.screen, self.font)
-                else:
-                    button.draw(self.screen)
+                button.draw(surface)
+
+    def _render(self) -> None:
+        # Controls are static during a stroke. Cache their pixels, not input or
+        # canvas samples; every accepted movement still reaches the old renderer.
+        key = (self.screen.get_size(), self.current_tool, self.current_size,
+               self.current_color, self.action_buttons["recall"].image)
+        if getattr(self, "_controls_cache_key", None) != key:
+            surface = self.screen.copy()
+            self._draw_controls(surface)
+            self._controls_cache = surface.subsurface(self.controls_rect).copy()
+            self._controls_cache_key = key
+        self.screen.fill(theme.BACKGROUND)
+        self.screen.blit(self._controls_cache, self.controls_rect.topleft)
+        self.screen.blit(self.canvas_surface, self.canvas_rect.topleft)
+        pygame.draw.rect(self.screen, theme.BORDER, self.canvas_rect, width=1)
+        draw_home_button(self.screen, self.action_buttons["home"].rect)
 
         if self.recall_open:
             self._draw_recall_overlay()

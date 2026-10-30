@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.3 development — unreleased
+
+- Paint preserves an active gesture across benign focus-gained/restored/size
+  notifications. Real focus loss/backgrounding still cancels input.
+- Cache static Paint controls between selection/thumbnail changes; retain exact
+  brush geometry, canvas pixels, Home placement and save behavior.
+- Add synthetic event regressions and an old/new full-frame comparison tool.
+  Faster synthetic rendering is not a measured touch-to-display improvement.
+
+
 ## 0.5.2 candidate — unreleased (dev/review-hardening)
 
 The target is a signed in-place app/system update, sequence 5. App and allowlisted

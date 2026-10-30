@@ -2413,3 +2413,47 @@ Physical input, Wi-Fi and listening acceptance remain pending, as does a verifie
 private backup before a live update. This evidence does not establish HP hardware
 qualification. The tag must identify the built commit above, not a later records
 commit; docs-only evidence changes do not change its content ID.
+
+
+## 0.5.3 bounded Paint development — 2026-10-30
+
+Source baseline: published/qualified 0.5.2 commit
+`94f852a24556e25b88dd7795bb03651d58140a8d`; new branch starts from its
+records-only descendant `d95ec1356810cf7aedf2eba9ad14e566ac0130dd`.
+Candidate content ID: `29273cfc22b6d2bb`. No final release sequence is allocated.
+
+Three new held-finger tests fail on the unchanged 0.5.2 source after benign
+focus-gained/restored/size notifications; actual focus loss correctly cancels.
+With the fix the relevant Paint/input/persistence suite passed 88 tests.
+`UV_CACHE_DIR=/tmp/tbx-release-uv-cache uv run --frozen pytest -q` passed
+**778 tests, zero skips**, 234.96 seconds, on Ubuntu 24.04/Python 3.12.3 outside
+the editor's Unix-socket-restricting sandbox. Production guards are unchanged.
+Pinned Ruff 0.12.0 and `git diff --check` passed.
+
+`uv run --frozen python scripts/check-paint-frame-baseline.py BASELINE` compared
+genuine old `_render` code with the candidate: **108 exact full-frame matches**
+across three sizes, selections, thumbnails, changed canvases and recall overlay.
+An AST comparison confirmed brush and persistence function bodies are unchanged.
+Dummy-backend timing at 1366x768 was 1.412 -> 0.975 ms median in the first final
+run and 1.219 -> 0.787 ms in a second run; p99 also improved in both. At 1024x600
+and 1920x1080 median work also fell. These are synthetic CPU measurements, not
+touch-to-display latency, physical validation or proof of the intermittent cause.
+
+For a local experiment only, stage the same app inputs as system/build-app.sh
+(`src assets pyproject.toml uv.lock README.md LICENSE config.yaml data-schema.json`),
+then on Ubuntu 24.04 x86-64/Python 3.12 run
+`UV_CACHE_DIR=/tmp/tbx-release-uv-cache UV_PYTHON_DOWNLOADS=never uv sync --frozen --no-dev --python /usr/bin/python3`.
+The local environment contains Pillow 12.3.0, pygame-ce 2.5.8, PyYAML 6.0.3 and
+ToddlerBox 0.5.3. Rewrite the staging prefix in text entrypoints/editable metadata
+to `/opt/toddlerbox/releases/29273cfc22b6d2bb`, normalize interpreter aliases with
+`system/normalize_venv.py`, and set public read/execute, non-group/world-write modes.
+Archive using `tar --sort=name --owner=0 --group=0 -czf APP -C RELEASES CONTENT_ID`.
+Build the local update with `system/build-update.py --cage /usr/local/libexec/toddlerbox-cage --app APP --output BUNDLE`.
+The compositor is the installed, previously qualified binary; no new image is built.
+
+This is an explicitly authorized local development/recovery install using the
+resident updater's journal and separate app release, not a signed production
+release. Preserve accepted 0.5.2 and require real supervised testing and explicit
+acceptance. Bundle/app hashes and the exact build commit are recorded beside
+the local artifacts; no private appliance data or credentials enter artifacts.
+Public release qualification and measured real-input latency remain pending.

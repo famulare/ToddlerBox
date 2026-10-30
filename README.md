@@ -1,5 +1,8 @@
 # ToddlerBox
 
+Development for 0.5.3 includes bounded Paint input and redraw hardening; see
+[the development notes](docs/dev/v0.5.3-paint.md). The published 0.5.2 artifacts remain immutable.
+
 **ToddlerBox 0.5:** six offline activities, a two-row launcher, pictures-first Math
 with deliberate math speech, and 18 short songs in a scrollable Music library.
 

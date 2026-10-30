@@ -257,3 +257,39 @@ def test_fountain_direction_cache_is_bounded_and_uses_deltas_not_positions():
     for delta in range(800):
         _fountain_width_for_direction(32, (0, 0), (delta, 1))
     assert _fountain_width_for_delta.cache_info().currsize == 512
+
+
+@pytest.mark.parametrize('notification', [pygame.WINDOWFOCUSGAINED, pygame.WINDOWRESTORED, pygame.WINDOWSIZECHANGED])
+def test_benign_window_notification_preserves_finger_stroke(app, monkeypatch, notification):
+    x, y = app.canvas_rect.center
+    def finger(kind, offset=0):
+        return pygame.event.Event(kind, finger_id=1, touch_id=1,
+                                  x=(x + offset) / app.screen_rect.width,
+                                  y=y / app.screen_rect.height)
+    batches = iter([
+        [finger(pygame.FINGERDOWN)],
+        [pygame.event.Event(notification), finger(pygame.FINGERMOTION, 40), finger(pygame.FINGERUP)],
+        [pygame.event.Event(pygame.QUIT)],
+    ])
+    monkeypatch.setattr(pygame.event, 'get', lambda: next(batches, []))
+    app._run()
+    local = (x + 35 - app.canvas_rect.left, y - app.canvas_rect.top)
+    assert app.canvas_surface.get_at(local)[:3] != (255, 255, 255)
+    assert len(app.undo_stack) == 1
+    assert app.pointer_input.owner is None
+
+
+def test_focus_loss_still_cancels_finger_stroke(app, monkeypatch):
+    x, y = app.canvas_rect.center
+    def finger(kind, offset=0):
+        return pygame.event.Event(kind, finger_id=1, touch_id=1,
+                                  x=(x + offset) / app.screen_rect.width,
+                                  y=y / app.screen_rect.height)
+    batches = iter([[finger(pygame.FINGERDOWN)],
+                    [pygame.event.Event(pygame.WINDOWFOCUSLOST), finger(pygame.FINGERMOTION, 40)],
+                    [finger(pygame.FINGERMOTION, 80), finger(pygame.FINGERUP), pygame.event.Event(pygame.QUIT)]])
+    monkeypatch.setattr(pygame.event, 'get', lambda: next(batches, []))
+    app._run()
+    local = (x + 35 - app.canvas_rect.left, y - app.canvas_rect.top)
+    assert app.canvas_surface.get_at(local)[:3] == (255, 255, 255)
+    assert app.pointer_input.owner is None

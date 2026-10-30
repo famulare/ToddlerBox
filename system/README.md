@@ -1,5 +1,7 @@
 # Bootable ToddlerBox
 
+For the unreleased bounded Paint candidate, see [0.5.3 development notes](../docs/dev/v0.5.3-paint.md).
+
 The development target is Ubuntu 24.04 LTS on x86-64 UEFI. The same assembled
 system disk produces the VM disk and the payload inside the USB installer.
 No HP access is needed to build or test it.
