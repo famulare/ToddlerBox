@@ -20,6 +20,7 @@ import toddlerbox.paint.app as candidate
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('baseline', type=Path)
+    parser.add_argument('--timings', action='store_true', help='Enable in-memory diagnostic histograms')
     args = parser.parse_args()
     tree = ast.parse(args.baseline.read_text())
     cls = next(n for n in tree.body if isinstance(n, ast.ClassDef) and n.name == 'PaintApp')
@@ -40,6 +41,9 @@ def main():
         os.environ['KIDBOX_CONFIG'] = str(config)
         for size in [(1024, 600), (1366, 768), (1920, 1080)]:
             app = candidate.PaintApp(screen=pygame.display.set_mode(size))
+            if args.timings:
+                from toddlerbox.runtime.paint_timing import PaintTiming
+                app._timing = PaintTiming(root / 'unused-timing.json', time.monotonic() + 600)
             for index in range(18):
                 app.current_tool = ['fountain', 'round', 'eraser'][index % 3]
                 app.current_size = app.size_values[index % len(app.size_values)]

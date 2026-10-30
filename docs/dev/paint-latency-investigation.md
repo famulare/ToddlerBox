@@ -1,6 +1,6 @@
 # Paint latency investigation
 
-Status: active; baseline collection prepared, no renderer experiment performed.
+Status: Phase 1 completed; opt-in Phase 2 app timing prepared. No renderer experiment performed.
 Owner branch: `dev/0.5.3-paint`. Follow-up: GitHub issue #29.
 
 ## Objective and current evidence
@@ -117,3 +117,39 @@ acceptance or public stable-channel advancement follows from this investigation.
 - Record commands/results/limits here or in VALIDATION.md; keep raw local reports
   outside Git. Next action is Phase 1, then determine whether Phase 2 or a safe
   compositor A/B is justified by its evidence.
+
+## Progress: first baseline and next measurement
+
+The bounded external collector completed. Its report and analysis remain local
+under ignored build/; do not publish appliance measurements or raw traces.
+The next step is application-stage timing rather than attributing the difference
+to compositor CPU load. CPU consumption is not a frame-latency measurement.
+
+Opt-in Paint timing is armed only by a small root-owned, non-symlink, non-writable
+flag `/run/toddlerbox-system/paint-timing.json` containing `expires_monotonic`.
+The deadline must be in the next 600 seconds. With no valid flag it is disabled.
+It records bounded histograms for event batches, render work, display flip,
+clock.tick, frame intervals and autosave snapshot calls, plus pointer acceptance
+counts and fixed display/canvas metadata. It never records positions or contents.
+Each Paint visit gets a distinct local report under its data_root/logs directory;
+a bounded daemon checkpoints it, so diagnostic file I/O never waits on the UI.
+Expiry stops recording and the writer. No health/recovery limits are relaxed.
+
+A new diagnostic candidate must use the resident update journal. If the existing
+local candidate has used its two permitted starts, restore accepted 0.5.2 first,
+then install the separate instrumented candidate. Never reset attempt counters
+or accept an unapproved candidate to gain more test sessions. The parent must
+authenticate the prepared local installation command; no live instrumentation
+is enabled merely by pushing source.
+
+Primary-source research, relevant to interpreting later experiments:
+
+- SDL screen-surface acceleration is separately controlled from brush drawing:
+  https://wiki.libsdl.org/SDL2/SDL_HINT_FRAMEBUFFER_ACCELERATION
+- Inspect the exact SDL 2.32.10 implementation before interpreting renderer hints:
+  https://github.com/libsdl-org/SDL/blob/release-2.32.10/src/video/SDL_video.c
+- Historical hint behavior and its fixes are documented upstream:
+  https://github.com/libsdl-org/SDL/issues/10061
+
+Do not assume that setting SDL_RENDER_DRIVER by itself establishes the actual
+framebuffer path, or that changing WLR_RENDERER will resolve the measured cost.

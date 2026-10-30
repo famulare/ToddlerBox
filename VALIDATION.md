@@ -2457,3 +2457,36 @@ release. Preserve accepted 0.5.2 and require real supervised testing and explici
 acceptance. Bundle/app hashes and the exact build commit are recorded beside
 the local artifacts; no private appliance data or credentials enter artifacts.
 Public release qualification and measured real-input latency remain pending.
+
+## Opt-in Paint stage timing — 2026-10-30
+
+Phase 1 external collection completed; private local runtime reports remain under
+ignored build/. No physical timing data or child data is added to source.
+Phase 2 adds bounded, root-armed, local diagnostic histograms for event batches,
+render work, display flip, clock wait, frame intervals and autosave snapshots.
+The default has no valid arming flag and starts no diagnostic writer. Flag expiry
+is bounded to 600 seconds; the daemon performs all report I/O off the UI thread.
+
+The broader Linux suite passed 783 tests in 228.45 seconds before final additions
+to timing context/counters; the final instrumented path, exporter privacy guards,
+Paint and save behavior receive focused checks. Both disabled and enabled timing
+passed 108 exact full-frame comparisons against genuine 0.5.2 rendering. Histograms
+retain every observation with bounded storage. Export refuses symlinks, oversized
+reports, unknown fields and nonfinite metrics. Pinned Ruff and diff checks pass.
+No brush geometry, compositor settings, health timeouts, save worker or child data
+format changes are part of this measurement candidate.
+
+Local candidate content: 035edf18ae3d5f87. Reuse the prior local production-only
+Ubuntu/Python 3.12 environment with unchanged pyproject/uv.lock; copy current app
+inputs, relocate its editable metadata prefix to the new versioned directory,
+and retain the normalized interpreter layout. Rebuild the app archive with root
+ownership and build the fixed-path update using the installed Cage binary.
+The system payload must be byte-identical to installed 0.5.2/initial 0.5.3 controls.
+Exact app/bundle hashes and commit are in the local artifact verification record.
+
+Installation is explicit local unsigned recovery, not a production release. If the
+previous local candidate is pending, restore accepted 0.5.2 before installing this
+fresh diagnostic candidate; do not reset counters or silently accept the old one.
+Production publication, physical latency conclusions and candidate acceptance
+remain pending. Source research links and the resume plan are in
+`docs/dev/paint-latency-investigation.md`.

@@ -293,3 +293,18 @@ def test_focus_loss_still_cancels_finger_stroke(app, monkeypatch):
     local = (x + 35 - app.canvas_rect.left, y - app.canvas_rect.top)
     assert app.canvas_surface.get_at(local)[:3] == (255, 255, 255)
     assert app.pointer_input.owner is None
+
+
+def test_armed_timing_records_stages_and_context_without_changing_exit(app, monkeypatch):
+    import time
+    from toddlerbox.runtime.paint_timing import PaintTiming
+    probe = PaintTiming(app.data_root / 'unused.json', time.monotonic() + 60)
+    app._timing = probe  # No writer thread or privileged arming file in this synthetic test.
+    monkeypatch.setattr(pygame.event, 'get', lambda: [pygame.event.Event(pygame.QUIT)])
+    app._run()
+    result = probe.snapshot()
+    assert result['context']['screen_size'] == app.screen.get_size()
+    assert result['metrics']['display_flip']['count'] >= 1
+    assert result['metrics']['event_batch']['count'] >= 1
+    assert result['counts']['events_received'] >= 1
+    assert not (app.data_root / 'unused.json').exists()

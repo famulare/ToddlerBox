@@ -21,6 +21,7 @@ from toddlerbox.runtime import RuntimeLogger, get_runtime_logger
 from toddlerbox.runtime import health, control, retained
 from toddlerbox.runtime.image_safety import DECODE_ERRORS, MAX_PHOTO_PIXELS
 from toddlerbox.runtime.workers import DaemonExecutor
+from toddlerbox.runtime.paint_timing import PaintTiming
 from toddlerbox.runtime.persistence import (
     confirm_durable,
     has_archive_reserve,
@@ -531,6 +532,7 @@ class PaintApp:
         self.logger: RuntimeLogger = get_runtime_logger(self.data_root)
         dirs = ensure_directories(self.data_root)
         self.paint_dir = dirs["paint"]
+        self._timing = PaintTiming.armed(self.data_root)
 
         if screen is None:
             self.screen, self.screen_rect = create_fullscreen_window()
@@ -1442,6 +1444,8 @@ class PaintApp:
                 button.draw(surface)
 
     def _render(self) -> None:
+        timing = getattr(self, "_timing", None)
+        render_started = time.perf_counter() if timing else 0.
         # Controls are static during a stroke. Cache their pixels, not input or
         # canvas samples; every accepted movement still reaches the old renderer.
         key = (self.screen.get_size(), self.current_tool, self.current_size,
@@ -1461,7 +1465,11 @@ class PaintApp:
             self._draw_recall_overlay()
 
         control.before_flip(self.screen, self._save_for_control)
+        flip_started = time.perf_counter() if timing else 0.
         pygame.display.flip()
+        if timing:
+            timing.observe("render_work", flip_started - render_started)
+            timing.observe("display_flip", time.perf_counter() - flip_started)
 
     def run(self, *, quit_on_exit: bool = True) -> None:
         try:
@@ -1489,15 +1497,31 @@ class PaintApp:
 
     def _run(self) -> None:
         running = True
+        if getattr(self, "_timing", None):
+            self._timing.context = {
+                "screen_size": self.screen.get_size(), "canvas_size": self.canvas_surface.get_size(),
+                "canvas_bytes_per_pixel": self.canvas_surface.get_bytesize(),
+                "canvas_flags": self.canvas_surface.get_flags(),
+                "sdl_version": pygame.get_sdl_version(), "video_driver": pygame.display.get_driver(),
+                "compositor_hint": os.environ.get("WLR_RENDERER"),
+                "sdl_renderer_hint": os.environ.get("SDL_RENDER_DRIVER"),
+            }
         self._render()
         last_frame_time = time.monotonic()
         while running and not health.stopping():
+            timing = getattr(self, "_timing", None)
+            if timing:
+                timing.frame()
+            events_started = time.perf_counter() if timing else 0.
             now = time.monotonic()
             if now - last_frame_time > 2.0:
                 self._handle_resume("frame-time gap")
             last_frame_time = now
             discard_input = False
-            for event in pygame.event.get():
+            events = pygame.event.get()
+            if timing:
+                timing.count("events_received", len(events))
+            for event in events:
                 if discard_input and event.type != pygame.QUIT:
                     continue
                 if event.type in _INPUT_RESET_EVENTS:
@@ -1508,7 +1532,11 @@ class PaintApp:
                     self._handle_resume("ignored keyboard shortcut")
                     discard_input = True
                     continue
-                if not self.pointer_input.accept(event):
+                accepted = self.pointer_input.accept(event)
+                if timing and (event.type in FINGER_EVENTS or event.type in {
+                        pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP, pygame.MOUSEMOTION}):
+                    timing.count("pointer_accepted" if accepted else "pointer_rejected")
+                if not accepted:
                     continue
                 if event.type == pygame.QUIT:
                     self._exit_requested = True
@@ -1549,9 +1577,14 @@ class PaintApp:
                     self.pointer_down = False
                     self._handle_pointer_up()
 
+            if timing:
+                timing.observe("event_batch", time.perf_counter() - events_started)
             now = time.monotonic()
             if now - self.last_autosave >= self.autosave_interval:
+                save_started = time.perf_counter() if timing else 0.
                 self._request_autosave()
+                if timing:
+                    timing.observe("autosave_snapshot", time.perf_counter() - save_started)
                 self.last_autosave = now
 
             self._service_transition()
@@ -1560,7 +1593,10 @@ class PaintApp:
             self._pump_recall_thumbnail()
             self._render()
             health.frame_complete()
+            tick_started = time.perf_counter() if timing else 0.
             self.clock.tick(60)
+            if timing:
+                timing.observe("clock_tick", time.perf_counter() - tick_started)
 
 
 def main() -> None:
