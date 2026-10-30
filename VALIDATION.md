@@ -2490,3 +2490,27 @@ fresh diagnostic candidate; do not reset counters or silently accept the old one
 Production publication, physical latency conclusions and candidate acceptance
 remain pending. Source research links and the resume plan are in
 `docs/dev/paint-latency-investigation.md`.
+
+
+## Bounded Cage renderer trial preparation — 2026-10-30
+
+The session retains its ordinary pixman/SDL software-hint settings. A root-owned,
+non-symlink, exact-mode-0644 runtime flag can request gles2 with a literal token,
+no extra fields and a Linux boot-time expiry at most 300 seconds ahead. Boot time
+includes suspend, matching /proc/uptime; a focused integration test exposed and
+corrected a monotonic-vs-boot-time mismatch during development.
+
+15 new deadline/metadata/symlink tests passed; relevant update, appliance,
+controller and accepted-boot recovery suites passed (84 and 64 tests in their
+respective focused runs). bash -n, pinned Ruff and diff checks pass. The child
+session flag guard is delivered as a normal allowlisted session payload. No
+compositor binary, health deadline, retry budget, IPC guard or data behavior changes.
+
+A separate root observer removes the flag after a gles2 Cage is observed, on
+termination or after the trial deadline; systemd ExecStopPost also removes it.
+It requests parent mode at timeout or absent startup, using existing authenticated
+control. This observer neither starts nested Cage nor changes candidate counters.
+The expiring /run flag cannot survive reboot. No bind mounts or temporary writes
+over recovery-managed files are used. Real GPU startup and physical performance
+remain untested until the explicitly initiated trial; source and artifact hashes
+are recorded next to the separate local candidate.

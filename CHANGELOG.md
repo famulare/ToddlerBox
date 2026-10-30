@@ -2,6 +2,10 @@
 
 ## 0.5.3 development — unreleased
 
+- Add explicit, expiring, root-owned diagnostic arming for app timings and a
+  one-variable Cage gles2 trial. Ordinary startup remains pixman; recovery and
+  parent escape limits are unchanged.
+
 - Paint preserves an active gesture across benign focus-gained/restored/size
   notifications. Real focus loss/backgrounding still cancels input.
 - Cache static Paint controls between selection/thumbnail changes; retain exact

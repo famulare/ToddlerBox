@@ -7,6 +7,23 @@ export SDL_VIDEODRIVER=wayland XDG_SESSION_TYPE=wayland LIBSEAT_BACKEND=logind
 # This 2D UI does not need a GPU renderer. The same path works with QEMU's
 # unaccelerated virtio display and avoids depending on old laptop GL drivers.
 export WLR_RENDERER=pixman SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR=0
+# Explicit, short-lived parent diagnostic override. The ordinary boot default
+# stays pixman. Root owns this /run flag; reboot and deadline both clear its effect.
+paint_trial_renderer() {
+    local now=$1 renderer=$2 expires=$3 extra=${4:-}
+    if [[ $renderer == gles2 && -z $extra && $now =~ ^[0-9]{1,12}$ && $expires =~ ^[0-9]{1,12}$ ]] &&
+       (( 10#$expires > 10#$now && 10#$expires - 10#$now <= 300 )); then
+        printf '%s' gles2
+    else
+        printf '%s' pixman
+    fi
+}
+trial_flag=/run/toddlerbox-system/cage-renderer-trial
+if [[ -f $trial_flag && ! -L $trial_flag && $(stat -c '%u:%a' "$trial_flag") == 0:644 ]]; then
+    read -r trial_uptime _ < /proc/uptime
+    read -r trial_renderer trial_deadline trial_extra < "$trial_flag" || true
+    export WLR_RENDERER=$(paint_trial_renderer "${trial_uptime%%.*}" "${trial_renderer:-}" "${trial_deadline:-}" "${trial_extra:-}")
+fi
 export PYGAME_HIDE_SUPPORT_PROMPT=1 KIDBOX_CONFIG=/etc/toddlerbox/config.yaml
 export TODDLERBOX_APP_CONTROL=1
 # Child work lives where sync and setup expect it, whatever the editable config says.

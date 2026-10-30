@@ -316,3 +316,9 @@ checks and maintainer signing. VM disks and ephemeral test passwords
 are never published. Selected screenshots/results are review evidence; physical
 HP radio, touch gestures, audio and sleep still need hardware acceptance.
 Maintainers verify evidence and sign the update manifest before publication.
+
+The 0.5.3 development session recipe retains pixman by default. A root-owned,
+non-symlink, mode-0644 `/run/toddlerbox-system/cage-renderer-trial` can request
+`gles2 EXPIRY_BOOTTIME_SECONDS` for at most 300 seconds. It is for the bounded
+local investigation only; it adds no automatic maintenance or normal user setting.
+See [the investigation plan](../docs/dev/paint-latency-investigation.md).

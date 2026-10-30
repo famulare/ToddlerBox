@@ -1,6 +1,6 @@
 # Paint latency investigation
 
-Status: Phase 1 completed; opt-in Phase 2 app timing prepared. No renderer experiment performed.
+Status: Phases 1 and 2 collected; a bounded Phase 3 renderer trial is prepared, not yet run.
 Owner branch: `dev/0.5.3-paint`. Follow-up: GitHub issue #29.
 
 ## Objective and current evidence
@@ -153,3 +153,30 @@ Primary-source research, relevant to interpreting later experiments:
 
 Do not assume that setting SDL_RENDER_DRIVER by itself establishes the actual
 framebuffer path, or that changing WLR_RENDERER will resolve the measured cost.
+
+## Phase 3 implementation and next action
+
+Stage timings from both modes were collected successfully. The raw reports and
+analysis remain local. The next variable is Cage's renderer; do not change the
+SDL renderer hint, app code, canvas dimensions or frame pacing during that trial.
+
+The development session recipe now admits a gles2 trial only through the fixed
+root-owned, non-symlink, exact-mode-0644 runtime flag. It validates a literal
+`gles2` token, decimal Linux boot-time expiry (including suspend), no extra fields and a deadline within
+300 seconds. Missing, malformed, untrusted or expired flags leave pixman selected.
+The file lives in /run and cannot survive reboot. This is a journaled session
+payload change, not an unjournaled replacement or a bind mount over a recovery
+destination. Normal startup and the signed stable release are unchanged.
+
+A separate bounded root observer removes the flag as soon as a gles2 Cage
+process is observed so a subsequent compositor restart gets the original default.
+It also removes the flag on termination and requests parent mode at its deadline
+if the child session has not ended. ExecStopPost provides independent flag cleanup.
+Existing controller escape, watchdog, retry limits and candidate recovery remain
+in force. A failed trial must be reported, not worked around by resetting counters.
+
+Install the new separate local candidate through the resident journal first,
+rolling the previous pending diagnostic candidate back to accepted 0.5.2 if needed.
+After parent login, arm the trial/timings, start the normal standalone child
+session, draw for 30 seconds and return through Ctrl+Alt+Home. Do not run Cage
+inside GNOME. Verify the override is removed before concluding the experiment.
