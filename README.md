@@ -1,8 +1,9 @@
 # ToddlerBox
 
-Development for 0.5.3 includes Paint input/redraw hardening, opt-in timing
-diagnostics and GPU-first composition with bounded software startup fallback; see
-[the development notes](docs/dev/v0.5.3-paint.md). The published 0.5.2 artifacts remain immutable.
+Development for 0.5.3 includes GPU-first presentation, visible-number speech,
+Reading/Math Back history, corrected “plum” audio and future-image diagnostic tools.
+See [the backlog/validation plan](docs/dev/v0.5.3-issue-plan.md). Published 0.5.2
+artifacts remain immutable; these later features are not yet installed or released.
 
 **ToddlerBox 0.5:** six offline activities, a two-row launcher, pictures-first Math
 with deliberate math speech, and 18 short songs in a scrollable Music library.
@@ -140,15 +141,21 @@ falling-note keyboard with playable keys and Free Play. Audio and note cues are 
 ### Reading
 
 Tap each letter or sound group at your own pace. Tap the whole-word button
-to hear the word and reveal its picture. Next chooses another random card without an immediate repeat.
+to hear the word and reveal its picture. Tap the visible picture to hear the whole
+word again. Back revisits earlier cards silently; Next follows forward visits
+before choosing a new random card without an immediate repeat. The corrected
+“plum” recording is separately credited to Dvortygirl under CC BY-SA 3.0.
 
 ![ToddlerBox Reading App](assets/screenshots/reading.png)
 
 ### Math
 
 Three modes: pictures-first Numbers, Addition and Subtraction. Passive illustrated
-ten-frames cover 0–100; a speaker button reads the revealed number or complete
-arithmetic equation on demand.
+ten-frames cover 0–100. Tap a visible printed number to hear that number; revealing
+a hidden answer stays silent. The separate speaker reads the revealed number or
+complete equation. Back/Next traverse up to 100 visits across modes, restoring
+exact examples and reveal states without autoplay. History lasts only for the
+current activity visit and never deletes saved child work.
 See [the design and desktop instructions](MATH_DESIGN.md).
 
 ---

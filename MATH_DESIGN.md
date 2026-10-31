@@ -7,7 +7,7 @@ The original trial and follow-up evidence remain in VALIDATION.md.
 ## Interaction
 
 Three modes cycle through one compact top control: `Numbers`, `+`, `−`.
-Home and Next retain the shared style. Tap the large number/question card to
+Home, Back and Next retain the shared style. Tap the large number/question card to
 reveal. Objects are visual only: tapping them has no action. There is no left
 rail, answer entry, right/wrong feedback, scoring, progression or learning history.
 
@@ -19,10 +19,19 @@ rail, answer entry, right/wrong feedback, scoring, progression or learning histo
   positions with muted gray ghosts and cancellation strokes, then shows the C
   remaining objects regrouped in a separate result area.
 
-The result remains visible until Next or mode change. Mode changes and Next
+Back and Next traverse up to 100 in-memory visits across modes, restoring exact
+examples, motifs and reveal states silently. Next generates only at the newest
+visit; a mode change after Back starts a new forward branch. Leaving the activity
+discards navigation history, without writing or deleting child work.
+
+The result remains visible until navigation or mode change. Mode changes and Next
 discard stale pointer ownership. Focus changes and long frame gaps also discard
 input, so an old release cannot reveal a new question. In development, Home
 returns to the launcher (or closes standalone Math).
+
+A deliberate tap on any visible printed numeral reads its own value, including
+operands while the answer is hidden. Question marks and the initial revealing tap
+remain silent. Illustrated objects stay passive.
 
 A small speaker button appears after revelation. Each deliberate tap reads the
 disclosed numeral (Numbers) or complete equation (arithmetic), replacing current

@@ -2545,3 +2545,36 @@ before explicit candidate acceptance; no production release is published here.
 Local artifacts record the exact commit, bundle/app hashes, same Ubuntu/Python
 production-only dependency environment and pending status. Preserve accepted
 0.5.2 as the local rollback and never roll back child data.
+
+## Integrated 0.5.3 backlog changes — 2026-10-31
+
+Development source integrates #25, #30, #24 and #27; detailed baseline identities,
+commands, asset hashes, licenses and limits are in docs/dev/issue-25.md,
+issue-30.md, issue-24.md and issue-27.md. The parent approved the replacement
+plum pronunciation by local listening. Unrelated audio/artwork remain exact.
+Speech-only UI changes match all 18 baseline frames; history changes match
+outside the intended Back control, including six identical initial frames.
+No private appliance data or device traces are included.
+
+Integration review added truncated retained-PCM rejection, explicit SMART
+ActiveState checks, a root/parent-only installed image smoke helper and its
+fresh-image qualification invocation. The helper and apt packages are absent
+from fixed app-update payloads; existing appliances receive no automatic apt
+installation. No live session, accepted app, backup or child data was changed.
+
+The earlier renderer-only workflow 41169159684 has passed fresh-install while
+update-chain is still running at this record. Its source is 3ab4d5d7d655d7a3faa261947b0473c5a02673f5,
+not this integration. New-source image/package qualification and physical
+combined-feature acceptance remain pending. No production tag/sequence is
+allocated and these issues are not closed by this source integration.
+
+Final combined local validation: `SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy
+UV_CACHE_DIR=/tmp/tbx-release-uv-cache uv run --frozen pytest -q -p no:cacheprovider`
+completed with 841 passes and one sandbox-denied AF_UNIX bind in
+`test_kernel_supplied_credentials_reject_unprivileged_datagram`. Re-running
+all 13 tests in tests/test_sync_ipc.py outside that filesystem/network sandbox
+passed. That test and system/tbx_sync are byte-unchanged from the renderer
+baseline. No credential guard was weakened or test skipped. Pinned Ruff 0.12.0,
+Bash syntax and git diff checks pass. The local interpreter is Python 3.12.3
+with the frozen development dependency group; the fresh-image toolchain/package
+manifest and artifact checksums remain for the combined image build.

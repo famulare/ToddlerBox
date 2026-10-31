@@ -102,3 +102,33 @@ Future images include `alsa-utils` (`speaker-test`, `aplay`, `alsamixer`) and
 new Ubuntu packages; adding optional diagnostic packages is a separate parent
 operation when networking is available. Never run a looping full-volume test or
 raise system volume automatically to diagnose a quiet speaker.
+
+## Optional parent diagnostics in new images
+
+The 0.5.3 image recipe includes input-event, disk-health and PCI tools. These are
+explicit parent actions; no SMART daemon, timer or background test is enabled.
+Older images may lack them, and app updates do not add Ubuntu packages. No new
+installation/reinstall is required merely to use the updated activities.
+
+In parent mode on a new image, `sudo toddlerbox-check-diagnostics` checks command
+availability/versions and disabled SMART startup with bounded help queries. It
+plays no sound and captures no input. Use the existing speaker check above for a
+deliberate quiet tone; its accepted behavior has not changed.
+
+For deeper diagnosis, first identify the intended input/disk device. Keep any raw
+output in a mode-0700 private directory created with umask 077. Never publish
+keyboard events, touch coordinates, media names, device identities or credentials.
+Bound any input recording with a kill backstop and never use an exclusive grab.
+Only inspect disk health unless a separate disk test was explicitly requested.
+Read-only examples (replace placeholders after checking the exact device):
+
+```sh
+sudo timeout --kill-after=2s 5s libinput list-devices
+sudo timeout --kill-after=2s 5s libinput debug-events --device /dev/input/eventX
+sudo timeout --kill-after=2s 5s evtest /dev/input/eventX
+sudo timeout --kill-after=2s 10s smartctl -H -A /dev/DISK
+timeout --kill-after=2s 5s lspci -k
+```
+
+Virtual-device checks establish tool operation and policy, not physical touch,
+SMART passthrough or human hearing. Keep parent escape usable throughout.

@@ -53,3 +53,19 @@ def test_smart_masks_override_package_enablement_in_disposable_root(tmp_path):
         assert result.stdout.strip() == 'masked'
         assert (tmp_path / 'etc/systemd/system' / name).readlink() == Path('/dev/null')
     assert not list((tmp_path / 'etc/systemd/system/multi-user.target.wants').glob('*smart*'))
+
+
+def test_diagnostic_smoke_check_is_image_only_and_parent_guarded():
+    recipe = (ROOT / 'system/configure-rootfs.sh').read_text()
+    assert 'check-diagnostic-tools.sh" /usr/local/sbin/toddlerbox-check-diagnostics' in recipe
+    script = (ROOT / 'system/check-diagnostic-tools.sh').read_text()
+    assert '$EUID == 0' in script and '/run/toddlerbox-system/mode' in script
+    assert 'libinput record --help' in script
+    assert 'systemctl show "$unit" --property=ActiveState --value' in script
+    qualification = (ROOT / 'scripts/qualify-release-vm.py').read_text()
+    assert '/usr/local/sbin/toddlerbox-check-diagnostics' in qualification
+    from importlib.util import module_from_spec, spec_from_file_location
+    spec = spec_from_file_location('diagnostic_update_payload', ROOT / 'system/update_bundle.py')
+    module = module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert 'toddlerbox-check-diagnostics' not in module.FILES

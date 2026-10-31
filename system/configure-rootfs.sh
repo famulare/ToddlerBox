@@ -19,6 +19,7 @@ printf 'GRUB_TIMEOUT_STYLE=menu\nGRUB_TIMEOUT=5\nGRUB_RECORDFAIL_TIMEOUT=5\nGRUB
 install -d /etc/sysctl.d
 printf 'kernel.sysrq = 16\n' >/etc/sysctl.d/90-toddlerbox.conf
 install -m 0755 "$source_dir/bin/toddlerbox-maintenance" /usr/local/sbin/
+install -m 0755 "$source_dir/check-diagnostic-tools.sh" /usr/local/sbin/toddlerbox-check-diagnostics
 touch /var/lib/toddlerbox-system/appliance-v1
 printf '{"sequence":%s,"source":"%s"}\n' "$(cat "$source_dir/release-sequence")" "$release_id" >/var/lib/toddlerbox-system/release-sequence.json
 chmod 0600 /var/lib/toddlerbox-system/release-sequence.json

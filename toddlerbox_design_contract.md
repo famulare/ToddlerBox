@@ -219,13 +219,21 @@ but must preserve every accepted stroke sample and the existing brush geometry.
 - One word or letter; numbers/math are separate from Reading.
 - Word units are explicit: `ship` is `sh/i/p`, `duck` is `d/u/ck`.
 - Each large sound-unit tap plays only that sound, without automatically advancing to another.
-- A separate whole-word button reads the word; picture tap replays the whole word.
+- A separate whole-word button reads the word; tapping the already-visible main
+  picture replays the whole word. Merely appearing or selecting content never
+  starts speech.
   Letter cards repeat the selected sound/name. Rapid sound taps interrupt without queuing voices.
 - A scrollable left rail switches between written-word selection and picture selection.
   Picture selection is the default and deliberately exposes preview art. Switching the rail never reveals the main picture.
 - Reading previews preload independently of the selected rail view. One bounded worker decodes validated art; SDL surface work stays on the main thread. Keep at most 96 small previews, prioritize visible/nearby cards and never wait for decoding during drawing or a held gesture.
-- Uniform random Next excludes the current card. Recent earlier cards may return.
-  A singleton deck supports replay; empty content returns Home quietly.
+- Back/Next traverse up to 100 chronological in-memory visits during this app
+  visit. Store card identifiers and reveal state, not decoded media. Reading's
+  Pictures/abc toggle and same-card taps do not create visits. A different sidebar
+  selection after Back starts a new forward branch; revisiting is silent and
+  cancels obsolete speech/input. Missing cards are skipped conservatively.
+- At the newest visit, uniform random Next excludes the current card. Recent
+  earlier cards may return. A singleton deck supports replay; empty content
+  returns Home quietly. History is not persisted after leaving the activity.
 - No scores, time limits, rewards, automatic progression, spaced repetition or usage history.
 - Parent YAML selects words/letters, word sets, letter sounds/names and case.
 - Default: all seven word sets, lowercase, software volume 0.70.
@@ -246,11 +254,13 @@ but must preserve every accepted stroke sample and the existing brush geometry.
   question card to reveal the numeral or answer; object taps have no action.
   Numbers keeps its pictures visible after revelation.
 - Full default range 0–100, including zero and crossing tens. Display numerals,
-  not written number names. No answer entry, assessment, scoring or stored history.
+  not written number names. No answer entry, assessment, scoring or disk-stored
+  activity history.
 - Each integer 0–20 has weight 12; each integer 21–100 has weight 1. Addition
   weights its total; subtraction weights its starting total. Ordered partitions
-  divide that total's weight equally. Next conditions this finite distribution
-  on excluding the current numerical prompt, independently of artwork.
+  divide that total's weight equally. At the newest visit, Next conditions this
+  finite distribution on excluding the current numerical prompt, independently
+  of artwork.
 - Ten-frames use two rows of five, complete tens and a partial frame. Empty
   frames represent zero; hidden content uses a visibly different neutral area.
 - Addition has two input collections and a separate combined result. Subtraction
@@ -258,12 +268,20 @@ but must preserve every accepted stroke sample and the existing brush geometry.
   regrouped in a separate result panel.
 - One countable illustration per example from Reading's explicitly curated
   artwork, with existing source/license records and PNG bytes retained.
-- Home, Next and one mode control; no left rail. Existing single-pointer cleanup,
+- Home, Back, Next and one mode control; no left rail. One 100-entry in-memory
+  visit history crosses modes and restores the exact example, motif and reveal
+  state silently. Next traverses forward entries before generating new examples;
+  a mode change after Back starts a new forward branch. History is discarded on
+  leaving Math and never removes saved child work. Existing single-pointer cleanup,
   frame supervision and authenticated screen-only receipt remain in use.
 - Next targets the full button with safe padding into unused space, never only
   the arrow glyph. Accept at most 32 pixels of release drift; other controls
   retain their existing tolerance. Touch pressure does not gate activation.
 - No child work is written; save-current uses the existing no-work acknowledgement.
+- Deliberately tapping a visible printed numeral speaks that value, including
+  equation operands while the result is hidden. Question marks never speak; the
+  initial revealing tap stays silent and a later visible-number tap speaks it.
+  Illustrated counting objects remain passive. No appearance/selection autoplay.
 - A speaker button reads the disclosed numeral in Numbers, or the complete
   arithmetic equation ("eight minus three equals five") on deliberate tap only.
   No autoplay or speech-controlled revelation. Offline bounded 0–100 WAV clips

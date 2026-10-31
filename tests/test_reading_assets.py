@@ -130,3 +130,14 @@ def test_reading_builder_rejects_incompatible_lossless_pcm(tmp_path, channels, w
     builder = runpy.run_path(str(ROOT.parents[1] / "scripts/build-reading.py"))
     with pytest.raises(ValueError, match="PCM source must be mono 44.1kHz signed 16-bit"):
         builder["decode"](path)
+
+
+def test_reading_builder_rejects_truncated_lossless_pcm(tmp_path):
+    path = tmp_path / "short.wav"
+    with wave.open(str(path), "wb") as source:
+        source.setparams((1, 2, 44100, 0, "NONE", "not compressed"))
+        source.writeframes(bytes(200))
+    path.write_bytes(path.read_bytes()[:-20])
+    builder = runpy.run_path(str(ROOT.parents[1] / "scripts/build-reading.py"))
+    with pytest.raises(ValueError, match="Truncated PCM source"):
+        builder["decode"](path)

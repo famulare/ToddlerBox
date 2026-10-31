@@ -2,6 +2,16 @@
 
 ## 0.5.3 development — unreleased
 
+- Math visible printed numerals speak their individual values on deliberate taps;
+  revelation remains silent. Verify Reading's existing visible-picture replay.
+- Reading and Math gain silent, bounded Back/forward history across modes/views,
+  with exact reveal-state restoration and no persisted activity tracking.
+- Replace “plum” with the parent-approved, separately credited CC-BY-SA-3.0
+  recording; unrelated audio/artwork stays byte-identical.
+- Future images add libinput-tools, evtest, smartmontools and pciutils. SMART
+  startup remains disabled/masked; an authenticated parent-only smoke check is
+  installed. Existing app updates do not install packages or enable monitoring.
+
 - Prefer GPU-backed Cage on every machine, with one silent software attempt for
   unsuccessful startup before healthy frames. Preserve normal exits, signals,
   root retry bounds and parent recovery. Retire the experimental renderer flag.
@@ -15,12 +25,13 @@
   Faster synthetic rendering is not a measured touch-to-display improvement.
 
 
-## 0.5.2 candidate — unreleased (dev/review-hardening)
+## 0.5.2 — published signed update (sequence 5)
 
 The target is a signed in-place app/system update, sequence 5. App and allowlisted
 root-tool changes below are delivered by that update. Entries explicitly marked
 fresh-image/installer, including resident sync and boot recovery, remain outside
-the existing-appliance delivery boundary. No new production release is published yet.
+the existing-appliance delivery boundary. The signed update is published; no new
+installer ISO was published with it. Later 0.5.3 development remains unreleased.
 
 - Photos thumbnails use a source-content digest and requested size instead of
   timestamp ordering. In-place replacements, timestamp-preserving imports and

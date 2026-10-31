@@ -2,16 +2,19 @@
 
 For unreleased Paint/session performance work, see [0.5.3 development notes](dev/v0.5.3-paint.md).
 
-The next [0.5.2 candidate](releases/v0.5.2.md) is an **in-place app/system update**,
-not an installer migration. Its qualification and publication are pending; 0.5.1
-remains the current published update until signed stable metadata is advanced.
-The resident sync worker, boot recovery gate, firstboot, sysctl and GRUB are
-preserved. Do not expect this update to deliver fixes to those image-only files.
+The [0.5.2 signed update](releases/v0.5.2.md) is published as an in-place
+app/system update. The public main catalogue still points to 0.5.1; a release
+asset's presence does not advance that catalogue. No 0.5.3 production release,
+sequence or stable promotion is claimed by the development branch.
 
-For the current 0.5.1 application update, follow the
-[existing-install instructions](releases/v0.5.1.md). Earlier USB setup/DNS repair
-instructions remain in the [0.5.0 guide](releases/v0.5.0.md). Pulling the checkout alone
-does not update the child application's versioned installation.
+The unreleased 0.5.3 work adds numeral/picture replay, Reading/Math visit history
+and corrected “plum” audio alongside session/renderer hardening. Its diagnostic
+packages and installed diagnostic helper are fresh-image changes, excluded from
+the fixed existing-appliance update payload. App updates never apt-install these
+packages, reinstall Ubuntu or roll back child work. Pulling a checkout alone does
+not update the versioned child installation. Current app/setup/update boundaries
+remain in the [release guide](releases/v0.5.2.md) and
+[development plan](dev/v0.5.3-issue-plan.md).
 
 ## Appliance installer and later releases
 

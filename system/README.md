@@ -328,3 +328,16 @@ No per-device graphics preference or permanent trial flag is required. The earli
 expiring renderer trial hook has been retired; its results informed this policy.
 Unaccelerated VM qualification and all six activity checks are required before
 publishing this development change. See the [investigation plan](../docs/dev/paint-latency-investigation.md).
+
+## Explicit parent diagnostic tools (0.5.3 image development)
+
+New images include libinput-tools, evtest, smartmontools and pciutils, retaining
+ALSA/PulseAudio and pw-play tools. SMART SysV startup and both systemd service
+names are disabled/masked; no automatic checks, polling or new network jobs are
+permitted. In a booted parent session, run `sudo toddlerbox-check-diagnostics`
+for bounded command/version and startup-policy checks. It performs no device
+capture, playback, disk self-test or package installation. The disposable fresh-VM
+qualification calls this helper; its package manifest records actual versions.
+Existing appliances receive none of these packages/helper through app updates.
+See [parent diagnostics](../docs/parent-maintenance.md) and the
+[image-tool evidence](../docs/dev/issue-27.md).

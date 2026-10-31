@@ -43,7 +43,10 @@ def decode(path):
         with wave.open(str(path), "rb") as recording:
             if recording.getparams()[:3] != (1, 2, RATE):
                 raise ValueError("PCM source must be mono 44.1kHz signed 16-bit")
-            raw = recording.readframes(recording.getnframes())
+            frames = recording.getnframes()
+            raw = recording.readframes(frames)
+            if len(raw) != frames * 2:
+                raise ValueError("Truncated PCM source")
         data = array.array("h")
         data.frombytes(raw)
         if sys.byteorder != "little":

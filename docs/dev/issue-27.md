@@ -68,10 +68,11 @@ for deliberate audio playback.
 
 ## Qualification and delivery limits
 
-`system/check-diagnostic-tools.sh` is an explicit repository-side clean-image
-smoke check, not a boot service or installed update payload. In a disposable
-image built from the final integrated source, run it from a parent terminal with
-`/usr/sbin` on PATH. It checks command paths, package versions, bounded help/version
+`system/check-diagnostic-tools.sh` is installed in new images as
+`/usr/local/sbin/toddlerbox-check-diagnostics`. It requires root and authenticated
+parent mode and is not a boot service or signed update payload. The disposable
+fresh-image qualification runs this helper in parent mode before child checks.
+For a deliberate manual check, use `sudo toddlerbox-check-diagnostics`. It checks command paths, package versions, bounded help/version
 operations, both masked/inactive SMART units and absent SysV startup links.
 Save output privately; retain the complete `/opt/toddlerbox/packages.tsv`, source
 identity, builder commands/toolchain and image checksums in final VALIDATION.md.
@@ -99,3 +100,8 @@ bounded help/version queries for evtest, smartctl and lspci without installation
 or hardware access. Noble evtest rejects --help with status 1 and prints USAGE;
 the smoke check explicitly validates that behavior. libinput and installed-image
 command checks remain for the builder. These are synthetic/source checks only.
+
+Integration review additionally checks libinput record help without recording,
+requires an explicit inactive ActiveState (a system bus error cannot pass), and
+verifies that the parent-only helper is installed only by the image recipe.
+A retained-PCM Reading source regression also rejects truncated WAV input.

@@ -238,6 +238,7 @@ class Qualification:
         test -e /var/lib/toddlerbox-system/password-created
         test ! -e /var/lib/toddlerbox-system/setup-complete
         test "$(cat /run/toddlerbox-system/mode)" = parent
+        /usr/local/sbin/toddlerbox-check-diagnostics
         if toddlerbox-mode child; then exit 1; fi
         for unit in toddlerbox-controller NetworkManager gdm3; do systemctl is-active --quiet "$unit"; done
         test "$(systemctl is-enabled toddlerbox-sync.service 2>/dev/null || true)" = static
@@ -268,6 +269,7 @@ INNER
         self.wait_text('Paint','Math','Reading')
         self.wait_health()
         self.shot('six-activity-launcher')
+        self.results.append('clean-image parent diagnostic commands available; SMART masked and inactive')
         size=Image.open(self.out/'six-activity-launcher.png').size
         w,h=size
         icon=max(120,min(184,int(min(size)*.23)));gap=int(icon*.3)
