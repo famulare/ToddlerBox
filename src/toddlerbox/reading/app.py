@@ -134,6 +134,7 @@ class ReadingApp:
         return False
 
     def select_card(self, card, *, restoring=False):
+        same_card = self.card is not None and self.card.id == card.id
         try:
             picture = pygame.image.load(str(card.image)).convert_alpha() if card.image else None
             if picture is not None:
@@ -152,7 +153,10 @@ class ReadingApp:
         self.card, self.picture = card, picture
         self._prepare_word()
         if not restoring:
-            self.history.append((card.id, False))
+            if same_card:
+                self.history.replace((card.id, False))
+            else:
+                self.history.append((card.id, False))
         return True
 
     def _scroll(self, delta):

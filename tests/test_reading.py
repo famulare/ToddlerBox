@@ -433,3 +433,38 @@ def test_reading_back_raw_finger_ignores_duplicate_mouse(scene):
     for kind in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP):
         app.handle_event(pygame.event.Event(kind, pos=(x, y), button=1, touch=True))
     assert app.history.index == index - 1
+
+
+@pytest.mark.parametrize('after_back', [False, True])
+def test_reselect_current_sidebar_card_resets_without_creating_or_branching_visit(scene, after_back):
+    app, audio = scene
+    first = app.card
+    forward = None
+    if after_back:
+        app.next_card()
+        forward = app.card
+        app.navigate(-1)
+    before = list(app.history.entries)
+    index = app.history.index
+    app.player.revealed = True
+    app.player.play(whole_word=True)
+    assert audio.playing
+    # Select the current card through its actual sidebar target.
+    row_index = next(i for i, card in enumerate(app.cards) if card.id == first.id)
+    app._scroll(row_index * 76)
+    row = next(row for card, row in app._rail_rows() if card.id == first.id)
+    click(app, row.center)
+    assert app.card == first and not app.player.revealed
+    assert not audio.playing and app.player.state == 'idle'
+    assert app.pressed is None and app.pointer.owner is None
+    assert app.history.entries == before
+    assert app.history.index == index
+    assert app.history.entries[index] == (first.id, False)
+    click(app, row.center)
+    assert app.history.entries == before and app.history.index == index
+    if after_back:
+        assert app.history.can_forward
+        app.next_card()
+        assert app.card == forward and not app.player.revealed
+    else:
+        assert not app.history.can_back and not app.history.can_forward

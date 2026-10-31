@@ -93,3 +93,19 @@ Build, installation and update procedures are unchanged. The integration owner
 should update shared documents together and record final combined source identity
 and appliance qualification in VALIDATION.md. No publication, live installation,
 issue closure or release claim was made by this task.
+
+## Integration review follow-up: current-card selection
+
+Repeated selection of the current Reading sidebar card retains the existing
+silent reset: playback and pending input stop and its picture becomes hidden.
+It updates the current history snapshot instead of creating a duplicate visit.
+At an earlier entry it also preserves the known forward branch. Only choosing a
+different card creates a new visit and truncates forward history. This
+interpretation conflicts with no existing tests.
+
+Regression tests exercise actual repeated sidebar clicks at the frontier and
+after Back, checking reset/cancellation, unchanged history length/index, updated
+reveal snapshot and Next restoring the existing forward card. The complete
+focused command above passed again: **139 passed in 17.65 s**. `git diff --check`
+passed. The original frame comparison remains applicable because the render path
+and captured navigation sequence are unchanged.
