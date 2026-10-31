@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.5.3 development — unreleased
+## 0.5.3 development — unreleased (proposed sequence 6)
 
 - Extend explicitly armed Paint diagnostics with bounded timing windows, tool
   transitions and read-only SDL queue-age sampling. Default remains disabled;

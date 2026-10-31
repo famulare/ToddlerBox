@@ -69,3 +69,74 @@ def test_diagnostic_smoke_check_is_image_only_and_parent_guarded():
     module = module_from_spec(spec)
     spec.loader.exec_module(module)
     assert 'toddlerbox-check-diagnostics' not in module.FILES
+
+
+def test_new_image_inventory_checks_reject_monitoring_and_command_failure(monkeypatch):
+    import importlib.util
+    from types import SimpleNamespace
+    import pytest
+    spec = importlib.util.spec_from_file_location('image_inventory_qa', ROOT / 'scripts/qualify-image-diagnostics.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    read_text = Path.read_text
+    monkeypatch.setattr(Path, 'read_text', lambda p, *a, **k: 'parent' if str(p) == '/run/toddlerbox-system/mode' else read_text(p, *a, **k))
+    fault = [None]
+    def bounded(argv):
+        if argv[:2] == ['dpkg-query', '-W']:
+            return 'baseline\t1\nsmartmontools\t1\nlibinput-tools\t1\nevtest\t1\npciutils\t1\n'
+        if argv[:2] == ['dpkg-query', '-L']:
+            if argv[-1] == 'smartmontools':
+                return '/usr/lib/systemd/system/smartmontools.service\n/usr/lib/systemd/system/smartd.service\n' + ('/etc/cron.daily/monitor\n' if fault[0] == 'cron' else '')
+            return '/usr/bin/diagnostic\n'
+        if argv[:2] == ['systemctl', 'show']:
+            return 'active' if fault[0] == 'active' else 'inactive'
+        if argv == ['libinput', 'list-devices'] and fault[0] == 'enumeration':
+            raise subprocess.TimeoutExpired(argv, 8)
+        return ''
+    monkeypatch.setattr(module, 'bounded', bounded)
+    monkeypatch.setattr(module.subprocess, 'run', lambda *_a, **_k: SimpleNamespace(stdout='enabled' if fault[0] == 'enabled' else 'masked'))
+    module.check({'baseline'})
+    for case in ('cron', 'active', 'enabled'):
+        fault[0] = case
+        with pytest.raises(AssertionError):
+            module.check({'baseline'})
+    fault[0] = 'enumeration'
+    with pytest.raises(subprocess.TimeoutExpired):
+        module.check({'baseline'})
+
+
+def test_diagnostic_baseline_inventory_has_recorded_provenance():
+    import hashlib
+    baseline = ROOT / 'docs/dev/evidence/diagnostic-baseline-packages.tsv'
+    assert hashlib.sha256(baseline.read_bytes()).hexdigest() == '36c1e45b42c042e832471b68795094af6d26be388bac4f4215cba6873ec19a85'
+    names = {line.split('\t')[0] for line in baseline.read_text().splitlines()}
+    assert not names.intersection({'libinput-tools', 'evtest', 'smartmontools', 'pciutils'})
+
+
+def test_vm_diagnostic_command_is_valid_shell_and_python(tmp_path):
+    import ast
+    import importlib.util
+    import json
+    import pytest
+    spec = importlib.util.spec_from_file_location('diagnostic_serial_qa', ROOT / 'scripts/qualify-release-vm.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    qa = module.Qualification.__new__(module.Qualification)
+    qa.out = tmp_path
+    calls = []
+    class StopAfterDiagnostic(Exception):
+        pass
+    def serial(script, **kwargs):
+        calls.append(script)
+        if len(calls) > 1:
+            raise StopAfterDiagnostic()
+        subprocess.run(['bash', '-n'], input=script, text=True, check=True)
+        python = script.split("python3 - <<'DIAGNOSTIC_PY'\n", 1)[1].rsplit('\nDIAGNOSTIC_PY', 1)[0]
+        parsed = ast.parse(python)
+        names = ast.literal_eval(parsed.body[-1].value.args[0])
+        assert 'libinput-bin' in names and all('\t' not in n for n in names)
+        return 'TBX_DIAGNOSTICS:' + json.dumps({'checks': ['synthetic marker']}) + '\r\n'
+    qa.serial = serial
+    with pytest.raises(StopAfterDiagnostic):
+        qa.smoke()
+    assert json.loads((tmp_path / 'diagnostics.json').read_text()) == {'checks': ['synthetic marker']}

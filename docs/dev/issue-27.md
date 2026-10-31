@@ -105,3 +105,26 @@ Integration review additionally checks libinput record help without recording,
 requires an explicit inactive ActiveState (a system bus error cannot pass), and
 verifies that the parent-only helper is installed only by the image recipe.
 A retained-PCM Reading source regression also rejects truncated WAV input.
+
+## Final qualification preparation
+
+The renderer-only run 41169159684 passed both jobs. Its public fresh-image
+package inventory (source 3ab4d5d7d655d7a3faa261947b0473c5a02673f5, content
+228da7aa0a16d343) is retained at
+docs/dev/evidence/diagnostic-baseline-packages.tsv, SHA256
+36c1e45b42c042e832471b68795094af6d26be388bac4f4215cba6873ec19a85.
+This is synthetic build metadata, not appliance data. It has none of the four
+new diagnostic packages.
+
+The fresh-image harness now also enumerates actual libinput devices, PCI and
+SMART scan results without capturing input or playing audio. It compares added
+packages to that genuine baseline, checks every added service/socket/timer/path
+unit inactive and not enabled, rejects new cron entries, and retains only the
+allowlisted diagnostics.json summary. Unsupported physical device operations
+remain explicit limits. Added package versions are retained in the complete
+manifest. Unit-policy/timeout negative tests and baseline provenance checks pass.
+
+The release-preparation source uses proposed sequence 6 for 0.5.3, following
+published 0.5.2 sequence 5. A single exact combined build will retain the ISO, app,
+bundle and checksums before qualification. This remains pending evidence, not
+released availability.

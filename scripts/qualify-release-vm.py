@@ -234,6 +234,16 @@ class Qualification:
 
     def smoke(self):
         print('QA: authenticating parent and verifying boot gate',flush=True)
+        baseline = (ROOT / 'docs/dev/evidence/diagnostic-baseline-packages.tsv').read_text()
+        names = sorted({line.split('\t')[0] for line in baseline.splitlines()})
+        # Only public package names and synthetic VM code cross this serial link.
+        diagnostic = (ROOT / 'scripts/qualify-image-diagnostics.py').read_text()
+        output = self.serial('/usr/local/sbin/toddlerbox-check-diagnostics\n' + "python3 - <<'DIAGNOSTIC_PY'\n" + diagnostic +
+                             '\ncheck(' + repr(names) + ')\nDIAGNOSTIC_PY', timeout=240)
+        evidence = re.search(r'TBX_DIAGNOSTICS:(\{[^\r\n]+\})', output)
+        if evidence is None:
+            raise RuntimeError('Missing clean-image diagnostic evidence')
+        (self.out / 'diagnostics.json').write_text(json.dumps(json.loads(evidence[1]), indent=2) + '\n')
         self.serial('''
         test -e /var/lib/toddlerbox-system/password-created
         test ! -e /var/lib/toddlerbox-system/setup-complete

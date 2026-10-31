@@ -2597,3 +2597,30 @@ storage, independent snapshots and export privacy. Genuine accepted-source
 docs/dev/evidence/paint-queue-frames.py: 42 frames and two saved-PNG comparisons
 are exact. A synthetic empty-queue pump comparison measured median 362.90us
 ordinary versus 389.33us armed, not a physical latency or worst-case bound.
+
+## 0.5.3 diagnostic image and exact release preparation
+
+The earlier renderer-only run 41169159684 completed successfully: fresh-install
+and update-chain both passed. Synthetic evidence and its package manifest were
+preserved locally. It predates the four new diagnostic packages and cannot close
+#27. Public baseline inventory provenance is recorded in docs/dev/issue-27.md.
+
+Current source preparation adds genuine-baseline package/unit comparison, real
+bounded enumeration and selected diagnostics.json retention to the fresh-image
+harness. 49 image/audio/update-qualification tests pass; pinned Ruff and diff
+checks pass. Root helpers, public signing keys and production IPC guards are not
+weakened. Proposed production sequence is now 6, not the prior dev test sequence 5.
+The workflow reads that source floor and retains exact artifacts plus a verified
+source/app/checksum build record; no release is automatically published or signed.
+See docs/releases/v0.5.3.md for the remaining gates, including current 0.5.2
+update-path qualification, production signing, exact-byte physical acceptance
+and explicit publication approval. New combined VM qualification is pending.
+
+Before the combined VM trigger, the broadened image/audio/update/source-ID/release/
+bundle run passed 90 tests. Serial-command assembly is checked as both valid
+shell and Python, with real baseline package names and parsed evidence markers.
+A synthetic build-record exercise rejected a mismatched embedded app before
+writing provenance, then verified every retained output checksum on matching
+inputs. Workflow YAML, pinned Ruff and diff checks passed. Runtime content for
+this sequence-6 preparation is 7779244944a8a162. Physical accepted development
+artifacts remain separate; no live installation was changed by this preparation.

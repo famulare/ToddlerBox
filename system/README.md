@@ -341,3 +341,10 @@ qualification calls this helper; its package manifest records actual versions.
 Existing appliances receive none of these packages/helper through app updates.
 See [parent diagnostics](../docs/parent-maintenance.md) and the
 [image-tool evidence](../docs/dev/issue-27.md).
+
+For 0.5.3 release preparation, the dev VM workflow retains the exact installer,
+app archive, update bundle, package manifest and checksum/source build record
+before testing. Its parent diagnostic checks compare new packages/units against
+the preserved renderer-only image inventory. Retained artifacts are candidates;
+require successful VM results and the remaining
+[release gates](../docs/releases/v0.5.3.md) before publication.

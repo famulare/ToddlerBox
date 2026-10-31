@@ -47,6 +47,24 @@ jobs:
           uv run --frozen python system/build-update.py --cage "$TODDLERBOX_BUILD_DIR/toddlerbox-cage" \
             --app "$TODDLERBOX_BUILD_DIR/toddlerbox-app-$id.tar.gz" --output "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
           sha256sum "$TODDLERBOX_BUILD_DIR/toddlerbox-installer.iso" "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
+      - name: Record and retain exact release preparation outputs
+        run: uv run --frozen python scripts/record-release-build.py build/dev
+      - name: Preserve exact installer and build provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dev-installer-candidate
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/dev/toddlerbox-installer.iso
+            build/dev/ToddlerBox-update.pyz
+            build/dev/ToddlerBox-update.pyz.source.json
+            build/dev/build-record.json
+            build/dev/BUILD-SHA256SUMS
+            build/dev/packages.tsv
+            build/dev/release-id
+            build/dev/toddlerbox-app-*.tar.gz
       - name: Pass the exact built candidate to update qualification
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -68,6 +86,7 @@ jobs:
           path: |
             build/dev-qa/*.png
             build/dev-qa/results.json
+            build/dev-qa/diagnostics.json
             build/dev/release-id
             build/dev/packages.tsv
   update-chain:
@@ -136,7 +155,7 @@ jobs:
             --baseline-image-dir build/published/installer --baseline-version 0.4.0 --baseline-sequence 2 \
             --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 \
             --candidate-version "$(uv run --frozen python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" \
-            --candidate-sequence 5 "${retry[@]}"
+            --candidate-sequence "$(cat system/release-sequence)" "${retry[@]}"
       - name: Keep selected synthetic update evidence briefly
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

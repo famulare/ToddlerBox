@@ -4,8 +4,9 @@ For unreleased Paint/session performance work, see [0.5.3 development notes](dev
 
 The [0.5.2 signed update](releases/v0.5.2.md) is published as an in-place
 app/system update. The public main catalogue still points to 0.5.1; a release
-asset's presence does not advance that catalogue. No 0.5.3 production release,
-sequence or stable promotion is claimed by the development branch.
+asset's presence does not advance that catalogue. No 0.5.3 production release
+or stable promotion is claimed by the development branch. The unpublished
+[0.5.3 preparation guide](releases/v0.5.3.md) proposes sequence 6.
 
 The unreleased 0.5.3 work adds numeral/picture replay, Reading/Math visit history
 and corrected “plum” audio alongside session/renderer hardening. Its diagnostic
