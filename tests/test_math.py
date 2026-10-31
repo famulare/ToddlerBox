@@ -397,3 +397,63 @@ def test_finger_numeral_tap_ignores_emulated_mouse_duplicate(app):
         app.handle_event(pygame.event.Event(mouse, button=1, pos=pos, touch=True))
     app.player.play.assert_called_once_with(8)
     assert not app.revealed
+
+
+def test_history_crosses_modes_restores_exact_reveal_and_branches_silently(app):
+    app.player = Mock()
+    first = app.example
+    app.change_mode()
+    second = app.example
+    app.reveal()
+    app.change_mode()
+    third = app.example
+    assert third.mode == 'subtraction'
+    app.player.reset_mock()
+    tap(app, app.back_rect.center)
+    assert (app.example, app.mode, app.revealed) == (second, 'addition', True)
+    tap(app, app.back_rect.center)
+    assert (app.example, app.mode, app.revealed) == (first, 'numbers', False)
+    tap(app, app.next_rect.center)
+    assert (app.example, app.revealed) == (second, True)
+    assert app.player.cancel.called
+    app.player.play.assert_not_called()
+    app.player.play_equation.assert_not_called()
+    app.change_mode()
+    assert len(app.history.entries) == 3
+    assert not app.history.can_forward
+    assert app.history.entries[:2] == [(first, False), (second, True)]
+
+
+def test_history_navigation_discards_pending_gesture(app):
+    app.next_example()
+    app.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=app.question_rect.center))
+    app.navigate(-1)
+    app.handle_event(pygame.event.Event(pygame.MOUSEBUTTONUP, button=1, pos=app.question_rect.center))
+    assert not app.revealed and app.pressed is None
+    assert app.history.index == 0
+    app.navigate(-1)
+    assert app.history.index == 0
+
+
+@pytest.mark.parametrize('size', [(480, 600), (800, 600), (1366, 768)])
+def test_back_target_has_room_without_changing_other_controls(app, size):
+    app.rect = pygame.Rect((0, 0), size)
+    other = MathApp(app.screen, app.rect, app.clock, config=app.config)
+    try:
+        assert other.back_rect.w >= 48 and other.back_rect.h >= 48
+        assert all(not other.back_rect.colliderect(rect) for rect in
+                   (other.home_rect, other.mode_rect, other.speech_rect, other.question_rect, other.next_hit_rect))
+    finally:
+        other.art.close()
+
+
+def test_math_back_raw_finger_ignores_duplicate_mouse(app):
+    app.next_example()
+    app.next_example()
+    index = app.history.index
+    x, y = app.back_rect.center
+    for kind in (pygame.FINGERDOWN, pygame.FINGERUP):
+        app.handle_event(pygame.event.Event(kind, touch_id=1, finger_id=2, x=x/app.rect.w, y=y/app.rect.h))
+    for kind in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP):
+        app.handle_event(pygame.event.Event(kind, pos=(x, y), button=1, touch=True))
+    assert app.history.index == index - 1

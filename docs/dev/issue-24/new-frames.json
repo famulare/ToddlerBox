@@ -1,0 +1,20 @@
+{
+  "math-480x600-initial.png": "a23a43cff81e852cbecab692cea4027dce32b2f0a110861af0ae6e426da662eb",
+  "math-480x600-next-hidden.png": "1580ece67e8a4cfc7c2790f224d659d4ed7334d1c1c2181abd2b8b3cdfb68fec",
+  "math-480x600-next-revealed.png": "85a73b3115b61c306a51b610028fd5e6a85d5cb35473ed75271822368c9b20a8",
+  "reading-480x600-initial.png": "5d3854456381361b6d2d2aac38725ab6ab804da61a42cb8d67bd3d0f6b5a00df",
+  "reading-480x600-next-hidden.png": "e89b7f82b8b74cf77347e5607cbd4cc6a2ee87b419d1f378eb37356037a80ad2",
+  "reading-480x600-next-revealed.png": "0e3b2da4135bf2d86413f2bbdab8782f6a4b0546d0f066c06f9afe3e6460782c",
+  "math-800x600-initial.png": "bc15e96745f7437f3978ed16dbb467063771239bbe23b58df5961b44b4b35fcd",
+  "math-800x600-next-hidden.png": "8a5d4e5aa6eaae362b15059af8a6f31e14ce9a86653e315fd760aef85c760659",
+  "math-800x600-next-revealed.png": "92a6148120f833a725db5809a2c04529ab5a83327628f965149878663a756568",
+  "reading-800x600-initial.png": "320f6bca5eb281fc1656e0b6bc50eac8e13e9a604a5bd7ef54a2d27417fbe3d8",
+  "reading-800x600-next-hidden.png": "6753fe88e51aef7299c2b1a58cfbbc8e05d6a4c8a1f7cb1949e778db5ff12c20",
+  "reading-800x600-next-revealed.png": "d31b66eac94f57cc09970e859a10276fca3786d594a502909f41f3650c9bcd87",
+  "math-1366x768-initial.png": "23b5a1796ae2ace82205e7f8e2456d25f38a4be904f5747b2d2fcc228686f217",
+  "math-1366x768-next-hidden.png": "d6eade2194c083493fb433d13c874657008bbd05b5a111224bceaba76cf8f491",
+  "math-1366x768-next-revealed.png": "bb06008f0cf0e361ecd0bc5d59aa36e12a555effb93050fbcd7d2d76b092f577",
+  "reading-1366x768-initial.png": "2eb40ab38c3c7d2a2fe0cdf85aa8e74bd1c17cf56b45fbe7d1bf938bdd4ca618",
+  "reading-1366x768-next-hidden.png": "3406973d2ddf74f76d5172c05ff664bc370230469b1bfcdf37e7560af3064031",
+  "reading-1366x768-next-revealed.png": "983455be5b71a4a2c26eb5e69f09e33d3470f2c503d8a665ec734c4fd63afb45"
+}

@@ -17,6 +17,7 @@ from toddlerbox.reading.playback import SpeechPlayer
 from toddlerbox.reading.selection import choose_next
 from toddlerbox.runtime import get_runtime_logger, health, control
 from toddlerbox.ui import theme
+from toddlerbox.ui.history import History
 from toddlerbox.ui.preload import preview_indices
 from toddlerbox.ui.common import (PointerInput, create_fullscreen_window, draw_home_button,
                                   is_escape_chord, is_primary_pointer_event, pointer_event_pos)
@@ -60,6 +61,7 @@ class ReadingApp:
         self._thumbnail_card = None
         self._scroll_y = None
         self.bad_images: set[str] = set()
+        self.history = History()
         self.card = None
         self.picture = None
         self.home_rect = theme.home_rect(self.rect)
@@ -77,6 +79,8 @@ class ReadingApp:
         self.read_rect = pygame.Rect(self.panel.centerx - 56, self.word_rect.bottom + 4, 112, 48)
         self.picture_rect = pygame.Rect(self.panel.x + 20, self.read_rect.bottom + 12,
                                         self.panel.w - 40, self.panel.bottom - self.read_rect.bottom - 32)
+        self.back_rect = pygame.Rect(160, 16, 48, 58)
+        self.back_arrow = theme.arrow("left", (36, 48))
         self.arrow = theme.arrow("right", (60, 72))
         self.title = theme.ui_font(28, bold=True).render("Reading", True, theme.INK)
         self._unit_rects = []
@@ -90,10 +94,29 @@ class ReadingApp:
 
     @property
     def can_next(self):
-        return any(card.id != (self.card.id if self.card else None) for card in self._available())
+        return self.history.can_forward or any(card.id != (self.card.id if self.card else None) for card in self._available())
+
+    def _remember(self):
+        if self.card is not None:
+            self.history.replace((self.card.id, self.player.revealed))
+
+    def navigate(self, direction):
+        self._remember()
+        self.reset_input()
+        original_index = self.history.index
+        while (entry := self.history.move(direction)) is not None:
+            card = next((card for card in self._available() if card.id == entry[0]), None)
+            if card is not None and self.select_card(card, restoring=True):
+                self.player.revealed = entry[1]
+                self.player.state = "revealed" if entry[1] else "idle"
+                return True
+        self.history.index = original_index
+        return False
 
     def next_card(self, *, previous_id=None) -> bool:
-        self.player.cancel()
+        if self.history.can_forward and self.navigate(1):
+            return True
+        self.reset_input()
         current_id = self.card.id if self.card else previous_id
         available = self._available()
         # A singleton deck opens normally; Next subsequently has no effect.
@@ -110,7 +133,7 @@ class ReadingApp:
         self.card = None
         return False
 
-    def select_card(self, card):
+    def select_card(self, card, *, restoring=False):
         try:
             picture = pygame.image.load(str(card.image)).convert_alpha() if card.image else None
             if picture is not None:
@@ -122,9 +145,14 @@ class ReadingApp:
             self.logger.exception("Reading illustration unavailable")
             self.bad_images.add(card.id)
             return False
+        if not restoring:
+            self._remember()
+        self.reset_input()
         self.player.select(card)
         self.card, self.picture = card, picture
         self._prepare_word()
+        if not restoring:
+            self.history.append((card.id, False))
         return True
 
     def _scroll(self, delta):
@@ -221,6 +249,9 @@ class ReadingApp:
         self.screen.fill(theme.BACKGROUND)
         self.screen.blit(self.title, (24, 30))
         draw_home_button(self.screen, self.home_rect)
+        if self.history.can_back:
+            theme.card(self.screen, self.back_rect)
+            self.screen.blit(self.back_arrow, self.back_arrow.get_rect(center=self.back_rect.center))
         self._draw_rail()
         theme.card(self.screen, self.panel, radius=20)
         active = self.player.active_unit
@@ -244,6 +275,8 @@ class ReadingApp:
             self.screen.blit(self.arrow, self.arrow.get_rect(center=self.next_rect.center))
 
     def _target(self, pos):
+        if self.history.can_back and self.back_rect.collidepoint(pos):
+            return "back"
         if self.home_rect.collidepoint(pos):
             return "home"
         if self.next_rect.collidepoint(pos) and self.can_next:
@@ -306,6 +339,9 @@ class ReadingApp:
             return True
         if pressed[0] == "home":
             return False
+        if pressed[0] == "back":
+            self.navigate(-1)
+            return True
         if pressed[0] == "next":
             return self.next_card()
         if pressed[0] == "word":

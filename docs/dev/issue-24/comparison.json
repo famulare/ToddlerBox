@@ -1,0 +1,74 @@
+{
+  "math-480x600-initial.png": {
+    "changed_inside_back": 0,
+    "changed_outside_back": 0
+  },
+  "math-480x600-next-hidden.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "math-480x600-next-revealed.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "reading-480x600-initial.png": {
+    "changed_inside_back": 0,
+    "changed_outside_back": 0
+  },
+  "reading-480x600-next-hidden.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "reading-480x600-next-revealed.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "math-800x600-initial.png": {
+    "changed_inside_back": 0,
+    "changed_outside_back": 0
+  },
+  "math-800x600-next-hidden.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "math-800x600-next-revealed.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "reading-800x600-initial.png": {
+    "changed_inside_back": 0,
+    "changed_outside_back": 0
+  },
+  "reading-800x600-next-hidden.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "reading-800x600-next-revealed.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "math-1366x768-initial.png": {
+    "changed_inside_back": 0,
+    "changed_outside_back": 0
+  },
+  "math-1366x768-next-hidden.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "math-1366x768-next-revealed.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "reading-1366x768-initial.png": {
+    "changed_inside_back": 0,
+    "changed_outside_back": 0
+  },
+  "reading-1366x768-next-hidden.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  },
+  "reading-1366x768-next-revealed.png": {
+    "changed_inside_back": 2624,
+    "changed_outside_back": 0
+  }
+}

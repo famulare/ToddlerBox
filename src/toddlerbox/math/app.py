@@ -13,6 +13,7 @@ from toddlerbox.math.visuals import Illustrations, draw_quantity, frame_geometry
 from toddlerbox.paths import get_data_root
 from toddlerbox.runtime import control, get_runtime_logger, health
 from toddlerbox.ui import theme
+from toddlerbox.ui.history import History
 from toddlerbox.ui.common import (PointerInput, create_fullscreen_window, draw_home_button,
                                   is_escape_chord, is_primary_pointer_event, pointer_event_pos)
 
@@ -31,6 +32,7 @@ class MathApp:
         self.mode = self.options.mode
         self.rng = random.Random() if rng is None else rng
         self.art = Illustrations() if library is None else Illustrations(library)
+        self.history = History()
         self.example = None
         self.revealed = False
         self.pointer = PointerInput()
@@ -44,18 +46,37 @@ class MathApp:
         # unused space; keep the icon/layout and other controls unchanged.
         self.next_hit_rect = self.next_rect.inflate(24, 24).clip(self.rect)
         self.body_rect = pygame.Rect(24, 226, self.rect.w-48, self.rect.h-250)
+        self.back_rect = pygame.Rect(110, 16, 48, 58)
+        self.back_arrow = theme.arrow("left", (36, 48))
         self.arrow = theme.arrow("right", (42, 48))
         self.next_example()
 
     @property
     def can_next(self):
-        return self.options.max_number > 0
+        return self.history.can_forward or self.options.max_number > 0
 
     def reset_input(self):
         self.pointer.reset()
         self.pressed = None
 
-    def next_example(self):
+    def _remember(self):
+        if self.example is not None:
+            self.history.replace((self.example, self.revealed))
+
+    def navigate(self, direction):
+        self._remember()
+        self.reset_input()
+        self.player.cancel()
+        entry = self.history.move(direction)
+        if entry is not None:
+            self.example, self.revealed = entry
+            self.mode = self.example.mode
+
+    def next_example(self, *, new_choice=False):
+        if self.history.can_forward and not new_choice:
+            self.navigate(1)
+            return
+        self._remember()
         self.reset_input()
         self.player.cancel()
         if not self.art.sources:
@@ -66,10 +87,11 @@ class MathApp:
         if example is not None:
             self.example = example
             self.revealed = False
+            self.history.append((example, False))
 
     def change_mode(self):
         self.mode = MODES[(MODES.index(self.mode)+1) % len(MODES)]
-        self.next_example()
+        self.next_example(new_choice=True)
 
     def reveal(self):
         self.revealed = True
@@ -139,6 +161,9 @@ class MathApp:
         theme.card(self.screen, self.mode_rect)
         self._text(MODE_LABELS[self.mode], self.mode_rect.move(-12, 0), 28)
         self._text("›", pygame.Rect(self.mode_rect.right-34, self.mode_rect.y, 28, 58), 28)
+        if self.history.can_back:
+            theme.card(self.screen, self.back_rect)
+            self.screen.blit(self.back_arrow, self.back_arrow.get_rect(center=self.back_rect.center))
         if self.example is None:
             return
         if self.revealed:
@@ -172,6 +197,8 @@ class MathApp:
             self._text("?", panels[-1], 64, theme.MUTED)
 
     def _target(self, pos):
+        if self.history.can_back and self.back_rect.collidepoint(pos):
+            return "back"
         for index, value, rect in self.numeral_targets():
             if rect.collidepoint(pos):
                 return ("number", index, value)
@@ -214,6 +241,9 @@ class MathApp:
         if pressed[0] == "home":
             self.player.cancel()
             return False
+        if pressed[0] == "back":
+            self.navigate(-1)
+            return True
         if pressed[0] == "next":
             self.next_example()
         elif pressed[0] == "mode":

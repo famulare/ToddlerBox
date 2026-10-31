@@ -359,3 +359,77 @@ def test_visible_main_picture_replays_whole_word_once_per_deliberate_tap(scene):
     assert len(audio.started) == 3
     app.next_card()
     assert not audio.playing and not app.player.revealed
+
+
+def test_reading_history_sidebar_visits_toggle_presentation_and_silent_restore(scene):
+    app, audio = scene
+    first = app.card
+    app.player.revealed = True
+    second = next(card for card in app.cards if card.id != first.id)
+    app.select_card(second)
+    count = len(app.history.entries)
+    click(app, app.words_toggle.center)
+    click(app, app.images_toggle.center)
+    assert len(app.history.entries) == count
+    click(app, app.back_rect.center)
+    assert app.card == first and app.player.revealed
+    assert not audio.started
+    click(app, app.next_rect.center)
+    assert app.card == second and not app.player.revealed
+    app.navigate(-1)
+    third = next(card for card in app.cards if card.id not in (first.id, second.id))
+    app.select_card(third)
+    assert [entry[0] for entry in app.history.entries] == [first.id, third.id]
+    assert not app.history.can_forward
+
+
+def test_reading_history_skips_missing_card_and_cancels_speech_and_stale_taps(scene):
+    app, audio = scene
+    first = app.card
+    app.next_card()
+    second = app.card
+    app.select_card(next(card for card in app.cards if card.id not in (first.id, second.id)))
+    app.bad_images.add(second.id)
+    app.player.play(whole_word=True)
+    click_count = len(audio.started)
+    app.handle_event(pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=app.read_rect.center, button=1))
+    assert app.navigate(-1)
+    assert app.card == first and not app.player.revealed
+    assert not audio.playing
+    app.handle_event(pygame.event.Event(pygame.MOUSEBUTTONUP, pos=app.read_rect.center, button=1))
+    assert len(audio.started) == click_count
+    app.bad_images.add(app.history.entries[-1][0])
+    index = app.history.index
+    assert not app.navigate(1)
+    assert app.history.index == index and app.card == first
+
+
+def test_reading_history_missing_image_restore_preserves_current_visit(scene, monkeypatch):
+    app, _ = scene
+    first = app.card
+    app.next_card()
+    current = app.card
+    original_load = pygame.image.load
+
+    def missing(path):
+        if str(path) == str(first.image):
+            raise OSError('synthetic removed illustration')
+        return original_load(path)
+
+    monkeypatch.setattr(pygame.image, 'load', missing)
+    assert not app.navigate(-1)
+    assert app.card == current and app.history.index == 1
+    assert first.id in app.bad_images
+
+
+def test_reading_back_raw_finger_ignores_duplicate_mouse(scene):
+    app, _ = scene
+    app.next_card()
+    app.next_card()
+    index = app.history.index
+    x, y = app.back_rect.center
+    for kind in (pygame.FINGERDOWN, pygame.FINGERUP):
+        app.handle_event(pygame.event.Event(kind, touch_id=1, finger_id=2, x=x/app.rect.w, y=y/app.rect.h))
+    for kind in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP):
+        app.handle_event(pygame.event.Event(kind, pos=(x, y), button=1, touch=True))
+    assert app.history.index == index - 1
