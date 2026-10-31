@@ -1636,12 +1636,18 @@
     },
     {
       "id": "word-plum",
-      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/plum.ogg",
-      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "source_url": "https://upload.wikimedia.org/wikipedia/commons/a/a3/En-us-plum.ogg",
+      "revision": "2006-10-28T03:19:00Z; Commons description oldid=1229152823",
       "license": "CC-BY-SA-3.0",
-      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "credit": "Dvortygirl, 2006, Wikimedia Commons; CC-BY-SA-3.0",
       "path": "sources/word-plum.ogg",
-      "sha256": "91c8fdf53d827fceb5e6fa215e0ab8920fe59395e95ae3421653bbf8454cf4a9"
+      "sha256": "ecc24b1e912a7079877e51fa9af6d1ebc5d3d755098a0c2a2cf526151cb332ec",
+      "description_url": "https://commons.wikimedia.org/w/index.php?title=File:En-us-plum.ogg&oldid=1229152823",
+      "decoded_pcm": {
+        "path": "sources/word-plum-pcm.wav",
+        "sha256": "b2b4746137fe04c57b65649f1a8a77072be991fef331ae73e29bf3df763bead9",
+        "preparation": "Full source decoded by pygame-ce 2.5.8 / SDL 2.32.10 / SDL_mixer 2.8.2 to mono 44100Hz signed 16-bit PCM; no trim or gain. See docs/dev/issue-25.md."
+      }
     },
     {
       "id": "word-sled",
@@ -1957,6 +1963,17 @@
       "credit": "ToddlerBox original illustration",
       "path": "sources/image-bun.svg",
       "sha256": "efd1798389de3bea488b466b908e5d5111a1f64ddaa8c96c272276925a63cd1e"
+    }
+  ],
+  "superseded_sources": [
+    {
+      "id": "superseded-word-plum-art4apps",
+      "source_url": "https://invent.kde.org/education/gcompris-data/-/raw/5cfd4e4a4236701ec5e9d04a1796b6837d945403/voices/en_US/words/plum.ogg",
+      "revision": "5cfd4e4a4236701ec5e9d04a1796b6837d945403",
+      "license": "CC-BY-SA-3.0",
+      "credit": " http://www.art4apps.org/ Creative Common License BY-SA",
+      "path": "sources/word-plum-art4apps.ogg",
+      "sha256": "91c8fdf53d827fceb5e6fa215e0ab8920fe59395e95ae3421653bbf8454cf4a9"
     }
   ]
 }

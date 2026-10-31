@@ -1,8 +1,13 @@
+import array
 import hashlib
 import json
+import math
 from pathlib import Path
+import runpy
 import wave
 from unittest.mock import Mock
+
+import pytest
 
 from toddlerbox.reading.catalog import Options, WORD_SETS, load_catalog
 
@@ -79,3 +84,49 @@ def test_plum_sequence_preserves_sound_units_and_complete_whole_word_replay():
         "end": offset // 2 + replay_cue["end"],
         "unit": -1,
     }
+
+
+def test_plum_retained_sources_and_lossless_rebuild_match_approved_replay():
+    manifest = json.loads((ROOT / "sources.json").read_text())
+    source = next(source for source in manifest["sources"] if source["id"] == "word-plum")
+    assert source["credit"] == "Dvortygirl, 2006, Wikimedia Commons; CC-BY-SA-3.0"
+    assert source["license"] == "CC-BY-SA-3.0"
+    for retained in (source, source["decoded_pcm"], *manifest["superseded_sources"]):
+        assert hashlib.sha256((ROOT / retained["path"]).read_bytes()).hexdigest() == retained["sha256"]
+
+    builder = runpy.run_path(str(ROOT.parents[1] / "scripts/build-reading.py"))
+    data = builder["decode"](ROOT / source["decoded_pcm"]["path"])
+    edit = json.loads((ROOT / "edits.json").read_text())["word-plum"]
+    data = data[edit["start"]:edit["end"]]
+    rms = math.sqrt(sum(float(value) ** 2 for value in data) / len(data))
+    gain = min(4.0, 3000 / max(1, rms), 25000 / max(1, max(map(abs, data))))
+    rebuilt = array.array("h", (round(value * gain) for value in data))
+    with wave.open(str(ROOT / "audio/word-plum.wav")) as replay:
+        assert builder["pcm_bytes"](rebuilt) == replay.readframes(replay.getnframes())
+
+
+def test_reading_builder_rejects_changed_retained_pcm(tmp_path, monkeypatch):
+    original = tmp_path / "original.ogg"
+    original.write_bytes(b"synthetic original")
+    (tmp_path / "decoded.wav").write_bytes(b"changed intermediate")
+    (tmp_path / "sources.json").write_text(json.dumps({"sources": [{
+        "id": "word-fixture", "path": original.name,
+        "sha256": hashlib.sha256(original.read_bytes()).hexdigest(),
+        "decoded_pcm": {"path": "decoded.wav", "sha256": "0" * 64},
+    }]}))
+    builder = runpy.run_path(str(ROOT.parents[1] / "scripts/build-reading.py"))
+    builder["main"].__globals__["ASSETS"] = tmp_path
+    monkeypatch.setattr("sys.argv", ["build-reading.py", "--verify"])
+    with pytest.raises(ValueError, match="Decoded PCM hash changed: word-fixture"):
+        builder["main"]()
+
+
+@pytest.mark.parametrize("channels,width,rate", [(2, 2, 44100), (1, 1, 44100), (1, 2, 22050)])
+def test_reading_builder_rejects_incompatible_lossless_pcm(tmp_path, channels, width, rate):
+    path = tmp_path / "incompatible.wav"
+    with wave.open(str(path), "wb") as source:
+        source.setparams((channels, width, rate, 0, "NONE", "not compressed"))
+        source.writeframes(bytes(100 * channels * width))
+    builder = runpy.run_path(str(ROOT.parents[1] / "scripts/build-reading.py"))
+    with pytest.raises(ValueError, match="PCM source must be mono 44.1kHz signed 16-bit"):
+        builder["decode"](path)

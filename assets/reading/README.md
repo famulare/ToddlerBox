@@ -15,6 +15,7 @@ The application code is MIT licensed. Media retain their individual terms:
 | Phoneme recordings | Debbie Dann, [Buzzphonics](https://github.com/hellodeborahuk/buzzphonics), 2022 | MIT; upstream explicitly licenses the phonics sounds |
 | Most whole words | Smart4Kids / Art4Apps, 2011, distributed by [GCompris](https://invent.kde.org/education/gcompris-data) | CC BY-SA 3.0; original OGG tags and upstream words/README retained as evidence |
 | Additional whole words and letter names | Joshua Shreve, GCompris, 2019 | GPL 3.0 or later, as identified by upstream credits and OGG tags |
+| Whole word `plum` | Dvortygirl, Wikimedia Commons, 2006 | CC BY-SA 3.0; original OGG, lossless decoded PCM and source description revision retained |
 | Outlined illustrations | [OpenMoji contributors](https://openmoji.org/) | CC BY-SA 4.0; rendered from the pinned original SVGs |
 | Additional illustrations | ToddlerBox, 2026 | MIT; original SVGs included |
 
@@ -59,6 +60,15 @@ same sample sequence. Initial edit suggestions retain 100ms around detected
 speech; silence detection is not a substitute for listening. The originals are
 preserved. `--prepare-trims` is a maintainer action to refresh those explicit
 bounds after changing content, not a step in ordinary builds.
+
+The replacement `plum` recording was approved by the parent on 2026-10-31,
+including the different speaker. Its original Commons OGG and a hash-pinned
+lossless PCM decode are retained. The builder reads that mono 44.1kHz 16-bit WAV
+directly before applying the ordinary edit/gain/sequence pipeline, preserving the
+exact approved preview samples across OGG decoder versions. `sources.json` records
+the intermediate's decoder versions and verifies both hashes. The superseded
+Art4Apps recording remains attributed and hash-checked under `superseded_sources`.
+See `docs/dev/issue-25.md` for the listening decision and reproduction commands.
 
 The expansion fetch script uses the same immutable GCompris/OpenMoji revisions,
 retains per-file credits and includes editable original drawings. Rebuilding the

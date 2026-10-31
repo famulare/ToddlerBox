@@ -37,6 +37,18 @@ def json_write(path, data):
 
 
 def decode(path):
+    if path.suffix == ".wav":
+        # Retained lossless intermediate: do not decode its original OGG again
+        # with a different codec library and introduce sample rounding changes.
+        with wave.open(str(path), "rb") as recording:
+            if recording.getparams()[:3] != (1, 2, RATE):
+                raise ValueError("PCM source must be mono 44.1kHz signed 16-bit")
+            raw = recording.readframes(recording.getnframes())
+        data = array.array("h")
+        data.frombytes(raw)
+        if sys.byteorder != "little":
+            data.byteswap()
+        return data
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", str(path), "-f", "s16le",
                           "-acodec", "pcm_s16le", "-ac", "1", "-ar", str(RATE), "pipe:1"],
                          check=True, capture_output=True).stdout
@@ -81,9 +93,13 @@ def main():
     args = parser.parse_args()
     manifest = json.loads((ASSETS / "sources.json").read_text())
     sources = manifest["sources"]
-    for source in sources:
+    for source in sources + manifest.get("superseded_sources", []):
         if sha(ASSETS / source["path"]) != source["sha256"]:
             raise ValueError("Source hash changed: " + source["id"])
+        if "decoded_pcm" in source:
+            pcm = source["decoded_pcm"]
+            if sha(ASSETS / pcm["path"]) != pcm["sha256"]:
+                raise ValueError("Decoded PCM hash changed: " + source["id"])
     if args.verify:
         outputs = json.loads((args.output / "outputs.json").read_text())
         for path, expected in outputs["sha256"].items():
@@ -109,7 +125,7 @@ def main():
             pygame.image.save(art, args.output / filename)
             images[identity.removeprefix("image-")] = filename
         else:
-            data = decode(path)
+            data = decode(ASSETS / source["decoded_pcm"]["path"] if "decoded_pcm" in source else path)
             if args.prepare_trims:
                 start, end = audible_bounds(data)
                 edits[identity] = {"start": max(0, start - RATE // 10),

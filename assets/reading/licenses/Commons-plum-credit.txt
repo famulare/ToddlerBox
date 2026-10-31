@@ -1,0 +1,22 @@
+plum — US English pronunciation
+Author: Dvortygirl, 28 October 2006. Source: own work, Wikimedia Commons.
+Original: https://upload.wikimedia.org/wikipedia/commons/a/a3/En-us-plum.ogg
+Description: https://commons.wikimedia.org/w/index.php?title=File:En-us-plum.ogg&oldid=1229152823
+Selected license: Creative Commons Attribution-ShareAlike 3.0 Unported
+https://creativecommons.org/licenses/by-sa/3.0/
+Full license text: CC-BY-SA-3.0.txt in this directory.
+
+ToddlerBox changes: original OGG decoded with pygame-ce 2.5.8 / SDL 2.32.10 /
+SDL_mixer 2.8.2 to retained mono 44.1kHz 16-bit PCM, no trim; bounded gain;
+assembled with existing MIT Buzzphonics sound clips and silence. The word replay
+and assembled sequence retain CC-BY-SA-3.0 terms. No endorsement is implied.
+
+Original source SHA-256:
+ecc24b1e912a7079877e51fa9af6d1ebc5d3d755098a0c2a2cf526151cb332ec
+Lossless decoded source SHA-256:
+b2b4746137fe04c57b65649f1a8a77072be991fef331ae73e29bf3df763bead9
+
+The superseded Smart4Kids / Art4Apps 2011 recording is retained separately as
+sources/word-plum-art4apps.ogg. Its GCompris attribution remains in
+GCompris-expansion-credits.txt, and its immutable upstream source and hash are in
+sources.json under superseded_sources.

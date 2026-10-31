@@ -7,10 +7,11 @@ from __future__ import annotations
 
 import array
 import hashlib
+import io
 import os
 from pathlib import Path
 import runpy
-import shutil
+import subprocess
 import sys
 import wave
 
@@ -21,6 +22,12 @@ import pygame
 ROOT = Path(__file__).resolve().parents[2]
 PACK = ROOT / "assets/reading"
 EXPECTED = "ecc24b1e912a7079877e51fa9af6d1ebc5d3d755098a0c2a2cf526151cb332ec"
+BASELINE = "4b9f6fb12f3718bb4d8ecffacb5ae518772b662d"
+
+
+def baseline(path):
+    return subprocess.run(["git", "show", f"{BASELINE}:assets/reading/{path}"],
+                          cwd=ROOT, capture_output=True, check=True).stdout
 
 
 def main():
@@ -42,21 +49,22 @@ def main():
     gain = min(4.0, 3000 / max(1, rms), 25000 / max(1, max(map(abs, data))))
     data = array.array("h", (round(value * gain) for value in data))
     helpers["save_wave"](output / "candidate-word-plum.wav", data)
-    with wave.open(str(PACK / "audio/sequence-plum.wav")) as recording:
-        baseline = recording.readframes(recording.getnframes())
-    with wave.open(str(PACK / "audio/word-plum.wav")) as recording:
+    # Keep the listening comparison reproducible after the approved integration.
+    with wave.open(io.BytesIO(baseline("audio/sequence-plum.wav"))) as recording:
+        baseline_pcm = recording.readframes(recording.getnframes())
+    with wave.open(io.BytesIO(baseline("audio/word-plum.wav"))) as recording:
         replay = recording.readframes(recording.getnframes())
-    assert baseline.endswith(replay)
+    assert baseline_pcm.endswith(replay)
     prefix = array.array("h")
-    prefix.frombytes(baseline[:-len(replay)])
+    prefix.frombytes(baseline_pcm[:-len(replay)])
     if sys.byteorder != "little":
         prefix.byteswap()
     offset = len(prefix)
     prefix.extend(data)
     helpers["save_wave"](output / "candidate-sequence-plum.wav", prefix)
     for name in ("word-plum.wav", "sequence-plum.wav", "word-drum.wav", "sound-u.wav"):
-        shutil.copyfile(PACK / "audio" / name, output / ("baseline-" + name))
-    shutil.copyfile(PACK / "sources/word-plum.ogg", output / "baseline-source-plum.ogg")
+        (output / ("baseline-" + name)).write_bytes(baseline("audio/" + name))
+    (output / "baseline-source-plum.ogg").write_bytes(baseline("sources/word-plum.ogg"))
     start, end = helpers["audible_bounds"](data)
     helpers["json_write"](output / "preview.json", {
         "status": "unapproved listening candidate; not installed",

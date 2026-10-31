@@ -3210,7 +3210,7 @@
       "image": "images/plum.png",
       "sequence": {
         "path": "audio/sequence-plum.wav",
-        "frames": 335468,
+        "frames": 324389,
         "cues": [
           {
             "start": 4410,
@@ -3233,19 +3233,19 @@
             "unit": 3
           },
           {
-            "start": 303199,
-            "end": 331526,
+            "start": 302118,
+            "end": 321422,
             "unit": -1
           }
         ]
       },
       "replay": {
         "path": "audio/word-plum.wav",
-        "frames": 36679,
+        "frames": 25600,
         "cues": [
           {
-            "start": 4410,
-            "end": 32737,
+            "start": 3329,
+            "end": 22633,
             "unit": -1
           }
         ]
