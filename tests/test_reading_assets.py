@@ -42,3 +42,40 @@ def test_prepared_audio_images_and_catalog_match_checked_hashes_and_have_sources
                 assert .02 < audio.getnframes() / 44100 < 12
                 data = audio.readframes(audio.getnframes())
                 assert len(data) == audio.getnframes() * 2 and any(data)
+
+
+def test_plum_sequence_preserves_sound_units_and_complete_whole_word_replay():
+    """Check assembly integrity; this cannot establish correct pronunciation."""
+    catalog = json.loads((ROOT / "catalog.json").read_text())
+    card = next(card for card in catalog["cards"] if card["id"] == "word-plum")
+    assert card["text"] == "plum"
+    assert card["units"] == ["p", "l", "u", "m"]
+
+    def pcm(path):
+        with wave.open(str(ROOT / path), "rb") as recording:
+            assert recording.getparams()[:3] == (1, 2, 44100)
+            return recording.readframes(recording.getnframes())
+
+    sequence = pcm(card["sequence"]["path"])
+    replay = pcm(card["replay"]["path"])
+    offset = 0
+    for index, unit in enumerate(card["units"]):
+        segment = pcm(f"audio/sound-{unit}.wav")
+        assert sequence[offset:offset + len(segment)] == segment
+        cue = card["sequence"]["cues"][index]
+        assert cue["unit"] == index
+        assert offset // 2 <= cue["start"] < cue["end"] <= (offset + len(segment)) // 2
+        offset += len(segment)
+        silence_bytes = round(44100 * (0.15 if index < 3 else 0.4)) * 2
+        assert sequence[offset:offset + silence_bytes] == bytes(silence_bytes)
+        offset += silence_bytes
+
+    assert sequence[offset:] == replay
+    assert len(replay) == card["replay"]["frames"] * 2
+    assert len(sequence) == card["sequence"]["frames"] * 2
+    replay_cue = card["replay"]["cues"][0]
+    assert card["sequence"]["cues"][-1] == {
+        "start": offset // 2 + replay_cue["start"],
+        "end": offset // 2 + replay_cue["end"],
+        "unit": -1,
+    }
