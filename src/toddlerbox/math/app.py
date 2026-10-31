@@ -81,13 +81,45 @@ class MathApp:
         symbol = "+" if e.mode == "addition" else "−"
         return f"{e.a} {symbol} {e.b} = {e.result if self.revealed else '?'}"
 
-    def _text(self, text, rect, size=72, color=theme.INK):
+    def _text_layout(self, text, rect, size=72):
         font = theme.ui_font(size)
         while font.size(text)[0] > rect.w-16 and size > 18:
             size -= 2
             font = theme.ui_font(size)
-        glyph = font.render(text, True, color)
-        self.screen.blit(glyph, glyph.get_rect(center=rect.center))
+        bounds = pygame.Rect((0, 0), font.size(text))
+        bounds.center = rect.center
+        return font, bounds
+
+    def _text(self, text, rect, size=72, color=theme.INK):
+        font, bounds = self._text_layout(text, rect, size)
+        self.screen.blit(font.render(text, True, color), bounds)
+
+    def numeral_targets(self):
+        """Use rendered font/placement; padding stops before adjacent tokens."""
+        if self.example is None:
+            return []
+        text = self._question()
+        font, bounds = self._text_layout(text, self.question_rect)
+        tokens = []
+        offset = 0
+        for token in text.split(" "):
+            left = bounds.left + font.size(text[:offset])[0]
+            right = bounds.left + font.size(text[:offset+len(token)])[0]
+            tokens.append((token, left, right))
+            offset += len(token)+1
+        targets = []
+        for index, (token, left, right) in enumerate(tokens):
+            if not token.isdecimal():
+                continue
+            hit = pygame.Rect(left, bounds.top, right-left, bounds.h)
+            hit.inflate_ip(max(32, 48-hit.w), max(24, 48-hit.h))
+            # Include operators and '?' in boundaries, keeping their centers inert.
+            lower = sum(tokens[index-1][1:])//2+1 if index else self.question_rect.left
+            upper = sum(tokens[index+1][1:])//2 if index+1 < len(tokens) else self.question_rect.right
+            width = min(hit.w, upper-lower)
+            hit.x, hit.width = max(lower, min(hit.left, upper-width)), width
+            targets.append((index, int(token), hit.clip(self.question_rect)))
+        return targets
 
     def quantity_panels(self):
         if self.mode == "numbers":
@@ -140,6 +172,9 @@ class MathApp:
             self._text("?", panels[-1], 64, theme.MUTED)
 
     def _target(self, pos):
+        for index, value, rect in self.numeral_targets():
+            if rect.collidepoint(pos):
+                return ("number", index, value)
         for name, rect in (("home", self.home_rect), ("mode", self.mode_rect),
                            ("reveal", self.question_rect)):
             if rect.collidepoint(pos):
@@ -188,6 +223,8 @@ class MathApp:
                 self.player.play(self.example.result)
             else:
                 self.player.play_equation(self.example)
+        elif isinstance(pressed[0], tuple) and pressed[0][0] == "number":
+            self.player.play(pressed[0][2])
         elif pressed[0] == "reveal":
             self.reveal()
         return True

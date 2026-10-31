@@ -260,3 +260,28 @@ def test_complete_equation_advances_all_five_words_with_real_sdl(app):
         "number-8", "minus", "number-3", "equals", "number-5"]
     assert app.player.deadline is None and not app.player.queue
     assert not pygame.mixer.music.get_busy()
+
+
+def test_numeral_replay_replaces_equation_and_navigation_cancels_real_sdl(app):
+    select(app, "addition", 8, 7, revealed=True)
+    tap(app, app.speech_rect.center)
+    assert app.player.queue
+    play = Mock(wraps=app.player.audio.play)
+    stop = Mock(wraps=app.player.audio.stop)
+    app.player.audio.play, app.player.audio.stop = play, stop
+    pos = app.numeral_targets()[0][2].center
+    tap(app, pos)
+    tap(app, pos)
+    assert [call.args[0].path.stem for call in play.call_args_list] == ["number-8"]*2
+    assert stop.call_count == 2 and not app.player.queue
+    tap(app, app.next_rect.center)
+    assert not pygame.mixer.music.get_busy() and app.player.deadline is None
+
+
+def test_missing_numeral_clip_cancels_obsolete_speech_without_reveal(app):
+    select(app, "addition", 8, 7)
+    app.player.bank.get = Mock(return_value=None)
+    app.player.audio.play = Mock()
+    tap(app, app.numeral_targets()[0][2].center)
+    app.player.audio.play.assert_not_called()
+    assert not app.revealed and not app.player.queue and app.player.deadline is None

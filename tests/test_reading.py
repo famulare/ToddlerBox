@@ -337,3 +337,25 @@ def test_singleton_deck_and_empty_library_are_quiet(scene, tmp_path):
     empty = ReadingApp(old.screen, old.rect, old.clock, config=old.config, audio=Audio(), library=tmp_path / "missing")
     empty.run()
     assert empty.card is None and empty.player.state == "stopped"
+
+
+def test_visible_main_picture_replays_whole_word_once_per_deliberate_tap(scene):
+    app, audio = scene
+    pos = app.picture_rect.center
+    assert not app.player.revealed and app._target(pos) is None
+    click(app, pos)
+    assert audio.started == []
+    app.player.revealed = True
+    assert app._target(pos) == "picture"
+    click(app, pos)
+    click(app, pos)
+    assert audio.started == [app.card.replay.path.name]*2
+    assert app.player.revealed
+    for finger, mouse in [(pygame.FINGERDOWN, pygame.MOUSEBUTTONDOWN),
+                          (pygame.FINGERUP, pygame.MOUSEBUTTONUP)]:
+        app.handle_event(pygame.event.Event(finger, x=pos[0]/app.rect.w, y=pos[1]/app.rect.h,
+                                           touch_id=1, finger_id=1))
+        app.handle_event(pygame.event.Event(mouse, button=1, pos=pos, touch=True))
+    assert len(audio.started) == 3
+    app.next_card()
+    assert not audio.playing and not app.player.revealed

@@ -333,3 +333,67 @@ def test_authenticated_save_request_uses_existing_no_work_ack(app):
                                            struct.pack("3i", os.getpid(), 0, 0))], 0, None), BlockingIOError()]
     channel.service()
     channel.socket.sendto.assert_called_once_with(b"save-result:"+nonce+b":ok", "/test-controller")
+
+
+@pytest.mark.parametrize("mode,a,b", [("numbers", 100, 0), ("addition", 37, 63), ("subtraction", 100, 99)])
+def test_visible_numerals_speak_own_value_without_revealing_or_autoplay(app, mode, a, b):
+    app.player = Mock()
+    select(app, mode, a, b)
+    app.render()
+    app.player.play.assert_not_called()
+    targets = app.numeral_targets()
+    assert [value for _, value, _ in targets] == ([] if mode == "numbers" else [a, b])
+    for _, value, rect in targets:
+        tap(app, rect.center)
+        app.player.play.assert_called_with(value)
+        assert not app.revealed
+    # The rightmost '?' remains a silent reveal action.
+    app.player.reset_mock()
+    tap(app, (app.question_rect.right-20, app.question_rect.centery))
+    assert app.revealed
+    app.player.play.assert_not_called()
+    targets = app.numeral_targets()
+    assert targets[-1][1] == app.example.result
+    for _, value, rect in targets:
+        tap(app, rect.center)
+        tap(app, rect.center)
+        assert app.player.play.call_args.args == (value,)
+    tap(app, app.speech_rect.center)
+    if mode == "numbers":
+        app.player.play.assert_called_with(a)
+    else:
+        app.player.play_equation.assert_called_once_with(app.example)
+    app.player.reset_mock()
+    tap(app, app.next_rect.center)
+    tap(app, app.mode_rect.center)
+    app.player.play.assert_not_called()
+    assert app.player.cancel.call_count == 2
+    assert tap(app, app.home_rect.center) is False
+    assert app.player.cancel.call_count == 3
+
+
+@pytest.mark.parametrize("size", [(800, 600), (1366, 768), (480, 600)])
+@pytest.mark.parametrize("mode,a,b", [("numbers", 100, 0), ("addition", 50, 50), ("subtraction", 100, 100)])
+def test_numeral_targets_follow_fitted_layout_and_never_overlap(app, size, mode, a, b):
+    app.question_rect.width = size[0]-128
+    select(app, mode, a, b, revealed=True)
+    targets = app.numeral_targets()
+    font, bounds = app._text_layout(app._question(), app.question_rect)
+    for i, (_, _, rect) in enumerate(targets):
+        assert app.question_rect.contains(rect)
+        assert rect.height >= 48 and rect.width >= 48
+        assert rect.top <= bounds.top and rect.bottom >= bounds.bottom
+        assert all(not rect.colliderect(other) for _, _, other in targets[i+1:])
+
+
+def test_finger_numeral_tap_ignores_emulated_mouse_duplicate(app):
+    app.player = Mock()
+    select(app, "addition", 8, 2)
+    pos = app.numeral_targets()[0][2].center
+    for finger, mouse in [(pygame.FINGERDOWN, pygame.MOUSEBUTTONDOWN),
+                          (pygame.FINGERUP, pygame.MOUSEBUTTONUP)]:
+        app.handle_event(pygame.event.Event(finger, x=pos[0]/app.rect.w, y=pos[1]/app.rect.h,
+                                           touch_id=1, finger_id=1))
+        app.handle_event(pygame.event.Event(mouse, button=1, pos=pos, touch=True))
+    app.player.play.assert_called_once_with(8)
+    assert not app.revealed
