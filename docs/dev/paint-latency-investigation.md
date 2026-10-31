@@ -1,6 +1,6 @@
 # Paint latency investigation
 
-Status: Phases 1–3 collected privately; durable renderer policy and final acceptance remain pending.
+Status: Phases 1–3 collected privately; GPU-first/shared software-fallback policy implemented; VM/hardware qualification and acceptance pending.
 Owner branch: `dev/0.5.3-paint`. Follow-up: GitHub issue #29.
 
 ## Objective and current evidence
@@ -154,7 +154,7 @@ Primary-source research, relevant to interpreting later experiments:
 Do not assume that setting SDL_RENDER_DRIVER by itself establishes the actual
 framebuffer path, or that changing WLR_RENDERER will resolve the measured cost.
 
-## Phase 3 implementation and next action
+## Historical Phase 3 implementation (superseded by the policy below)
 
 Stage timings from both modes were collected successfully. The raw reports and
 analysis remain local. The next variable is Cage's renderer; do not change the
@@ -181,7 +181,7 @@ After parent login, arm the trial/timings, start the normal standalone child
 session, draw for 30 seconds and return through Ctrl+Alt+Home. Do not run Cage
 inside GNOME. Verify the override is removed before concluding the experiment.
 
-## Resume after the renderer A/B
+## Historical interpretation after the renderer A/B
 
 The bounded GLES2 trial ran and returned through the normal parent path. The
 override was removed. Its timing/CPU reports and user observations remain local
@@ -202,3 +202,28 @@ existing root supervision and known-good 0.5.2. Verify both GPU success and fail
 initialization before qualifying a durable session change. Do not simply turn
 the temporary root-owned trial flag into a permanent always-on flag. No renderer
 policy change or automatic acceptance has been performed after the A/B.
+
+## Current implementation: shared GPU-first startup
+
+The parent explicitly requested this policy for every machine, not only one
+local appliance. The normal session sets gles2 first, keeping the proven SDL hint
+and the existing standalone Cage command. It invokes that command once; successful
+exit, signal status >=128, healthy-frame evidence or missing/malformed controller
+state all end that attempt without a software relaunch. For a non-signal failure
+before healthy frames, it execs the same command once with pixman. A second
+failure exits normally into the unchanged root recovery/watchdog. No inner retry
+loop, root counter reset or timeout extension is added. The running launcher
+keeps its original argv and credentials for pidfd/IPC checks.
+
+The old expiring renderer flag hook and observer are retired from current source;
+use Git history for experiment code. Paint timing remains separately root-armed
+and bounded. Every activity shares the resulting presentation path; scrolling
+in Photos/Music/Reading/Recall should be checked, without claiming decode/disk/audio
+performance gains. Candidate acceptance requires real six-activity checks and
+independent escape. Automated unaccelerated VM qualification must demonstrate the
+software path, including its recovery behavior, before a public release.
+
+Next actions: finish CI/disposable VM qualification for the exact new build,
+install a separate pending candidate on the appliance using a detached system
+service, test ordinary startup/scrolling/drawing/audio/Home/escape, then request
+explicit parent acceptance. Private timing evidence stays under ignored build/.

@@ -2,9 +2,10 @@
 
 ## 0.5.3 development — unreleased
 
-- Add explicit, expiring, root-owned diagnostic arming for app timings and a
-  one-variable Cage gles2 trial. Ordinary startup remains pixman; recovery and
-  parent escape limits are unchanged.
+- Prefer GPU-backed Cage on every machine, with one silent software attempt for
+  unsuccessful startup before healthy frames. Preserve normal exits, signals,
+  root retry bounds and parent recovery. Retire the experimental renderer flag.
+- Retain explicit, expiring, root-owned arming for bounded app timing diagnostics.
 
 - Paint preserves an active gesture across benign focus-gained/restored/size
   notifications. Real focus loss/backgrounding still cancels input.

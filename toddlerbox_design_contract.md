@@ -57,6 +57,11 @@ included in ToddlerBox 0.4.
 - Esc exits Paint, Typing and Photos only in desktop development (`TODDLERBOX_APP_CONTROL` unset);
   the supervised child session ignores it.
 
+The shared standalone child session prefers GPU-backed composition on every
+machine. An unsuccessful startup before healthy frames may try software once,
+without child-facing prompts. Normal exits, signals and failures after healthy
+frames remain under existing independent parent recovery and retry bounds.
+
 ## 2. Paint App
 
 Benign focus-gained, restored and size notifications do not cancel a drawing

@@ -4,26 +4,43 @@ set -euo pipefail
 cd /opt/toddlerbox/current
 unset DISPLAY WAYLAND_DISPLAY SWAYSOCK
 export SDL_VIDEODRIVER=wayland XDG_SESSION_TYPE=wayland LIBSEAT_BACKEND=logind
-# This 2D UI does not need a GPU renderer. The same path works with QEMU's
-# unaccelerated virtio display and avoids depending on old laptop GL drivers.
-export WLR_RENDERER=pixman SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR=0
-# Explicit, short-lived parent diagnostic override. The ordinary boot default
-# stays pixman. Root owns this /run flag; reboot and deadline both clear its effect.
-paint_trial_renderer() {
-    local now=$1 renderer=$2 expires=$3 extra=${4:-}
-    if [[ $renderer == gles2 && -z $extra && $now =~ ^[0-9]{1,12}$ && $expires =~ ^[0-9]{1,12}$ ]] &&
-       (( 10#$expires > 10#$now && 10#$expires - 10#$now <= 300 )); then
-        printf '%s' gles2
-    else
-        printf '%s' pixman
-    fi
+# Prefer GPU-backed composition on all hardware. Unaccelerated machines get
+# one software attempt if startup fails before any supervised healthy frame.
+export WLR_RENDERER=gles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR=0
+
+startup_without_frame() {
+    /usr/bin/python3 - <<'PY'
+import json
+from pathlib import Path
+import sys
+try:
+    status = json.loads(Path("/run/toddlerbox-system/status.json").read_text())
+    allowed = status.get("mode") == "child" and status.get("seen_frame") is False
+except (OSError, ValueError, AttributeError):
+    allowed = False
+sys.exit(0 if allowed else 1)
+PY
 }
-trial_flag=/run/toddlerbox-system/cage-renderer-trial
-if [[ -f $trial_flag && ! -L $trial_flag && $(stat -c '%u:%a' "$trial_flag") == 0:644 ]]; then
-    read -r trial_uptime _ < /proc/uptime
-    read -r trial_renderer trial_deadline trial_extra < "$trial_flag" || true
-    export WLR_RENDERER=$(paint_trial_renderer "${trial_uptime%%.*}" "${trial_renderer:-}" "${trial_deadline:-}" "${trial_extra:-}")
-fi
+
+run_cage_session() {
+    local renderer=$1 result
+    shift
+    if [[ $renderer == gles2 ]]; then
+        if WLR_RENDERER=gles2 "$@"; then
+            return 0
+        else
+            result=$?
+        fi
+        # Never relaunch after normal exit, a signal or a running child crash.
+        # Missing/unreadable controller evidence fails closed into root recovery.
+        if (( result >= 128 )) || ! startup_without_frame; then
+            return "$result"
+        fi
+        printf '%s\n' 'GPU session startup failed; trying software composition once.' >&2
+    fi
+    WLR_RENDERER=pixman exec "$@"
+}
+
 export PYGAME_HIDE_SUPPORT_PROMPT=1 KIDBOX_CONFIG=/etc/toddlerbox/config.yaml
 export TODDLERBOX_APP_CONTROL=1
 # Child work lives where sync and setup expect it, whatever the editable config says.
@@ -36,6 +53,6 @@ timeout 2 /usr/local/libexec/toddlerbox-volume startup || true
 export SDL_AUDIODRIVER=pulseaudio
 # Cage owns the seat. Do not use -s (which enables virtual-terminal switching).
 # Inhibitors live only as long as the child session; parent GNOME has normal keys.
-exec systemd-inhibit --what=handle-power-key:handle-suspend-key:handle-hibernate-key:handle-lid-switch \
+run_cage_session "$WLR_RENDERER" systemd-inhibit --what=handle-power-key:handle-suspend-key:handle-hibernate-key:handle-lid-switch \
     --who=ToddlerBox --why='Child session' --mode=block \
     /usr/local/libexec/toddlerbox-cage -- .venv/bin/python -m toddlerbox.launcher

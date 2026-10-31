@@ -317,8 +317,14 @@ are never published. Selected screenshots/results are review evidence; physical
 HP radio, touch gestures, audio and sleep still need hardware acceptance.
 Maintainers verify evidence and sign the update manifest before publication.
 
-The 0.5.3 development session recipe retains pixman by default. A root-owned,
-non-symlink, mode-0644 `/run/toddlerbox-system/cage-renderer-trial` can request
-`gles2 EXPIRY_BOOTTIME_SECONDS` for at most 300 seconds. It is for the bounded
-local investigation only; it adds no automatic maintenance or normal user setting.
-See [the investigation plan](../docs/dev/paint-latency-investigation.md).
+The 0.5.3 development session prefers GPU-backed Cage (`gles2`) on every machine.
+If that process exits unsuccessfully before the controller reports a healthy
+frame, it makes one software (`pixman`) attempt. Normal exit, signal termination,
+already-observed frames and missing controller evidence never trigger that retry.
+Both attempts use the same standalone Cage/launcher command and existing inhibitors.
+A second failure or a hang remains subject to the unchanged independent watchdog
+and parent recovery. Software fallback is logged, with no child-facing dialog.
+No per-device graphics preference or permanent trial flag is required. The earlier
+expiring renderer trial hook has been retired; its results informed this policy.
+Unaccelerated VM qualification and all six activity checks are required before
+publishing this development change. See the [investigation plan](../docs/dev/paint-latency-investigation.md).

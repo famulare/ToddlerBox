@@ -2514,3 +2514,34 @@ The expiring /run flag cannot survive reboot. No bind mounts or temporary writes
 over recovery-managed files are used. Real GPU startup and physical performance
 remain untested until the explicitly initiated trial; source and artifact hashes
 are recorded next to the separate local candidate.
+
+## Shared GPU-first session policy — 2026-10-31
+
+The parent explicitly requested GPU-first/silent CPU fallback for every machine.
+The session now invokes the unchanged standalone Cage/launcher command with gles2.
+A non-signal unsuccessful exit before the root controller reports healthy frames
+gets exactly one pixman exec. Success, normal exit, signals, frames already seen,
+and missing/malformed controller evidence never cause that inner relaunch. A
+second failure exits; a hang stays under the existing independent root watchdog.
+No health deadlines, root retry counters, IPC/pidfd guards, data format, driver or
+package changes are made. A waiting shell on the initial GPU path does not alter
+the launcher's argv/credentials used for authenticated supervision and shutdown.
+
+14 new shell/predicate tests cover GPU success, early failure, both paths failing,
+signal termination, explicit software mode, missing/invalid evidence, parent mode
+and frames already observed. The focused session/update/appliance/controller/
+accepted-boot/guard/legacy-installer runs passed 52 and 136 tests respectively.
+Bash syntax, pinned Ruff and diff checks passed. Existing UI/render/save code is
+unchanged; previous exact-frame and persistence evidence applies to those inputs.
+The retired temporary renderer trial hook, observer and their tests are removed;
+Git history retains the experiment. Opt-in app timing is still separately bounded.
+
+The only changed fixed system payload is toddlerbox-session. Candidate content
+is 228da7aa0a16d343. Build and qualify this exact source on the existing disposable
+unaccelerated VM workflow, including fresh installation, signed baseline hops,
+rollback and reset recovery. VM qualification is pending at this commit. Physical
+all-six-activity and scrolling/audio/Home/parent-escape checks remain required
+before explicit candidate acceptance; no production release is published here.
+Local artifacts record the exact commit, bundle/app hashes, same Ubuntu/Python
+production-only dependency environment and pending status. Preserve accepted
+0.5.2 as the local rollback and never roll back child data.

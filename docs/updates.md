@@ -1,6 +1,6 @@
 # Updates without reinstalling Ubuntu
 
-For the unreleased bounded Paint candidate, see [0.5.3 development notes](dev/v0.5.3-paint.md).
+For unreleased Paint/session performance work, see [0.5.3 development notes](dev/v0.5.3-paint.md).
 
 The next [0.5.2 candidate](releases/v0.5.2.md) is an **in-place app/system update**,
 not an installer migration. Its qualification and publication are pending; 0.5.1
