@@ -1,6 +1,6 @@
 # Paint latency investigation
 
-Status: Phases 1 and 2 collected; a bounded Phase 3 renderer trial is prepared, not yet run.
+Status: Phases 1–3 collected privately; durable renderer policy and final acceptance remain pending.
 Owner branch: `dev/0.5.3-paint`. Follow-up: GitHub issue #29.
 
 ## Objective and current evidence
@@ -180,3 +180,25 @@ rolling the previous pending diagnostic candidate back to accepted 0.5.2 if need
 After parent login, arm the trial/timings, start the normal standalone child
 session, draw for 30 seconds and return through Ctrl+Alt+Home. Do not run Cage
 inside GNOME. Verify the override is removed before concluding the experiment.
+
+## Resume after the renderer A/B
+
+The bounded GLES2 trial ran and returned through the normal parent path. The
+override was removed. Its timing/CPU reports and user observations remain local
+under ignored build/; do not publish these private appliance measurements.
+Do not confuse a successful one-shot trial with a durable startup setting or
+acceptance of the whole candidate. Ordinary startup remains pixman at this point.
+
+For the durable policy, inspect the exact linked wlroots implementation, not a
+current-version summary. Upstream 0.17.1 renderer_autocreate tries GLES2 in auto
+mode, but automatic pixman fallback is conditional on the backend lacking a
+render node. GPU initialization failure with a render node is not covered by a
+universal fallback guarantee. Keep this distinction in the implementation/tests.
+Primary source: https://gitlab.freedesktop.org/wlroots/wlroots/-/blob/0.17.1/render/wlr_renderer.c
+
+Next implementation boundary: choose a measured accelerated default for suitable
+hardware while preserving the unaccelerated VM path, explicit software recovery,
+existing root supervision and known-good 0.5.2. Verify both GPU success and failed
+initialization before qualifying a durable session change. Do not simply turn
+the temporary root-owned trial flag into a permanent always-on flag. No renderer
+policy change or automatic acceptance has been performed after the A/B.
