@@ -52,3 +52,7 @@ pipewire-pulse
 wireplumber
 alsa-utils
 pulseaudio-utils
+libinput-tools
+evtest
+smartmontools
+pciutils

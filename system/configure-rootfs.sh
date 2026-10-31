@@ -164,5 +164,10 @@ cp /etc/apt/sources.list.d/ubuntu.sources /opt/toddlerbox/build-ubuntu.sources
 printf 'Types: deb\nURIs: https://archive.ubuntu.com/ubuntu/\nSuites: noble noble-updates\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n\nTypes: deb\nURIs: https://security.ubuntu.com/ubuntu/\nSuites: noble-security\nComponents: main restricted universe multiverse\nSigned-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg\n' >/etc/apt/sources.list.d/ubuntu.sources
 printf 'APT::Periodic::Enable "0";\nAPT::Periodic::Update-Package-Lists "0";\nAPT::Periodic::Unattended-Upgrade "0";\n' >/etc/apt/apt.conf.d/99toddlerbox-explicit-maintenance
 systemctl mask apt-daily.timer apt-daily-upgrade.timer
+# Diagnostic binaries are parent-invoked only. smartmontools postinst enables
+# its daemon and SysV startup by default; policy-rc.d only blocks build-time start.
+update-rc.d smartmontools disable
+systemctl disable smartmontools.service smartd.service
+systemctl mask smartmontools.service smartd.service
 printf '%s\n' "$release_id" >/opt/toddlerbox/release-id
 rm -f /var/lib/systemd/random-seed
