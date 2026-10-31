@@ -1518,7 +1518,15 @@ class PaintApp:
                 self._handle_resume("frame-time gap")
             last_frame_time = now
             discard_input = False
-            events = pygame.event.get()
+            if timing:
+                timing.state(self.current_tool)
+                pump_started = time.perf_counter()
+                pygame.event.pump()
+                timing.observe('event_pump', time.perf_counter() - pump_started)
+                timing.sample_touch_queue()
+                events = pygame.event.get(pump=False)
+            else:
+                events = pygame.event.get()
             if timing:
                 timing.count("events_received", len(events))
             for event in events:
@@ -1578,6 +1586,7 @@ class PaintApp:
                     self._handle_pointer_up()
 
             if timing:
+                timing.state(self.current_tool)
                 timing.observe("event_batch", time.perf_counter() - events_started)
             now = time.monotonic()
             if now - self.last_autosave >= self.autosave_interval:

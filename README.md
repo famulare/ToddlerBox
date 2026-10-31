@@ -2,6 +2,8 @@
 
 Development for 0.5.3 includes GPU-first presentation, visible-number speech,
 Reading/Math Back history, corrected “plum” audio and future-image diagnostic tools.
+Optional, parent-armed Paint diagnostics distinguish short app-stage windows
+from SDL queue residence; physical latency remains a separate test.
 See [the backlog/validation plan](docs/dev/v0.5.3-issue-plan.md). Published 0.5.2
 artifacts remain immutable; these later features are not yet installed or released.
 

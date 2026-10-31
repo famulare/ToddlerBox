@@ -227,3 +227,51 @@ Next actions: finish CI/disposable VM qualification for the exact new build,
 install a separate pending candidate on the appliance using a detached system
 service, test ordinary startup/scrolling/drawing/audio/Home/escape, then request
 explicit parent acceptance. Private timing evidence stays under ignored build/.
+
+## Phase 4: queue residence and short timing windows
+
+Aggregate frame rate is insufficient to establish physical responsiveness.
+The armed diagnostic now retains the latest 60 two-second windows (counts, sums
+and maxima), up to 64 tool transitions, event-pump cost and an optional
+SDL touch-queue residence histogram. No coordinates, IDs, key contents, drawings
+or raw event payloads enter the report. The writer remains off the UI thread.
+
+The exact pygame-ce 2.5.8 source converts SDL finger events without copying their
+timestamp (src_c/event.c). SDL 2.32.10 SDL_PushEvent overwrites common.timestamp
+with SDL_GetTicks, so subtract only in that same unsigned millisecond clock,
+with wrap/future bounds. This measures time inside SDL's queue, excluding hardware,
+kernel/compositor delivery before enqueue and compositor/panel latency afterward.
+Primary sources:
+- https://github.com/pygame-community/pygame-ce/blob/2.5.8/src_c/event.c
+- https://github.com/libsdl-org/SDL/blob/release-2.32.10/src/events/SDL_events.c
+- https://wiki.libsdl.org/SDL2/SDL_PeepEvents
+- https://wiki.libsdl.org/SDL2/SDL_TouchFingerEvent
+
+Only Linux x86-64 with the verified pygame 2.5.8 / SDL 2.32.10 ABI can enable
+the native sampler. Resolve through pygame's loaded extension, never a separate
+SDL instance. Peek at most 64 finger events, preserving their order and leaving
+them queued; zero the temporary native buffer after reading timestamp headers.
+No event watch/filter, thread callback, grab, injection or event consumption is
+installed. Unsupported builds omit queue sampling gracefully. A synthetic dummy
+SDL test injects test-only events and verifies non-consumption, age, order and
+buffer clearing; production sampling never injects events.
+
+When armed, explicitly pump once, sample, then get(pump=False); pygame's normal
+pressed/released-state reset still occurs once. The disabled path keeps its exact
+normal event.get call. Existing blocked-event filtering is idempotent in this
+verified pygame source. Tool/reveal/drawing/save semantics are unchanged.
+
+Reproduce synthetic output evidence with docs/dev/evidence/paint-queue-frames.py
+under the accepted and new PYTHONPATH, using frozen Python 3.12 dependencies,
+dummy SDL and synthetic temporary data. All 42 genuine baseline/new frames and
+both saved-PNG hashes match (21 frames unarmed, 21 armed). The 116-test focused
+Paint/timing/export/collector/archive/save/exit/durable-work run passed.
+Physical session evidence stays in ignored local build output. Prepare a new
+journaled development candidate, preserve accepted rollback, run fresh Drive
+sync, and inspect legitimate start allowance before each physical trial.
+
+Suggested trial, under two minutes: draw with the initial pen; select eraser and
+pause without drawing; erase; return to pen; leave/reopen Paint and repeat.
+Correlate tool transitions and two-second windows. A low queue age still cannot
+prove low physical latency; investigate presentation or earlier input delivery
+next if queue and app stages remain short. Do not accept based on frame rate.

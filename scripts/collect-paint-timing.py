@@ -9,8 +9,10 @@ import stat
 import tempfile
 
 ROOT = Path('/home/parent/toddlerbox/build')
-METRICS = {'event_batch', 'render_work', 'display_flip', 'clock_tick', 'frame_interval', 'autosave_snapshot'}
-COUNTS = {'events_received', 'pointer_accepted', 'pointer_rejected'}
+METRICS = {'event_batch', 'render_work', 'display_flip', 'clock_tick', 'frame_interval',
+           'autosave_snapshot', 'event_pump', 'sdl_touch_queue_age'}
+COUNTS = {'events_received', 'pointer_accepted', 'pointer_rejected',
+          'queued_touch_samples', 'touch_queue_sample_capped'}
 
 
 def number(value):
@@ -29,6 +31,24 @@ def sanitize(value):
             continue
         result['metrics'][name] = {k: entry[k] for k in ['count', 'sum_ms', 'max_ms', 'buckets']}
     result['counts'] = {k: v for k, v in value.get('counts', {}).items() if k in COUNTS and number(v)}
+    result['sdl_touch_queue_available'] = value.get('sdl_touch_queue_available') is True
+    result['windows'] = []
+    for window in value.get('windows', [])[-60:]:
+        if not isinstance(window, dict) or not number(window.get('seconds')):
+            continue
+        metrics = {}
+        for name, entry in window.get('metrics', {}).items():
+            if name in METRICS and isinstance(entry, dict) and all(
+                    number(entry.get(k)) for k in ['count', 'sum_ms', 'max_ms']):
+                metrics[name] = {k: entry[k] for k in ['count', 'sum_ms', 'max_ms']}
+        result['windows'].append({'seconds': window['seconds'], 'metrics': metrics,
+                                  'counts': {k: v for k, v in window.get('counts', {}).items()
+                                             if k in COUNTS and number(v)}})
+    result['tool_changes'] = [
+        {'seconds': entry['seconds'], 'tool': entry['tool']}
+        for entry in value.get('tool_changes', [])[-64:]
+        if isinstance(entry, dict) and number(entry.get('seconds'))
+        and entry.get('tool') in {'round', 'fountain', 'eraser', 'bucket'}]
     context = value.get('context', {})
     for name in ['screen_size', 'canvas_size', 'sdl_version']:
         values = context.get(name)

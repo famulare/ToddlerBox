@@ -2578,3 +2578,22 @@ baseline. No credential guard was weakened or test skipped. Pinned Ruff 0.12.0,
 Bash syntax and git diff checks pass. The local interpreter is Python 3.12.3
 with the frozen development dependency group; the fresh-image toolchain/package
 manifest and artifact checksums remain for the combined image build.
+
+## Armed Paint queue diagnostic — 2026-10-31
+
+Extends the optional root-armed timing path with bounded two-second windows,
+tool changes, event-pump time and a non-consuming SDL2 finger-queue timestamp
+peek on the verified Linux x86-64 ABI. Default-disabled behavior retains the
+original event getter. No brush, save, renderer, recovery counter or fixed system
+payload changes. Timestamp clock/ABI checks and measurement limits are recorded
+in docs/dev/paint-latency-investigation.md. No physical improvement is claimed.
+
+116 relevant tests passed through frozen uv on Python 3.12, dummy SDL: Paint,
+timing/export/collector, archives, responsive saves, exit safety and durable work.
+Real native dummy-SDL queue tests verify timestamp age, event order/non-consumption
+and temporary buffer erasure. Pure tests verify clock wrap, expiry, bounded
+storage, independent snapshots and export privacy. Genuine accepted-source
+228da7aa0a16d343 versus new-source evidence uses
+docs/dev/evidence/paint-queue-frames.py: 42 frames and two saved-PNG comparisons
+are exact. A synthetic empty-queue pump comparison measured median 362.90us
+ordinary versus 389.33us armed, not a physical latency or worst-case bound.

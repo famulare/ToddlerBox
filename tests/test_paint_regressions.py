@@ -300,7 +300,7 @@ def test_armed_timing_records_stages_and_context_without_changing_exit(app, monk
     from toddlerbox.runtime.paint_timing import PaintTiming
     probe = PaintTiming(app.data_root / 'unused.json', time.monotonic() + 60)
     app._timing = probe  # No writer thread or privileged arming file in this synthetic test.
-    monkeypatch.setattr(pygame.event, 'get', lambda: [pygame.event.Event(pygame.QUIT)])
+    monkeypatch.setattr(pygame.event, 'get', lambda **_kwargs: [pygame.event.Event(pygame.QUIT)])
     app._run()
     result = probe.snapshot()
     assert result['context']['screen_size'] == app.screen.get_size()
@@ -308,3 +308,52 @@ def test_armed_timing_records_stages_and_context_without_changing_exit(app, monk
     assert result['metrics']['event_batch']['count'] >= 1
     assert result['counts']['events_received'] >= 1
     assert not (app.data_root / 'unused.json').exists()
+
+
+def test_timing_keeps_tool_cycle_frames_and_saved_png_exact(app, monkeypatch):
+    from pathlib import Path
+    import time
+    from toddlerbox.runtime.paint_timing import PaintTiming
+    x, y = app.canvas_rect.center
+    def down(pos):
+        return pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=pos, button=1, touch=False)
+    def up(pos):
+        return pygame.event.Event(pygame.MOUSEBUTTONUP, pos=pos, button=1, touch=False)
+    batches = []
+    for tool, offset in [('fountain', 0), ('eraser', 12), ('round', 24), ('fountain', 36)]:
+        target = app.tool_buttons[tool].rect.center
+        batches.extend([[down(target)], [up(target)], [down((x, y + offset))],
+                        [pygame.event.Event(pygame.MOUSEMOTION, pos=(x + 40, y + offset),
+                                            rel=(40, 0), buttons=(1, 0, 0), touch=False)],
+                        [up((x + 40, y + offset))]])
+    original_render = app._render
+    results = []
+    for armed in (False, True):
+        app.canvas_surface.fill('white')
+        app.current_tool = 'fountain'
+        app.current_stroke = None
+        app.pointer_down = False
+        app.pointer_input = PointerInput()
+        app.undo_stack.clear()
+        app.redo_stack.clear()
+        app._canvas_revision = 0
+        app._saved_revision = -1
+        app.last_autosave = time.monotonic()
+        app._timing = PaintTiming(Path('unused'), time.monotonic() + 60) if armed else None
+        frames, received = [], []
+        pending = iter(batches)
+        def get_events(**kwargs):
+            received.append(kwargs)
+            return next(pending)
+        def render():
+            original_render()
+            frames.append(pygame.image.tobytes(app.screen, 'RGB'))
+        monkeypatch.setattr(pygame.event, 'get', get_events)
+        monkeypatch.setattr(app, '_render', render)
+        monkeypatch.setattr('toddlerbox.paint.app.health.stopping', lambda: len(received) >= len(batches))
+        monkeypatch.setattr('toddlerbox.paint.app.health.frame_complete', lambda: None)
+        app._run()
+        assert app._autosave_latest()
+        results.append((frames, (app.paint_dir / 'latest.png').read_bytes(), app._canvas_revision))
+        assert received == ([{'pump': False}] if armed else [{}]) * len(batches)
+    assert results[0] == results[1]

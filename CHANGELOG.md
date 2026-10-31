@@ -2,6 +2,10 @@
 
 ## 0.5.3 development — unreleased
 
+- Extend explicitly armed Paint diagnostics with bounded timing windows, tool
+  transitions and read-only SDL queue-age sampling. Default remains disabled;
+  software timestamps do not establish physical touch-to-display latency.
+
 - Math visible printed numerals speak their individual values on deliberate taps;
   revelation remains silent. Verify Reading's existing visible-picture replay.
 - Reading and Math gain silent, bounded Back/forward history across modes/views,
