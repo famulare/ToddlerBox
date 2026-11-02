@@ -163,7 +163,7 @@ jobs:
         run: |
           gh release download v0.4.0 --repo famulare/ToddlerBox --dir build/published/installer \
             --pattern toddlerbox-installer.iso --pattern INSTALLER-SHA256SUMS
-          for tag in v0.5.0 v0.5.1; do
+          for tag in v0.5.0 v0.5.1 v0.5.2; do
             gh release download "$tag" --repo famulare/ToddlerBox --dir "build/published/$tag" \
               --pattern stable.json --pattern stable.json.sig --pattern ToddlerBox-update.pyz
           done
@@ -178,7 +178,8 @@ jobs:
           fi
           uv run --frozen python scripts/qualify-patch-update.py build/dev-candidate build/responsive-update-vm-dev \
             --baseline-image-dir build/published/installer --baseline-version 0.4.0 --baseline-sequence 2 \
-            --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 \
+            --published-dir build/published --release v0.5.0:0.5.0:3 --release v0.5.1:0.5.1:4 --release v0.5.2:0.5.2:5 \
+            --recover-public-trust-before v0.5.2 \
             --candidate-version "$(uv run --frozen python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')" \
             --candidate-sequence "$(cat system/release-sequence)" "${retry[@]}"
       - name: Keep selected synthetic update evidence briefly

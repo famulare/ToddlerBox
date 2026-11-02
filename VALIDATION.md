@@ -2659,3 +2659,28 @@ Harness-retry preparation passed 150 Math/image/update/reuse tests, including
 archive hash/path rejection and 16 silent-reveal target cases. Pinned Ruff,
 workflow YAML and diff checks pass. Original runtime content remains
 3ca89c04d3a90cbd; no rebuild or live installation change is part of this retry.
+
+## Current published baseline upgrade qualification preparation
+
+The portable update harness now includes published v0.5.2 (sequence5) before
+the exact sequence6 candidate. The v0.5.2 hop requires an explicit VM-only
+public-trust recovery operation: verify signature rejection first, bind the
+public-only ring to its SHA256, require real parent mode, then verify/install
+through unchanged production signature and sequence guards. No production
+private key is read and no automatic production rotation is introduced. The
+recovered ring is retained when adding the separate ephemeral VM signer.
+
+Public v0.5.2 metadata was independently checked: original0.5.1 ring rejects its
+signature; the checked-in recovered ring validates tagv0.5.2, sequence5, source
+fad63c88b47f97b6. Focused qualification tests pass (153 across Math/image/update/
+reuse before the final public-share test, then all42 update-qualification tests).
+Negative checks cover parent-mode refusal, wrong key digest, private/nonpublic
+material, unknown recovery hop, and changed qualified-harness identity. Only
+public trust material reaches the synthetic share. Runtime content remains
+3ca89c04d3a90cbd; this is a harness-only change, not a candidate rebuild.
+
+For a retry following successful fresh installation under a newer harness,
+reuse-vm-candidate records the original built git separately from the qualified
+harness git. It still requires a completed dev workflow with an actually
+successful fresh-install job, verifies the same bundle digest/source afterward,
+and the main harness independently checks unchanged current runtime content.

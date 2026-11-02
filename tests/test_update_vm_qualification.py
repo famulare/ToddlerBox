@@ -291,3 +291,83 @@ def test_retry_bundle_is_verified_again_after_download(inputs):
     with pytest.raises(ValueError, match='source mismatch'): reuse.check_bundle(record, path)
     record['sha256'] = '0' * 64
     with pytest.raises(ValueError, match='checksum mismatch'): reuse.check_bundle(record, path)
+
+
+def test_public_trust_recovery_is_explicit_bounded_and_public_only(harness, inputs):
+    args, root = inputs
+    args.recover_public_trust_before = 'v0.5.2'
+    with pytest.raises(ValueError, match='actual published hop'):
+        harness.validate_inputs(args, root)
+    args.recover_public_trust_before = 'v0.5.1'
+    (root/'system').mkdir()
+    public = root/'system/release-public-key.pem'
+    public.write_bytes((ROOT/'system/release-public-key.pem').read_bytes())
+    assert harness.public_recovery_ring(public) == public.read_bytes()
+    harness.validate_inputs(args, root)
+    public.write_bytes(b'-----BEGIN PRIVATE KEY-----\nsynthetic-not-a-key\n-----END PRIVATE KEY-----')
+    with pytest.raises(ValueError, match='public keys only'):
+        harness.validate_inputs(args, root)
+    assert not args.output.exists()
+
+
+def test_guest_public_recovery_requires_parent_guard_and_exact_public_bytes(tmp_path, monkeypatch):
+    import sys
+    guest = load('guest_public_recovery', ROOT/'scripts/update-vm-guest.py')
+    root = tmp_path/'guest'
+    qa = root/'root/update-qa';qa.mkdir(parents=True)
+    destination = root/'etc/toddlerbox/release-public-key.pem';destination.parent.mkdir(parents=True)
+    destination.write_bytes(b'old-public-fixture')
+    (qa/'original-public-key.pem').write_bytes(b'old-public-fixture')
+    child = root/'synthetic-child-work';child.write_bytes(b'preserve me')
+    (qa/'preserved.json').write_text(json.dumps({str(child): hashlib.sha256(child.read_bytes()).hexdigest()}))
+    public = tmp_path/'public.pem';public.write_bytes((ROOT/'system/release-public-key.pem').read_bytes())
+    monkeypatch.setattr(guest, 'ROOT', root);monkeypatch.setattr(guest, 'QA', qa)
+    permitted = [False]
+    def guard():
+        if not permitted[0]:raise ValueError('parent mode required')
+    def atomic(path, data, mode=0o600):
+        path.write_bytes(data);path.chmod(mode)
+    monkeypatch.setitem(sys.modules, 'appliance', SimpleNamespace(guard=guard))
+    monkeypatch.setitem(sys.modules, 'boot_recovery', SimpleNamespace(atomic=atomic))
+    digest = hashlib.sha256(public.read_bytes()).hexdigest()
+    with pytest.raises(ValueError, match='parent'):guest.recover_public_trust(digest, public)
+    assert destination.read_bytes() == b'old-public-fixture'
+    permitted[0] = True
+    with pytest.raises(AssertionError, match='Unexpected public'):guest.recover_public_trust('0'*64, public)
+    assert destination.read_bytes() == b'old-public-fixture'
+    guest.recover_public_trust(digest, public)
+    assert destination.read_bytes() == public.read_bytes() == (qa/'original-public-key.pem').read_bytes()
+    assert child.read_bytes() == b'preserve me'
+
+
+def test_update_retry_keeps_built_identity_separate_from_successful_fresh_harness(pinned_candidate):
+    reuse = load('reuse_qualified_harness', ROOT/'scripts/reuse-vm-candidate.py')
+    record, run, jobs = pinned_candidate
+    record['qualification_git'] = 'd'*40
+    run['head_sha'] = 'd'*40
+    reuse.validate(record, run, jobs)
+    assert record['git'] == 'a'*40
+    jobs['jobs'][0]['conclusion'] = 'failure'
+    with pytest.raises(ValueError, match='successful fresh'):reuse.validate(record, run, jobs)
+    jobs['jobs'][0]['conclusion'] = 'success'
+    run['head_sha'] = 'e'*40
+    with pytest.raises(ValueError, match='pinned dev build'):reuse.validate(record, run, jobs)
+
+
+def test_recovery_share_contains_only_public_trust_material(harness, inputs, monkeypatch):
+    args, root = inputs
+    args.recover_public_trust_before = 'v0.5.1'
+    (root/'system').mkdir()
+    ring = (ROOT/'system/release-public-key.pem').read_bytes()
+    (root/'system/release-public-key.pem').write_bytes(ring)
+    (root/'scripts').mkdir()
+    (root/'scripts/update-vm-guest.py').write_text('# synthetic guest fixture\n')
+    for tag, _, _ in args.release:
+        directory = args.published_dir/tag;directory.mkdir()
+        for name in ['stable.json', 'stable.json.sig', 'ToddlerBox-update.pyz']:
+            (directory/name).write_bytes(b'public fixture')
+    out, _, manifest = harness.validate_inputs(args, root);out.mkdir()
+    monkeypatch.setattr(harness, 'ROOT', root)
+    share, _ = harness.prepare_share(args, out, manifest)
+    assert (share/'recovered-production-public-key.pem').read_bytes() == ring
+    assert all(b'PRIVATE KEY' not in p.read_bytes() for p in share.rglob('*') if p.is_file())

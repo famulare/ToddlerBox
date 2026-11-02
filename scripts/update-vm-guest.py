@@ -10,6 +10,7 @@ import importlib.metadata
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import stat
 import struct
@@ -74,7 +75,7 @@ def seed():
 def check_preserved():
     for name, expected in json.loads((QA / 'preserved.json').read_text()).items():
         assert digest(Path(name)) == expected, 'Preserved synthetic data/config/resident file changed'
-    assert not Path('/var/lib/toddlerbox-system/recovery-error').exists(), 'Resident recovery failed'
+    assert not (ROOT / 'var/lib/toddlerbox-system/recovery-error').exists(), 'Resident recovery failed'
 
 
 def pair():
@@ -89,6 +90,23 @@ def inject_key():
     original = (QA / 'original-public-key.pem').read_bytes()
     public = Path('/qa/vm-public-key.pem').read_bytes()
     atomic(Path('/etc/toddlerbox/release-public-key.pem'), original.rstrip() + b'\n' + public, 0o644)
+
+
+def recover_public_trust(expected, public=Path('/qa/recovered-production-public-key.pem')):
+    from appliance import guard
+    from boot_recovery import atomic
+    guard()  # Real authenticated parent mode, inside the disposable guest only.
+    assert QA.is_dir() and re.fullmatch(r'[0-9a-f]{64}', expected or '')
+    assert not public.is_symlink() and public.is_file() and public.stat().st_size <= 4096
+    data = public.read_bytes()
+    assert hashlib.sha256(data).hexdigest() == expected, 'Unexpected public recovery ring'
+    pattern = rb'-----BEGIN PUBLIC KEY-----.*?-----END PUBLIC KEY-----'
+    assert 1 <= len(re.findall(pattern, data, re.DOTALL)) <= 4
+    assert not re.sub(pattern, b'', data, flags=re.DOTALL).strip(), 'Public material only'
+    atomic(ROOT / 'etc/toddlerbox/release-public-key.pem', data, 0o644)
+    # Later fixture-key injection must retain the explicitly recovered ring.
+    atomic(QA / 'original-public-key.pem', data, 0o600)
+    check_preserved()
 
 
 def verify_release(directory, sequence):
@@ -186,18 +204,20 @@ def check_version(version, source=None, status=None):
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument('action', choices=('seed', 'preserved', 'inject-key', 'save-pair', 'check-pair',
-                                    'install', 'rollback', 'boundary', 'version', 'untrusted'))
+                                    'install', 'rollback', 'boundary', 'version', 'untrusted', 'recover-public-trust'))
     p.add_argument('--directory', type=Path)
     p.add_argument('--sequence', type=int)
     p.add_argument('--boundary', choices=BOUNDARIES)
     p.add_argument('--version')
     p.add_argument('--source')
     p.add_argument('--status')
+    p.add_argument('--public-key-sha256')
     a = p.parse_args()
     assert os.geteuid() == 0, 'Disposable guest root only'
     if a.action == 'seed': seed()
     elif a.action == 'preserved': check_preserved()
     elif a.action == 'inject-key': inject_key()
+    elif a.action == 'recover-public-trust': recover_public_trust(a.public_key_sha256)
     elif a.action == 'save-pair': record('pair.json', pair())
     elif a.action == 'check-pair':
         assert pair() == json.loads((QA / 'pair.json').read_text()), 'Known-good system/app pair changed'

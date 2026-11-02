@@ -13,15 +13,20 @@ import zipfile
 
 
 def validate(record, run, jobs):
-    if (not isinstance(record, dict) or set(record) != {'run_id', 'git', 'content', 'sha256'}
+    fields = {'run_id', 'git', 'content', 'sha256'}
+    if (not isinstance(record, dict) or set(record) not in (fields, fields | {'qualification_git'})
             or type(record['run_id']) is not int
             or not 1 <= record['run_id'] < 2 ** 63
             or not all(isinstance(record[key], str) for key in ('git', 'content', 'sha256'))
             or not re.fullmatch(r'[0-9a-f]{40}', record['git'])
             or not re.fullmatch(r'[0-9a-f]{16}', record['content'])
-            or not re.fullmatch(r'[0-9a-f]{64}', record['sha256'])):
+            or not re.fullmatch(r'[0-9a-f]{64}', record['sha256'])
+            or ('qualification_git' in record and (not isinstance(record['qualification_git'], str)
+                or not re.fullmatch(r'[0-9a-f]{40}', record['qualification_git'])))):
         raise ValueError('Invalid pinned candidate record')
-    if (run['head_sha'] != record['git'] or run['status'] != 'completed'
+    # A retained-byte fresh retry may have a newer harness revision. The bundle
+    # still has to match the separately pinned original built Git identity.
+    if (run['head_sha'] != record.get('qualification_git', record['git']) or run['status'] != 'completed'
             or run['path'] != '.github/workflows/dev-vm-qualify.yml'
             or not run['head_branch'].startswith('dev/')
             or run['repository']['full_name'] != 'famulare/ToddlerBox'):

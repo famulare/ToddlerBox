@@ -32,6 +32,21 @@ def checkout_source(root):
     return module.source_id(root)
 
 
+def public_recovery_ring(path):
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > 4096:
+        raise ValueError('Expected a bounded public-only recovery ring')
+    data = path.read_bytes()
+    pattern = rb'-----BEGIN PUBLIC KEY-----.*?-----END PUBLIC KEY-----'
+    keys = re.findall(pattern, data, re.DOTALL)
+    if not 1 <= len(keys) <= 4 or re.sub(pattern, b'', data, flags=re.DOTALL).strip():
+        raise ValueError('Recovery ring must contain public keys only')
+    if any(not isinstance(load_pem_public_key(key), Ed25519PublicKey) for key in keys):
+        raise ValueError('Recovery ring requires Ed25519 public keys')
+    return data
+
+
 def installer_digest(directory):
     matches = []
     for line in (directory / 'INSTALLER-SHA256SUMS').read_text().splitlines():
@@ -72,6 +87,7 @@ def parse_args(argv=None):
     p.add_argument('--candidate-sequence', type=int, required=True, help='VM-only signed sequence')
     p.add_argument('--candidate-revision', help='Exact built Git revision for a harness-only retry')
     p.add_argument('--candidate-sha256', help='Pinned bundle checksum for that retry')
+    p.add_argument('--recover-public-trust-before', help='Explicit VM-only public trust recovery before this published hop')
     return p.parse_args(argv)
 
 
@@ -94,6 +110,10 @@ def validate_inputs(args, root=ROOT):
         raise ValueError('Signed sequence must increase at every update hop')
     if len({item[0] for item in args.release}) != len(args.release):
         raise ValueError('Duplicate release tag')
+    if args.recover_public_trust_before:
+        if args.recover_public_trust_before not in {item[0] for item in args.release}:
+            raise ValueError('Trust recovery must name an actual published hop')
+        public_recovery_ring(root / 'system/release-public-key.pem')
     checksum = installer_digest(args.baseline_image_dir)
     bundle = args.candidate / 'ToddlerBox-update.pyz'
     with zipfile.ZipFile(bundle) as archive:
@@ -124,6 +144,9 @@ def prepare_share(args, out, manifest):
     share = out / 'share'
     share.mkdir()
     shutil.copyfile(ROOT / 'scripts/update-vm-guest.py', share / 'guest.py')
+    if args.recover_public_trust_before:
+        (share / 'recovered-production-public-key.pem').write_bytes(
+            public_recovery_ring(ROOT / 'system/release-public-key.pem'))
     for tag, _, _ in args.release:
         target = share / tag
         target.mkdir()
@@ -166,6 +189,10 @@ class UpdateChain:
                        'Class C remains from the published installer',
                        'No physical HP input, Wi-Fi or acoustic validation',
                        'No fresh qualification of unchanged Music PCM; separate fresh-install job covers it']}
+        if args.recover_public_trust_before:
+            self.report['inputs']['explicit_public_trust_recovery_before'] = args.recover_public_trust_before
+            self.report['inputs']['recovery_public_ring_sha256'] = sha(self.share / 'recovered-production-public-key.pem')
+            self.report['limits'].append('Published-key recovery is an explicit synthetic parent operation, not automatic production trust rotation')
         self.save()
 
     def save(self):
@@ -307,6 +334,11 @@ class UpdateChain:
             self.passed('Verified published installer, authenticated setup and genuine supervised child/escape')
             baseline = (self.args.baseline_version, None)
             for tag, version, sequence in self.args.release:
+                if tag == self.args.recover_public_trust_before:
+                    self.guest('untrusted', '--directory', '/qa/' + tag, '--sequence', sequence)
+                    self.guest('recover-public-trust', '--public-key-sha256',
+                               sha(self.share / 'recovered-production-public-key.pem'))
+                    self.passed('Published replacement signer rejected before explicit parent public-key recovery')
                 self.guest('install', '--directory', '/qa/' + tag, '--sequence', sequence)
                 self.version(version, status='pending')
                 self.observe(tag)
