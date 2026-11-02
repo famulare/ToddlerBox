@@ -457,3 +457,19 @@ def test_math_back_raw_finger_ignores_duplicate_mouse(app):
     for kind in (pygame.MOUSEBUTTONDOWN, pygame.MOUSEBUTTONUP):
         app.handle_event(pygame.event.Event(kind, pos=(x, y), button=1, touch=True))
     assert app.history.index == index - 1
+
+
+@pytest.mark.parametrize('width', [480, 800, 1024, 1366])
+@pytest.mark.parametrize('mode,a,b', [('numbers', 100, 0), ('addition', 8, 2),
+                                    ('addition', 0, 100), ('subtraction', 100, 100)])
+def test_vm_silent_reveal_target_avoids_speaking_numerals(app, width, mode, a, b):
+    import importlib.util
+    from pathlib import Path
+    script = Path(__file__).resolve().parents[1] / 'scripts/qualify-release-vm.py'
+    spec = importlib.util.spec_from_file_location('math_vm_target', script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    app.rect.width = width
+    app.question_rect.width = width - 128
+    select(app, mode, a, b)
+    assert app._target(module.math_reveal_point(width)) == 'reveal'

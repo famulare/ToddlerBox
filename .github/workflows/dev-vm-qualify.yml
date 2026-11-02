@@ -18,6 +18,9 @@ jobs:
       cancel-in-progress: false
     runs-on: ubuntu-24.04
     timeout-minutes: 150
+    outputs:
+      candidate_git: ${{ steps.installer-reuse.outputs.git }}
+      candidate_sha256: ${{ steps.installer-reuse.outputs.bundle_sha256 }}
     env:
       TODDLERBOX_BUILD_DIR: ${{ github.workspace }}/build/dev
       TODDLERBOX_DOCKER_ARCHIVE: /tmp/toddlerbox-dev-image.tar.gz
@@ -36,7 +39,27 @@ jobs:
           sudo apt-get install -y --no-install-recommends tesseract-ocr
           uv sync --frozen --group dev --python /usr/bin/python3
           uv run --frozen pytest -q -p no:cacheprovider
+      - name: Validate exact retained installer provenance
+        if: contains(github.event.head_commit.message, '[reuse-installer]')
+        id: installer-reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run --no-project --python /usr/bin/python3 scripts/reuse-installer-candidate.py docs/dev/installer-vm-candidate.json --github-output "$GITHUB_OUTPUT"
+      - name: Verify exact retained bytes and prepare VM tools
+        if: contains(github.event.head_commit.message, '[reuse-installer]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RETAINED_ARTIFACT_ID: ${{ steps.installer-reuse.outputs.artifact_id }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$RETAINED_ARTIFACT_ID/zip" > /tmp/tbx-retained-installer.zip
+          uv run --no-project --python /usr/bin/python3 scripts/reuse-installer-candidate.py docs/dev/installer-vm-candidate.json --archive /tmp/tbx-retained-installer.zip --directory build/dev
+          rm /tmp/tbx-retained-installer.zip
+          source system/versions.env
+          docker build --platform linux/amd64 --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt \
+            --build-arg "UBUNTU_IMAGE=$UBUNTU_IMAGE" --build-arg "UBUNTU_SNAPSHOT=$UBUNTU_SNAPSHOT" \
+            -f system/Dockerfile.tools -t toddlerbox-image-tools .
       - name: Build disk, installer and unsigned update bundle
+        if: "!contains(github.event.head_commit.message, '[reuse-installer]')"
         run: |
           df -h . /tmp
           ./system/build-compact.sh
@@ -48,8 +71,10 @@ jobs:
             --app "$TODDLERBOX_BUILD_DIR/toddlerbox-app-$id.tar.gz" --output "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
           sha256sum "$TODDLERBOX_BUILD_DIR/toddlerbox-installer.iso" "$TODDLERBOX_BUILD_DIR/ToddlerBox-update.pyz"
       - name: Record and retain exact release preparation outputs
+        if: "!contains(github.event.head_commit.message, '[reuse-installer]')"
         run: uv run --frozen python scripts/record-release-build.py build/dev
       - name: Preserve exact installer and build provenance
+        if: "!contains(github.event.head_commit.message, '[reuse-installer]')"
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: dev-installer-candidate
@@ -144,8 +169,8 @@ jobs:
           done
       - name: Qualify signed update chain, unsigned recovery and journal resets
         env:
-          REUSE_GIT: ${{ steps.reuse.outputs.git }}
-          REUSE_SHA256: ${{ steps.reuse.outputs.sha256 }}
+          REUSE_GIT: ${{ steps.reuse.outputs.git || needs.fresh-install.outputs.candidate_git }}
+          REUSE_SHA256: ${{ steps.reuse.outputs.sha256 || needs.fresh-install.outputs.candidate_sha256 }}
         run: |
           retry=()
           if [[ -n "$REUSE_GIT" ]]; then

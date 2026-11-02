@@ -32,6 +32,12 @@ from qmp import command
 EXPECTED_VERSION = tomllib.loads((ROOT/'pyproject.toml').read_text())['project']['version']
 
 
+def math_reveal_point(width):
+    # Blank right edge of the question card. Its center can now be a deliberate
+    # numeral-speech target; tapping that operand must not reveal the answer.
+    return width - 116, 152
+
+
 class Qualification:
     def __init__(self, image, out):
         self.image, self.out = image.resolve(), out.resolve()
@@ -310,11 +316,11 @@ INNER
         # Math: pictures first, silent reveal, explicit bundled speech, cleanup.
         self.click(*centers[5]);self.wait_text('Math','Numbers')
         self.shot('math-objects-first')
-        self.click((w-128)//2+24,152);self.shot('math-revealed')
+        self.click(*math_reveal_point(w));self.shot('math-revealed')
         time.sleep(2);assert self.rms()<1
         self.click(w//2+125,45);self.wait_audio()
         self.shot('math-speaking')
-        self.click(w//2,45);self.click((w-128)//2+24,152)
+        self.click(w//2,45);self.click(*math_reveal_point(w))
         time.sleep(3);assert self.rms()<1
         self.click(w//2+125,45);self.wait_audio()
         self.shot('math-equation');self.home();time.sleep(3);assert self.rms()<1

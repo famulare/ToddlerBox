@@ -1,0 +1,32 @@
+{
+  "source": {
+    "git": "0807dbc9ec5514eef5a492358ab547572eb7d45b",
+    "content": "3ca89c04d3a90cbd"
+  },
+  "workflow_run": 41176657705,
+  "scope": "Issue27 diagnostic-image checks passed; whole run failed afterward at an outdated Math silent-tap assertion; update-chain skipped",
+  "diagnostics": {
+    "added_packages": {
+      "evtest": "1:1.35-1",
+      "libinput-tools": "1.25.0-1ubuntu3.7",
+      "pciutils": "1:3.10.0-2build1",
+      "python3-libevdev": "0.5-3",
+      "python3-pyudev": "0.24.0-1",
+      "smartmontools": "7.4-2build1"
+    },
+    "added_units": {
+      "smartd.service": "masked",
+      "smartmontools.service": "masked"
+    },
+    "baseline_comparison": "actual package inventory from successful renderer-only fresh image",
+    "checks": [
+      "parent diagnostic smoke helper passed separately",
+      "bounded real libinput enumeration, PCI enumeration and SMART scan passed",
+      "new-package units inactive and not enabled; no new cron entries"
+    ],
+    "limits": [
+      "virtual devices only; no physical touchscreen, disk SMART passthrough or hearing evidence",
+      "libinput record/debug-events and evtest availability checked without recording input"
+    ]
+  }
+}

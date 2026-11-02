@@ -128,3 +128,13 @@ The release-preparation source uses proposed sequence 6 for 0.5.3, following
 published 0.5.2 sequence 5. A single exact combined build will retain the ISO, app,
 bundle and checksums before qualification. This remains pending evidence, not
 released availability.
+
+## Verified result — 2026-11-02
+
+The fresh-image diagnostic gate passed in run 41176657705 on source0807dbc,
+content3ca89c04d3a90cbd. Exact selected public evidence and added package versions
+are in docs/releases/diagnostics-3ca89c04d3a90cbd.json. Both SMART aliases are
+masked/inactive; libinput/PCI/SMART enumeration passed; no new cron entries.
+This closes #27 as implemented and image-verified, without claiming release.
+The full run later failed an unrelated outdated Math silent-tap harness target;
+full fresh/update qualification is being repeated against the retained bytes.

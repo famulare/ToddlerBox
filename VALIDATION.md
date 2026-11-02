@@ -2622,5 +2622,40 @@ shell and Python, with real baseline package names and parsed evidence markers.
 A synthetic build-record exercise rejected a mismatched embedded app before
 writing provenance, then verified every retained output checksum on matching
 inputs. Workflow YAML, pinned Ruff and diff checks passed. Runtime content for
-this sequence-6 preparation is 7779244944a8a162. Physical accepted development
+the final sequence-6 build is 3ca89c04d3a90cbd. The earlier preliminary
+7779244944a8a162 was computed before the final system guide edit and was not
+the built identity; the retained build manifest is authoritative. Physical accepted development
 artifacts remain separate; no live installation was changed by this preparation.
+
+## Diagnostic-image result and exact-installer harness retry — 2026-11-02
+
+Run 41176657705 built commit 0807dbc9ec5514eef5a492358ab547572eb7d45b,
+content 3ca89c04d3a90cbd. CI run 41176657771 passed. The fresh-image diagnostic
+helper, actual bounded libinput/PCI/SMART enumeration and genuine-baseline new
+package/unit policy checks passed; selected evidence is retained at
+docs/releases/diagnostics-3ca89c04d3a90cbd.json. Added versions are evtest
+1:1.35-1, libinput-tools 1.25.0-1ubuntu3.7, pciutils 1:3.10.0-2build1,
+smartmontools 7.4-2build1, python3-libevdev 0.5-3 and python3-pyudev 0.24.0-1.
+Only SMART services were added; both aliases are masked/inactive, no new cron
+entry. This completes #27's image-specific checks, not full release readiness.
+
+The full fresh run subsequently failed Math's silent-reveal assertion: its old
+center tap can hit an intentionally speaking operand after #30. Music and earlier
+checks had passed; update-chain was skipped. The harness now taps a blank edge
+of the question card, tested against actual Math targets over four resolutions.
+No production application bytes are changed by that harness correction.
+
+Retry inputs pin original run, source, installer/bundle hashes and immutable
+archive ID/digest in docs/dev/installer-vm-candidate.json. The separate installer
+reuse path requires successful original build/record/retention steps, validates
+archive integrity/paths and all retained file hashes, checks runtime content is
+unchanged, then repeats full fresh qualification. It does not claim prior fresh
+qualification success or weaken the older update-only reuse guard. The update
+job waits for the retry's fresh-install success and validates original built
+revision separately from the harness revision. Exact ISO/bundle remain remote
+workflow artifacts; the HP remains on its accepted development installation.
+
+Harness-retry preparation passed 150 Math/image/update/reuse tests, including
+archive hash/path rejection and 16 silent-reveal target cases. Pinned Ruff,
+workflow YAML and diff checks pass. Original runtime content remains
+3ca89c04d3a90cbd; no rebuild or live installation change is part of this retry.
